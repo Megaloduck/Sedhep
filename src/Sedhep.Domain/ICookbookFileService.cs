@@ -23,8 +23,15 @@ public interface ICookbookFileService
         IReadOnlyCollection<Guid>? recipeIds = null,
         CancellationToken cancellationToken = default);
 
-    /// <summary>Reads a cookbook package and adds its recipes to the local cookbook.</summary>
-    Task<CookbookImportResult> ReadAsync(Stream source, CancellationToken cancellationToken = default);
+    /// <summary>
+    /// Reads a cookbook package and adds its recipes to the local cookbook. When a recipe exists in
+    /// both places, <paramref name="policy"/> decides which copy survives; without one the local
+    /// copy is always kept, because the plan says an import must never silently destroy it.
+    /// </summary>
+    Task<CookbookImportResult> ReadAsync(
+        Stream source,
+        ICookbookImportPolicy? policy = null,
+        CancellationToken cancellationToken = default);
 }
 
 public sealed record CookbookFileSummary(int RecipeCount, int PhotoCount, long Bytes);
@@ -34,4 +41,29 @@ public sealed record CookbookImportResult(
     int Replaced,
     int PhotosRestored,
     int Skipped,
-    IReadOnlyList<string> Warnings);
+    IReadOnlyList<string> Warnings)
+{
+    /// <summary>Recipes that existed on both sides, whether or not the user resolved them.</summary>
+    public IReadOnlyList<CookbookConflict> Conflicts { get; init; } = Array.Empty<CookbookConflict>();
+}
+
+/// <summary>Two copies of the same recipe, and no obvious winner.</summary>
+public sealed record CookbookConflict(Guid RecipeId, string Title, int LocalRevision, int IncomingRevision);
+
+public enum ConflictDecision
+{
+    /// <summary>Leave the recipe on this device exactly as it is.</summary>
+    KeepLocal,
+
+    /// <summary>Overwrite the local copy with the one from the package.</summary>
+    UseIncoming
+}
+
+/// <summary>
+/// Asked once per recipe that exists in both cookbooks. The UI answers this; an import that has no
+/// policy keeps the local copy.
+/// </summary>
+public interface ICookbookImportPolicy
+{
+    Task<ConflictDecision> ResolveAsync(CookbookConflict conflict, CancellationToken cancellationToken = default);
+}

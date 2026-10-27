@@ -37,8 +37,31 @@ public partial class App : Application
 
     public override void OnFrameworkInitializationCompleted()
     {
+        try
+        {
+            StartApplication();
+        }
+        catch (Exception ex)
+        {
+            // A cookbook that cannot be opened is a message, not a crash.
+            ShowStartupError(ex);
+        }
+
+        base.OnFrameworkInitializationCompleted();
+    }
+
+    private void StartApplication()
+    {
         var logger = Services.GetRequiredService<ILogger<App>>();
         logger.LogInformation("Sedhep starting");
+
+        var sandbox = Services.GetRequiredService<FileSystemAppSandbox>();
+        if (sandbox.Problem is { } problem)
+        {
+            throw new CookbookStorageException(
+                sandbox.RootDirectory,
+                $"Sedhep could not use its cookbook folder at {sandbox.RootDirectory}. {problem}");
+        }
 
         // Avoid duplicate validations from both Avalonia and the CommunityToolkit.
         // More info: https://docs.avaloniaui.net/docs/guides/development-guides/data-validation#manage-validationplugins
@@ -82,7 +105,63 @@ public partial class App : Application
         });
 
         logger.LogInformation("Startup complete");
-        base.OnFrameworkInitializationCompleted();
+    }
+
+    private void ShowStartupError(Exception exception)
+    {
+        string path;
+        string message;
+        string? hint = null;
+
+        if (exception is CookbookStorageException storage)
+        {
+            path = storage.Path;
+            message = storage.Message;
+        }
+        else
+        {
+            path = _services?.GetService<FileSystemAppSandbox>()?.RootDirectory ?? string.Empty;
+            message = exception.Message;
+            hint = "This is unexpected. The details are in the log next to the app's output.";
+        }
+
+        try
+        {
+            _services?.GetService<ILogger<App>>()?.LogError(exception, "Sedhep could not start");
+        }
+        catch
+        {
+            // Logging must not hide the original failure.
+        }
+
+        var view = new StartupErrorView(message, path, hint);
+
+        switch (ApplicationLifetime)
+        {
+            case IClassicDesktopStyleApplicationLifetime desktop:
+                var window = new Window
+                {
+                    Title = "Sedhep",
+                    Width = 432,
+                    Height = 620,
+                    MinWidth = 380,
+                    MinHeight = 460,
+                    WindowStartupLocation = WindowStartupLocation.CenterScreen,
+                    Content = view
+                };
+
+                if (Current?.TryFindResource("Page", out var page) == true && page is Avalonia.Media.IBrush brush)
+                {
+                    window.Background = brush;
+                }
+
+                desktop.MainWindow = window;
+                break;
+
+            case ISingleViewApplicationLifetime singleViewPlatform:
+                singleViewPlatform.MainView = view;
+                break;
+        }
     }
 
     private void ShutDownServices()

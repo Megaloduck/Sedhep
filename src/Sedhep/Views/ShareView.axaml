@@ -136,5 +136,36 @@
         </Border>
       </StackPanel>
     </ScrollViewer>
+
+    <!-- The same recipe on both sides: the user picks which copy the cookbook keeps. -->
+    <Border Grid.Row="0" Grid.RowSpan="2"
+            IsVisible="{Binding HasPendingConflict}"
+            Background="{DynamicResource Scrim}">
+      <Border Classes="card" Margin="24" Padding="20" VerticalAlignment="Center">
+        <StackPanel Spacing="14">
+          <Border Classes="pill accent" HorizontalAlignment="Left">
+            <TextBlock Classes="label" Text="SAME RECIPE, TWO VERSIONS" Foreground="{DynamicResource Accent}" />
+          </Border>
+
+          <StackPanel Spacing="4">
+            <TextBlock Classes="h2" Text="{Binding PendingConflict.Title}" />
+            <TextBlock Classes="muted" Text="{Binding ConflictDetails}" />
+          </StackPanel>
+
+          <TextBlock Classes="muted" Text="Choose which one stays in your cookbook. Neither is thrown away until you decide." />
+
+          <StackPanel Spacing="8">
+            <Button Classes="primary"
+                    Content="Keep my version"
+                    HorizontalAlignment="Stretch"
+                    Command="{Binding KeepMineCommand}" />
+            <Button Classes="outline"
+                    Content="Use the incoming version"
+                    HorizontalAlignment="Stretch"
+                    Command="{Binding UseIncomingCommand}" />
+          </StackPanel>
+        </StackPanel>
+      </Border>
+    </Border>
   </Grid>
 </UserControl>

@@ -1,0 +1,56 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Sedhep.Views.StartupErrorView">
+  <Grid Background="{DynamicResource Page}" RowDefinitions="*,Auto">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+      <StackPanel VerticalAlignment="Center"
+                  HorizontalAlignment="Center"
+                  MaxWidth="380"
+                  Spacing="14"
+                  Margin="28,24">
+        <Border Width="76" Height="76" CornerRadius="38" Background="{DynamicResource DangerSoft}" HorizontalAlignment="Center">
+          <Path Classes="icon lg"
+                Data="{StaticResource IconInfo}"
+                Width="30" Height="30"
+                Stroke="{DynamicResource Danger}"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center" />
+        </Border>
+
+        <TextBlock Classes="h2" Text="Sedhep could not open your cookbook" TextAlignment="Center" />
+        <TextBlock Classes="muted" x:Name="MessageText" TextAlignment="Center" />
+
+        <Border Classes="flat">
+          <StackPanel Spacing="4">
+            <TextBlock Classes="label" Text="COOKBOOK FOLDER" />
+            <TextBlock Classes="meta" x:Name="PathText" TextWrapping="Wrap" />
+          </StackPanel>
+        </Border>
+
+        <TextBlock Classes="muted" x:Name="HintText" TextAlignment="Center" />
+
+        <TextBlock Classes="muted"
+                   TextAlignment="Center"
+                   Text="Nothing has been deleted or moved. Your recipes are still wherever they were." />
+      </StackPanel>
+    </ScrollViewer>
+
+    <Border Grid.Row="1"
+            Background="{DynamicResource Surface}"
+            BorderBrush="{DynamicResource Border}"
+            BorderThickness="0,1,0,0"
+            Padding="18,12,18,16">
+      <StackPanel Spacing="8">
+        <Button Classes="outline"
+                x:Name="OpenFolderButton"
+                Content="Open the folder"
+                HorizontalAlignment="Stretch"
+                Click="OnOpenFolderClick" />
+        <Button Classes="primary"
+                Content="Close Sedhep"
+                HorizontalAlignment="Stretch"
+                Click="OnCloseClick" />
+      </StackPanel>
+    </Border>
+  </Grid>
+</UserControl>

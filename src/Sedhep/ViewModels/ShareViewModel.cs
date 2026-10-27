@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -19,7 +20,7 @@ namespace Sedhep.ViewModels;
 /// Sending recipes to another phone and moving cookbook files in and out. The page never shows
 /// technical words: a device is "Rina's phone", a transfer is "Send".
 /// </summary>
-public partial class ShareViewModel : ViewModelBase
+public partial class ShareViewModel : ViewModelBase, ICookbookImportPolicy
 {
     private readonly ICookbookFileService _files;
     private readonly INearbyShareService _nearby;
@@ -67,6 +68,19 @@ public partial class ShareViewModel : ViewModelBase
 
     [ObservableProperty]
     private bool _isFileWorking;
+
+    [ObservableProperty]
+    private CookbookConflict? _pendingConflict;
+
+    [ObservableProperty]
+    private string? _conflictDetails;
+
+    private TaskCompletionSource<ConflictDecision>? _conflictAnswer;
+
+    public bool HasPendingConflict => PendingConflict is not null;
+
+    partial void OnPendingConflictChanged(CookbookConflict? value)
+        => OnPropertyChanged(nameof(HasPendingConflict));
 
     public ObservableCollection<NearbyDevice> Devices { get; } = new();
 
@@ -313,16 +327,25 @@ public partial class ShareViewModel : ViewModelBase
             }
 
             await using var stream = await file.OpenReadAsync();
-            var result = await _files.ReadAsync(stream);
+
+            // This page answers the "both copies exist" questions while the file is being read.
+            var result = await _files.ReadAsync(stream, this);
 
             var added = result.Imported + result.Replaced;
+            var addedText = added == 1 ? "1 recipe added" : $"{added} recipes added";
+            var photoText = result.PhotosRestored == 1
+                ? "1 photo restored"
+                : $"{result.PhotosRestored} photos restored";
+
             FileStatus = added == 0 && result.Skipped == 0
                 ? "That file had no recipes in it."
-                : $"{added} recipes added, {result.PhotosRestored} photos restored.";
+                : $"{addedText}, {photoText}.";
 
             if (result.Skipped > 0)
             {
-                FileStatus += $" {result.Skipped} kept as they were (newer here).";
+                FileStatus += result.Skipped == 1
+                    ? " 1 kept as it was."
+                    : $" {result.Skipped} kept as they were.";
             }
 
             _cookbookCount += result.Imported;
@@ -335,9 +358,45 @@ public partial class ShareViewModel : ViewModelBase
         }
         finally
         {
+            PendingConflict = null;
+            _conflictAnswer = null;
             IsFileWorking = false;
         }
     }
+
+    /// <summary>
+    /// Called by the file reader for every recipe that exists on both sides. The prompt is a card on
+    /// this page; the answer is whatever the user taps.
+    /// </summary>
+    public async Task<ConflictDecision> ResolveAsync(
+        CookbookConflict conflict,
+        CancellationToken cancellationToken = default)
+    {
+        _conflictAnswer = new TaskCompletionSource<ConflictDecision>(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+
+        ConflictDetails = conflict.LocalRevision == conflict.IncomingRevision
+            ? "Both copies were edited since they were last shared. Nothing has been changed yet."
+            : $"This device has revision {conflict.LocalRevision}; the file has revision {conflict.IncomingRevision}.";
+
+        PendingConflict = conflict;
+
+        try
+        {
+            return await _conflictAnswer.Task.WaitAsync(cancellationToken);
+        }
+        finally
+        {
+            PendingConflict = null;
+            _conflictAnswer = null;
+        }
+    }
+
+    [RelayCommand]
+    private void KeepMine() => _conflictAnswer?.TrySetResult(ConflictDecision.KeepLocal);
+
+    [RelayCommand]
+    private void UseIncoming() => _conflictAnswer?.TrySetResult(ConflictDecision.UseIncoming);
 
     [RelayCommand]
     private void Back() => _navigator.GoBack();

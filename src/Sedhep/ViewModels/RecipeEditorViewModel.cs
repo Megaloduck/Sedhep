@@ -66,6 +66,12 @@ public partial class RecipeEditorViewModel : ViewModelBase
     [ObservableProperty]
     private bool _hasSteps;
 
+    [ObservableProperty]
+    private bool _isConfirmingDiscard;
+
+    /// <summary>The draft as it was when the editor opened, so leaving early can notice edits.</summary>
+    private string _openingSignature = string.Empty;
+
     public ObservableCollection<IngredientRowViewModel> IngredientRows { get; } = new();
     public ObservableCollection<StepRowViewModel> StepRows { get; } = new();
     public ObservableCollection<RecipePhotoViewModel> Photos { get; } = new();
@@ -129,9 +135,60 @@ public partial class RecipeEditorViewModel : ViewModelBase
         HasIngredients = IngredientRows.Count > 0;
         HasSteps = StepRows.Count > 0;
 
+        _openingSignature = BuildSignature();
+
         _ = LoadCategoriesAsync();
         _ = LoadPhotoImagesAsync();
     }
+
+    /// <summary>
+    /// Everything the editor can change, flattened into one comparable value. Comparing it when the
+    /// user leaves is simpler and more reliable than tracking each field separately.
+    /// </summary>
+    private string BuildSignature()
+    {
+        var builder = new System.Text.StringBuilder();
+        builder.Append(Title).Append('\u001f')
+            .Append(Description).Append('\u001f')
+            .Append(Notes).Append('\u001f')
+            .Append(Servings).Append('\u001f')
+            .Append(PrepMinutes).Append('\u001f')
+            .Append(CookMinutes).Append('\u001f')
+            .Append(SelectedCategory?.Id).Append('\u001f');
+
+        foreach (var tag in Tags)
+        {
+            builder.Append(tag).Append('\u001e');
+        }
+
+        builder.Append('\u001f');
+
+        foreach (var row in IngredientRows)
+        {
+            builder.Append(row.Model.Quantity).Append('\u001d')
+                .Append(row.Model.Unit).Append('\u001d')
+                .Append(row.Model.Name).Append('\u001e');
+        }
+
+        builder.Append('\u001f');
+
+        foreach (var row in StepRows)
+        {
+            builder.Append(row.Model.Instruction).Append('\u001d')
+                .Append(row.Model.Minutes).Append('\u001e');
+        }
+
+        builder.Append('\u001f');
+
+        foreach (var photo in Photos)
+        {
+            builder.Append(photo.Photo.StorageId).Append('\u001e');
+        }
+
+        return builder.ToString();
+    }
+
+    public bool IsDirty => !string.Equals(BuildSignature(), _openingSignature, StringComparison.Ordinal);
 
     private async Task LoadCategoriesAsync()
     {
@@ -414,5 +471,25 @@ public partial class RecipeEditorViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private void Cancel() => _navigator.GoBack();
+    private void Cancel()
+    {
+        // Leaving with unsaved changes asks once rather than silently dropping them.
+        if (IsDirty)
+        {
+            IsConfirmingDiscard = true;
+            return;
+        }
+
+        _navigator.GoBack();
+    }
+
+    [RelayCommand]
+    private void KeepEditing() => IsConfirmingDiscard = false;
+
+    [RelayCommand]
+    private void DiscardChanges()
+    {
+        IsConfirmingDiscard = false;
+        _navigator.GoBack();
+    }
 }

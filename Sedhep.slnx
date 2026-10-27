@@ -8,9 +8,14 @@
     <Project Path="src/Sedhep.Infrastructure/Sedhep.Infrastructure.csproj" />
   </Folder>
   <Folder Name="/platforms/">
-    <Project Path="platforms/Sedhep.Android/Sedhep.Android.csproj" />
+    <Project Path="platforms/Sedhep.Android/Sedhep.Android.csproj">
+      <Deploy Solution="Debug|*" />
+    </Project>
     <Project Path="platforms/Sedhep.Browser/Sedhep.Browser.csproj" />
     <Project Path="platforms/Sedhep.Desktop/Sedhep.Desktop.csproj" />
     <Project Path="platforms/Sedhep.iOS/Sedhep.iOS.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Sedhep.Tests/Sedhep.Tests.csproj" />
   </Folder>
 </Solution>

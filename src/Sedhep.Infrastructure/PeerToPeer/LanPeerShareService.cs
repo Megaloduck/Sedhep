@@ -495,7 +495,7 @@ public sealed class LanPeerShareService : INearbyShareService
                 }
 
                 await using var received = File.OpenRead(packagePath);
-                var result = await _cookbookFiles.ReadAsync(received, token);
+                var result = await _cookbookFiles.ReadAsync(received, null, token);
 
                 _logger.LogInformation(
                     "Received {Recipes} recipes ({Bytes} bytes) from {Device}",

@@ -28,6 +28,9 @@ public sealed class CookbookFileService : ICookbookFileService
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
         WriteIndented = true,
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        // Files written by hand or by an older build must still be readable.
+        PropertyNameCaseInsensitive = true,
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
     };
 
@@ -121,7 +124,10 @@ public sealed class CookbookFileService : ICookbookFileService
         return new CookbookFileSummary(selected.Count, photoCount, bytes);
     }
 
-    public async Task<CookbookImportResult> ReadAsync(Stream source, CancellationToken cancellationToken = default)
+    public async Task<CookbookImportResult> ReadAsync(
+        Stream source,
+        ICookbookImportPolicy? policy = null,
+        CancellationToken cancellationToken = default)
     {
         using var archive = new ZipArchive(source, ZipArchiveMode.Read, leaveOpen: true);
 
@@ -142,6 +148,7 @@ public sealed class CookbookFileService : ICookbookFileService
             ?? throw new InvalidDataException("This cookbook file contains unreadable recipes.");
 
         var warnings = new List<string>();
+        var conflicts = new List<CookbookConflict>();
         var imported = 0;
         var replaced = 0;
         var photosRestored = 0;
@@ -153,12 +160,30 @@ public sealed class CookbookFileService : ICookbookFileService
         foreach (var dto in payload.Recipes)
         {
             var existing = await _recipes.GetByIdAsync(dto.Id, cancellationToken);
-            if (existing is not null && existing.Revision > dto.Revision)
+
+            if (existing is not null)
             {
-                // The copy on this device is newer; the plan says never silently destroy it.
-                skipped++;
-                warnings.Add($"“{dto.Title}” was kept as it is, because this device has a newer version.");
-                continue;
+                // A recipe that exists on both sides is a conflict unless the incoming one is
+                // clearly newer. The plan is explicit that neither copy may be thrown away without
+                // a decision.
+                if (existing.Revision >= dto.Revision)
+                {
+                    var conflict = new CookbookConflict(dto.Id, dto.Title, existing.Revision, dto.Revision);
+                    conflicts.Add(conflict);
+
+                    var decision = policy is null
+                        ? ConflictDecision.KeepLocal
+                        : await policy.ResolveAsync(conflict, cancellationToken);
+
+                    if (decision == ConflictDecision.KeepLocal)
+                    {
+                        skipped++;
+                        warnings.Add($"“{dto.Title}” was kept exactly as it is on this device.");
+                        continue;
+                    }
+                }
+
+                replaced++;
             }
 
             var categoryId = Guid.Empty;
@@ -254,17 +279,16 @@ public sealed class CookbookFileService : ICookbookFileService
             {
                 imported++;
             }
-            else
-            {
-                replaced++;
-            }
         }
 
         _logger.LogInformation(
-            "Imported {Imported}, replaced {Replaced}, skipped {Skipped}, photos {Photos}",
-            imported, replaced, skipped, photosRestored);
+            "Imported {Imported}, replaced {Replaced}, skipped {Skipped}, conflicts {Conflicts}, photos {Photos}",
+            imported, replaced, skipped, conflicts.Count, photosRestored);
 
-        return new CookbookImportResult(imported, replaced, photosRestored, skipped, warnings);
+        return new CookbookImportResult(imported, replaced, photosRestored, skipped, warnings)
+        {
+            Conflicts = conflicts
+        };
     }
 
     private static string PhotoEntry(Guid recipeId, string storageId)

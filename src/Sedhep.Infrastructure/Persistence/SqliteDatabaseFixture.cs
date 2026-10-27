@@ -38,21 +38,70 @@ public sealed class SqliteDatabaseFixture
 
     public SqliteConnection OpenConnection()
     {
-        var dir = Path.GetDirectoryName(_path);
-        if (!string.IsNullOrEmpty(dir)) Directory.CreateDirectory(dir);
-
-        var conn = new SqliteConnection($"Data Source={_path}");
-        conn.Open();
-
-        // Foreign keys are what keep a deleted recipe from leaving orphaned ingredients behind.
-        using (var pragma = conn.CreateCommand())
+        try
         {
-            pragma.CommandText = "PRAGMA foreign_keys = ON; PRAGMA journal_mode = WAL;";
-            pragma.ExecuteNonQuery();
+            EnsureDirectory();
+        }
+        catch (Exception ex)
+        {
+            throw Unwritable(ex);
         }
 
-        RunMigrations(conn);
-        return conn;
+        var conn = new SqliteConnection($"Data Source={_path}");
+
+        try
+        {
+            conn.Open();
+
+            // Foreign keys are what keep a deleted recipe from leaving orphaned ingredients behind.
+            using (var pragma = conn.CreateCommand())
+            {
+                pragma.CommandText = "PRAGMA foreign_keys = ON; PRAGMA journal_mode = WAL;";
+                pragma.ExecuteNonQuery();
+            }
+
+            RunMigrations(conn);
+            return conn;
+        }
+        catch (SqliteException ex) when (ex.SqliteErrorCode is SqliteReadOnly or SqliteCannotOpen or SqlitePermission)
+        {
+            conn.Dispose();
+            throw Unwritable(ex);
+        }
+        catch
+        {
+            conn.Dispose();
+            throw;
+        }
+    }
+
+    private const int SqliteReadOnly = 8;
+    private const int SqlitePermission = 3;
+    private const int SqliteCannotOpen = 14;
+
+    private void EnsureDirectory()
+    {
+        var dir = Path.GetDirectoryName(_path);
+        if (!string.IsNullOrEmpty(dir))
+        {
+            Directory.CreateDirectory(dir);
+        }
+    }
+
+    /// <summary>
+    /// Turns a permissions failure into the one thing the user needs to read. An unwritable folder
+    /// is a situation to explain, not a stack trace to dump on startup.
+    /// </summary>
+    private CookbookStorageException Unwritable(Exception inner)
+    {
+        _logger.LogError(inner, "The cookbook at {Path} is not writable", _path);
+
+        var message =
+            $"Sedhep could not write to its cookbook at {_path}. " +
+            "The folder is read-only for this app, which usually means the file belongs to another " +
+            "user, a sync tool has locked it, or this copy of Sedhep is running inside a sandbox.";
+
+        return new CookbookStorageException(_path, message, inner);
     }
 
     private void RunMigrations(SqliteConnection conn)

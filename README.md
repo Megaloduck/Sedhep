@@ -32,6 +32,12 @@ way. No accounts, no cloud.
 device. That file is a zip holding `manifest.json` (with the format version), `recipes.json`, and
 the photo files.
 
+**Two copies of the same recipe.** When an import finds a recipe that already exists here and the
+incoming one is not clearly newer, nothing is overwritten: the recipe is shown with both revisions
+and the user chooses “Keep my version” or “Use the incoming version”, once per recipe.
+
+![A recipe that exists in both cookbooks](docs/screenshots/conflict.png)
+
 **Settings.** Light, dark or system theme, three text sizes that scale the whole app (cooking mode
 included), the device name other phones see, and where the cookbook is stored.
 
@@ -74,14 +80,47 @@ dotnet run --project platforms/Sedhep.Desktop
 dotnet build Sedhep.slnx
 ```
 
-The cookbook lives in `%LOCALAPPDATA%\Sedhep` on Windows (the equivalent per-user data folder
-elsewhere): `cookbook.db`, `photos/`, `settings.json`. Set `SEDHEP_DATA_DIR` to keep the cookbook
-somewhere else — useful for a portable install or for running two "devices" on one machine.
+If you open the solution in an IDE, make **Sedhep.Desktop** the startup project. With the Android
+head selected, the IDE tries to deploy to an emulator instead of starting the desktop app.
+
+## Where the cookbook lives
+
+`%LOCALAPPDATA%\Sedhep` on Windows, the equivalent per-user data folder elsewhere:
+
+- `cookbook.db` — recipes, ingredients, steps, categories, revisions and deletion tombstones
+- `photos/` — one folder per recipe
+- `settings.json` — device name, theme, text size
+
+To keep the cookbook somewhere else — a portable install, a folder you control, or a machine where
+the default folder is read-only — use either form:
+
+```bash
+Sedhep.Desktop.exe --data-dir "D:\Sedhep"
+# or
+set SEDHEP_DATA_DIR=D:\Sedhep
+```
+
+If the folder cannot be written, Sedhep does not crash: it opens a screen that names the folder,
+says what is wrong, and offers to open it in the file manager. Your cookbook is never moved or
+deleted behind your back — a read-only location is reported, not worked around.
+
+## Tests
+
+```bash
+dotnet test tests/Sedhep.Tests
+```
+
+The suite runs against a real SQLite file and a real photo folder, and covers the parts where a
+mistake would cost the user recipes: saving children in one transaction, revision bumps, tombstones
+on delete, category deletion keeping its recipes, search across tags/ingredients/notes, the
+`.cookbook` round trip (including photos), refusing a newer file format, and the conflict rule with
+both answers.
 
 ## Deliberately not here yet
 
 The plan's “could have” list: voice recipe entry, step photos, ingredient scaling, printable
-cookbooks, optional cloud backup, and the field-level conflict review that would replace the
-current “keep the newer copy and say so” rule during sharing.
+cookbooks, optional cloud backup, field-level merging of two edited copies (today the whole recipe
+is chosen, not individual fields), and a sync screen that reconciles two live cookbooks — the
+revision numbers and tombstones it needs are already stored.
 
 There is no public feed, no likes, no accounts and no analytics — and there will not be.

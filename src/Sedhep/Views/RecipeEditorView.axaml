@@ -331,5 +331,27 @@
         <Button Classes="primary" Content="Save recipe" Command="{Binding SaveCommand}" HorizontalAlignment="Stretch" />
       </StackPanel>
     </Border>
+    <!-- Leaving early is allowed, but not by accident. -->
+    <Border Grid.Row="0" Grid.RowSpan="3"
+            IsVisible="{Binding IsConfirmingDiscard}"
+            Background="{DynamicResource Scrim}">
+      <Border Classes="card" Margin="24" Padding="20" VerticalAlignment="Center">
+        <StackPanel Spacing="14">
+          <Path Classes="icon lg" Data="{StaticResource IconInfo}" Stroke="{DynamicResource Accent}" />
+          <TextBlock Classes="h2" Text="Leave without saving?" />
+          <TextBlock Classes="muted" Text="The changes you made to this recipe have not been saved." />
+          <StackPanel Spacing="8">
+            <Button Classes="primary"
+                    Content="Keep editing"
+                    HorizontalAlignment="Stretch"
+                    Command="{Binding KeepEditingCommand}" />
+            <Button Classes="outline"
+                    Content="Discard changes"
+                    HorizontalAlignment="Stretch"
+                    Command="{Binding DiscardChangesCommand}" />
+          </StackPanel>
+        </StackPanel>
+      </Border>
+    </Border>
   </Grid>
 </UserControl>
