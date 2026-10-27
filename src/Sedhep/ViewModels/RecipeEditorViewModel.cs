@@ -12,6 +12,11 @@ using Sedhep.Navigation;
 
 namespace Sedhep.ViewModels;
 
+/// <summary>
+/// Writing or changing a recipe. Everything is optional except the name, and ingredients and steps
+/// can be added, reordered and removed one at a time — a non-technical user should never have to
+/// start over because of a wrong row in the middle.
+/// </summary>
 public partial class RecipeEditorViewModel : ViewModelBase
 {
     private readonly IRecipeRepository _recipes;
@@ -29,7 +34,7 @@ public partial class RecipeEditorViewModel : ViewModelBase
     private string? _description;
 
     [ObservableProperty]
-    private string _cuisine = string.Empty;
+    private string? _notes;
 
     [ObservableProperty]
     private int _servings = 4;
@@ -49,14 +54,25 @@ public partial class RecipeEditorViewModel : ViewModelBase
     [ObservableProperty]
     private bool _isNew;
 
-    public ObservableCollection<Ingredient> Ingredients { get; } = new();
-    public ObservableCollection<RecipeStep> Steps { get; } = new();
+    [ObservableProperty]
+    private string _tagInput = string.Empty;
+
+    [ObservableProperty]
+    private bool _hasPhotos;
+
+    [ObservableProperty]
+    private bool _hasIngredients;
+
+    [ObservableProperty]
+    private bool _hasSteps;
+
+    public ObservableCollection<IngredientRowViewModel> IngredientRows { get; } = new();
+    public ObservableCollection<StepRowViewModel> StepRows { get; } = new();
     public ObservableCollection<RecipePhotoViewModel> Photos { get; } = new();
     public ObservableCollection<CategoryOption> CategoryOptions { get; } = new();
+    public ObservableCollection<string> Tags { get; } = new();
 
     public string Header => IsNew ? "New recipe" : "Edit recipe";
-
-    public bool HasPhotos => Photos.Count > 0;
 
     public RecipeEditorViewModel(
         IRecipeRepository recipes,
@@ -83,25 +99,35 @@ public partial class RecipeEditorViewModel : ViewModelBase
 
         Title = _recipe.Title;
         Description = _recipe.Description;
-        Cuisine = _recipe.Cuisine;
-        Servings = _recipe.Servings;
+        Notes = _recipe.Notes;
+        Servings = _recipe.Servings <= 0 ? 4 : _recipe.Servings;
         PrepMinutes = _recipe.PrepMinutes;
         CookMinutes = _recipe.CookMinutes;
 
         foreach (var ingredient in _recipe.Ingredients.OrderBy(i => i.SortOrder))
         {
-            Ingredients.Add(ingredient);
+            IngredientRows.Add(new IngredientRowViewModel(ingredient));
         }
 
         foreach (var step in _recipe.Steps.OrderBy(s => s.SortOrder))
         {
-            Steps.Add(step);
+            StepRows.Add(new StepRowViewModel(step));
+        }
+
+        foreach (var tag in _recipe.Tags)
+        {
+            Tags.Add(tag);
         }
 
         foreach (var photo in _recipe.Photos.OrderByDescending(p => p.IsCover).ThenByDescending(p => p.CapturedAt))
         {
             Photos.Add(new RecipePhotoViewModel(photo));
         }
+
+        Renumber();
+        HasPhotos = Photos.Count > 0;
+        HasIngredients = IngredientRows.Count > 0;
+        HasSteps = StepRows.Count > 0;
 
         _ = LoadCategoriesAsync();
         _ = LoadPhotoImagesAsync();
@@ -137,6 +163,22 @@ public partial class RecipeEditorViewModel : ViewModelBase
         }
     }
 
+    private void Renumber()
+    {
+        for (var i = 0; i < IngredientRows.Count; i++)
+        {
+            IngredientRows[i].Number = i + 1;
+        }
+
+        for (var i = 0; i < StepRows.Count; i++)
+        {
+            StepRows[i].Number = i + 1;
+        }
+
+        HasIngredients = IngredientRows.Count > 0;
+        HasSteps = StepRows.Count > 0;
+    }
+
     /// <summary>Stores a chosen photo next to the cookbook and attaches it to the recipe.</summary>
     public async Task AddPhotoAsync(Stream source, string fileName)
     {
@@ -161,8 +203,8 @@ public partial class RecipeEditorViewModel : ViewModelBase
             Photos.Add(thumbnail);
             thumbnail.Image = await _photoLoader.LoadAsync(photo);
 
-            OnPropertyChanged(nameof(HasPhotos));
-            Status = "Photo added. Tap “Save recipe” to keep it.";
+            HasPhotos = Photos.Count > 0;
+            Status = "Photo added. Save the recipe to keep it.";
         }
         catch (Exception ex)
         {
@@ -186,49 +228,121 @@ public partial class RecipeEditorViewModel : ViewModelBase
             Photos[i].Refresh();
         }
 
-        OnPropertyChanged(nameof(HasPhotos));
-        Status = "Photo removed. Tap “Save recipe” to keep the change.";
+        HasPhotos = Photos.Count > 0;
+        Status = "Photo removed. Save the recipe to keep the change.";
     }
 
     [RelayCommand]
     private void AddIngredient()
     {
-        Ingredients.Add(new Ingredient
+        IngredientRows.Add(new IngredientRowViewModel(new Ingredient
         {
             Id = Guid.NewGuid(),
-            RecipeId = _recipe.Id,
-            SortOrder = Ingredients.Count + 1
-        });
+            RecipeId = _recipe.Id
+        }));
+
+        Renumber();
     }
 
     [RelayCommand]
-    private void RemoveIngredient()
+    private void RemoveIngredient(IngredientRowViewModel? row)
     {
-        if (Ingredients.Count > 0)
+        if (row is null)
         {
-            Ingredients.RemoveAt(Ingredients.Count - 1);
+            return;
         }
+
+        IngredientRows.Remove(row);
+        Renumber();
     }
+
+    [RelayCommand]
+    private void MoveIngredientUp(IngredientRowViewModel? row) => Move(IngredientRows, row, -1);
+
+    [RelayCommand]
+    private void MoveIngredientDown(IngredientRowViewModel? row) => Move(IngredientRows, row, 1);
 
     [RelayCommand]
     private void AddStep()
     {
-        Steps.Add(new RecipeStep
+        StepRows.Add(new StepRowViewModel(new RecipeStep
         {
             Id = Guid.NewGuid(),
-            RecipeId = _recipe.Id,
-            SortOrder = Steps.Count + 1
-        });
+            RecipeId = _recipe.Id
+        }));
+
+        Renumber();
     }
 
     [RelayCommand]
-    private void RemoveStep()
+    private void RemoveStep(StepRowViewModel? row)
     {
-        if (Steps.Count > 0)
+        if (row is null)
         {
-            Steps.RemoveAt(Steps.Count - 1);
+            return;
         }
+
+        StepRows.Remove(row);
+        Renumber();
     }
+
+    [RelayCommand]
+    private void MoveStepUp(StepRowViewModel? row) => Move(StepRows, row, -1);
+
+    [RelayCommand]
+    private void MoveStepDown(StepRowViewModel? row) => Move(StepRows, row, 1);
+
+    private void Move<T>(ObservableCollection<T> rows, T? row, int delta)
+    {
+        if (row is null)
+        {
+            return;
+        }
+
+        var index = rows.IndexOf(row);
+        var target = index + delta;
+        if (index < 0 || target < 0 || target >= rows.Count)
+        {
+            return;
+        }
+
+        rows.Move(index, target);
+        Renumber();
+    }
+
+    [RelayCommand]
+    private void AddTag()
+    {
+        var tag = TagInput.Trim().TrimEnd(',');
+        if (tag.Length == 0)
+        {
+            return;
+        }
+
+        if (Tags.Any(t => string.Equals(t, tag, StringComparison.CurrentCultureIgnoreCase)))
+        {
+            TagInput = string.Empty;
+            return;
+        }
+
+        Tags.Add(tag);
+        TagInput = string.Empty;
+        OnPropertyChanged(nameof(HasTags));
+    }
+
+    [RelayCommand]
+    private void RemoveTag(string? tag)
+    {
+        if (tag is null)
+        {
+            return;
+        }
+
+        Tags.Remove(tag);
+        OnPropertyChanged(nameof(HasTags));
+    }
+
+    public bool HasTags => Tags.Count > 0;
 
     [RelayCommand]
     private async Task Save()
@@ -241,14 +355,46 @@ public partial class RecipeEditorViewModel : ViewModelBase
         }
 
         _recipe.Title = Title.Trim();
-        _recipe.Description = Description;
-        _recipe.Cuisine = Cuisine;
-        _recipe.Servings = Servings;
-        _recipe.PrepMinutes = PrepMinutes;
-        _recipe.CookMinutes = CookMinutes;
+        _recipe.Description = string.IsNullOrWhiteSpace(Description) ? null : Description.Trim();
+        _recipe.Notes = string.IsNullOrWhiteSpace(Notes) ? null : Notes.Trim();
+        _recipe.Servings = Servings <= 0 ? 1 : Servings;
+        _recipe.PrepMinutes = Math.Max(0, PrepMinutes);
+        _recipe.CookMinutes = Math.Max(0, CookMinutes);
         _recipe.UpdatedAt = DateTimeOffset.UtcNow;
-        _recipe.Ingredients = Ingredients.ToList();
-        _recipe.Steps = Steps.ToList();
+        _recipe.Tags = Tags.ToList();
+
+        var ingredients = new List<Ingredient>();
+        for (var i = 0; i < IngredientRows.Count; i++)
+        {
+            var ingredient = IngredientRows[i].Model;
+            if (string.IsNullOrWhiteSpace(ingredient.Name)
+                && string.IsNullOrWhiteSpace(ingredient.Quantity)
+                && string.IsNullOrWhiteSpace(ingredient.Unit))
+            {
+                continue;
+            }
+
+            ingredient.RecipeId = _recipe.Id;
+            ingredient.SortOrder = ingredients.Count + 1;
+            ingredients.Add(ingredient);
+        }
+
+        var steps = new List<RecipeStep>();
+        for (var i = 0; i < StepRows.Count; i++)
+        {
+            var step = StepRows[i].Model;
+            if (string.IsNullOrWhiteSpace(step.Instruction))
+            {
+                continue;
+            }
+
+            step.RecipeId = _recipe.Id;
+            step.SortOrder = steps.Count + 1;
+            steps.Add(step);
+        }
+
+        _recipe.Ingredients = ingredients;
+        _recipe.Steps = steps;
         _recipe.Photos = Photos.Select(p => p.Photo).ToList();
 
         // Null only before the picker has loaded; then the recipe keeps the category it had.

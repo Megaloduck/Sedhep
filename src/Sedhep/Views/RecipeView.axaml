@@ -4,122 +4,183 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:Sedhep.ViewModels"
              xmlns:domain="using:Sedhep.Domain"
-             mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="760"
+             xmlns:sys="using:System"
+             mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="800"
              x:Class="Sedhep.Views.RecipeView"
              x:DataType="vm:RecipeViewModel">
-  <Grid Classes="page" RowDefinitions="*,Auto">
+  <Grid Background="{DynamicResource Page}" RowDefinitions="*,Auto">
     <ScrollViewer Grid.Row="0">
-      <StackPanel Margin="16" Spacing="12">
-        <Button Classes="ghost"
-                Content="‹ Cookbook"
-                Command="{Binding BackCommand}"
-                HorizontalAlignment="Left" />
+      <StackPanel Margin="18,14,18,20" Spacing="16">
+        <!-- Leaving and sharing, always in the same place. -->
+        <Grid ColumnDefinitions="Auto,*,Auto">
+          <Button Classes="icon" Command="{Binding BackCommand}" ToolTip.Tip="Back to cookbook">
+            <Path Classes="icon" Data="{StaticResource IconChevronLeft}" />
+          </Button>
+          <Button Grid.Column="2" Classes="icon" Command="{Binding ShareCommand}" ToolTip.Tip="Send to a nearby phone">
+            <Path Classes="icon" Data="{StaticResource IconShare}" />
+          </Button>
+        </Grid>
 
-        <TextBlock Classes="appTitle" Text="{Binding Recipe.Title}" />
-
-        <StackPanel Orientation="Horizontal" Spacing="0">
-          <Border Classes="pill">
-            <TextBlock Classes="muted" Text="{Binding CategoryLabel}" />
-          </Border>
-          <Border Classes="pill">
-            <TextBlock Classes="muted" Text="{Binding Recipe.TotalMinutes, StringFormat='{}{0} min'}" />
-          </Border>
-          <Border Classes="pill">
-            <TextBlock Classes="muted" Text="{Binding Recipe.Servings, StringFormat='{}{0} servings'}" />
-          </Border>
-          <Border Classes="pill" IsVisible="{Binding Recipe.IsFavorite}">
-            <TextBlock Classes="muted"
-                       Foreground="{DynamicResource SedhepFavoriteBrush}"
-                       Text="★ Favorite" />
-          </Border>
-        </StackPanel>
-
-        <TextBlock Classes="body"
-                   Text="{Binding Recipe.Description}"
-                   IsVisible="{Binding Recipe.Description, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
-
-        <Border Classes="card" IsVisible="{Binding HasPhoto}">
-          <StackPanel Spacing="8">
-            <TextBlock Classes="sectionHeader" Text="PHOTOS" />
-            <ItemsControl ItemsSource="{Binding Photos}">
-              <ItemsControl.ItemsPanel>
-                <ItemsPanelTemplate>
-                  <WrapPanel />
-                </ItemsPanelTemplate>
-              </ItemsControl.ItemsPanel>
-              <ItemsControl.ItemTemplate>
-                <DataTemplate x:DataType="vm:RecipePhotoViewModel">
-                  <Grid Width="112" Height="112" Margin="0,0,8,8" ClipToBounds="True">
-                    <Image Source="{Binding Image}" Stretch="UniformToFill" IsVisible="{Binding HasImage}" />
-                    <Border CornerRadius="12"
-                            Background="{DynamicResource SedhepSurfaceMutedBrush}"
-                            IsVisible="{Binding !HasImage}">
-                      <TextBlock Text="📷" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="30" />
-                    </Border>
-                    <Border Classes="pill"
-                            HorizontalAlignment="Left"
-                            VerticalAlignment="Top"
-                            Margin="6"
-                            IsVisible="{Binding IsCover}">
-                      <TextBlock Classes="muted" Text="Cover" />
-                    </Border>
-                  </Grid>
-                </DataTemplate>
-              </ItemsControl.ItemTemplate>
-            </ItemsControl>
-          </StackPanel>
+        <!-- The dish itself: a photo when there is one, a warm monogram when there is not. -->
+        <Border Classes="cover" Height="200">
+          <Panel>
+            <Image Source="{Binding CoverImage}" Stretch="UniformToFill" IsVisible="{Binding HasCover}" />
+            <Border Background="{DynamicResource SurfaceMuted}" IsVisible="{Binding !HasCover}">
+              <Grid>
+                <Path Classes="icon"
+                      Data="{StaticResource IconPot}"
+                      Width="70" Height="70"
+                      Stroke="{DynamicResource BorderStrong}"
+                      Opacity="0.5"
+                      HorizontalAlignment="Right"
+                      VerticalAlignment="Bottom"
+                      Margin="0,0,26,22" />
+                <TextBlock Text="{Binding Initial}"
+                           FontSize="72"
+                           FontWeight="Bold"
+                           Foreground="{DynamicResource Accent}"
+                           Opacity="0.9"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center" />
+              </Grid>
+            </Border>
+          </Panel>
         </Border>
 
+        <StackPanel Spacing="10">
+          <TextBlock Classes="display" Text="{Binding Recipe.Title}" />
+
+          <WrapPanel>
+            <Border Classes="pill" Margin="0,0,6,6">
+              <StackPanel Orientation="Horizontal" Spacing="5">
+                <Path Classes="icon sm" Data="{StaticResource IconFolder}" />
+                <TextBlock Classes="meta" Text="{Binding CategoryLabel}" />
+              </StackPanel>
+            </Border>
+            <Border Classes="pill" Margin="0,0,6,6" IsVisible="{Binding HasTime}">
+              <StackPanel Orientation="Horizontal" Spacing="5">
+                <Path Classes="icon sm" Data="{StaticResource IconClock}" />
+                <TextBlock Classes="meta" Text="{Binding TimeLabel}" />
+              </StackPanel>
+            </Border>
+            <Border Classes="pill" Margin="0,0,6,6">
+              <StackPanel Orientation="Horizontal" Spacing="5">
+                <Path Classes="icon sm" Data="{StaticResource IconPerson}" />
+                <TextBlock Classes="meta" Text="{Binding ServingsLabel}" />
+              </StackPanel>
+            </Border>
+            <Border Classes="pill accent" Margin="0,0,6,6" IsVisible="{Binding IsFavorite}">
+              <StackPanel Orientation="Horizontal" Spacing="5">
+                <Path Classes="icon sm" Data="{StaticResource IconStar}" Fill="{DynamicResource Favorite}" Stroke="{DynamicResource Favorite}" />
+                <TextBlock Classes="meta" Text="Favorite" Foreground="{DynamicResource Favorite}" />
+              </StackPanel>
+            </Border>
+          </WrapPanel>
+
+          <TextBlock Classes="body" Text="{Binding Recipe.Description}" IsVisible="{Binding HasDescription}" />
+        </StackPanel>
+
+        <!-- Ingredients read as a column of numbers first, names second. -->
         <Border Classes="card">
-          <StackPanel Spacing="10">
-            <TextBlock Classes="sectionHeader" Text="INGREDIENTS" />
-            <TextBlock Classes="muted"
-                       Text="No ingredients yet."
-                       IsVisible="{Binding !HasIngredients}" />
+          <StackPanel Spacing="12">
+            <Grid ColumnDefinitions="*,Auto">
+              <TextBlock Classes="label" Text="INGREDIENTS" VerticalAlignment="Center" />
+              <TextBlock Grid.Column="1"
+                         Classes="meta"
+                         Text="{Binding Recipe.Servings, StringFormat='{}{0} servings'}" />
+            </Grid>
+
+            <TextBlock Classes="muted" Text="No ingredients listed yet." IsVisible="{Binding !HasIngredients}" />
+
             <ItemsControl ItemsSource="{Binding Recipe.Ingredients}">
               <ItemsControl.ItemTemplate>
                 <DataTemplate x:DataType="domain:Ingredient">
-                  <TextBlock Classes="body" Margin="0,0,0,6">
-                    <TextBlock.Text>
-                      <MultiBinding StringFormat="{}{0} {1} {2}">
-                        <Binding Path="Quantity" />
-                        <Binding Path="Unit" />
-                        <Binding Path="Name" />
-                      </MultiBinding>
-                    </TextBlock.Text>
-                  </TextBlock>
-                </DataTemplate>
-              </ItemsControl.ItemTemplate>
-            </ItemsControl>
-          </StackPanel>
-        </Border>
-
-        <Border Classes="card">
-          <StackPanel Spacing="10">
-            <TextBlock Classes="sectionHeader" Text="DIRECTIONS" />
-            <TextBlock Classes="muted"
-                       Text="No steps yet."
-                       IsVisible="{Binding !HasSteps}" />
-            <ItemsControl ItemsSource="{Binding Recipe.Steps}">
-              <ItemsControl.ItemTemplate>
-                <DataTemplate x:DataType="domain:RecipeStep">
-                  <Grid ColumnDefinitions="Auto,*" Margin="0,0,0,10">
-                    <Border Width="28" Height="28"
-                            CornerRadius="14"
-                            VerticalAlignment="Top"
-                            Background="{DynamicResource SedhepSurfaceMutedBrush}">
-                      <TextBlock Classes="meta"
-                                 Text="{Binding SortOrder}"
-                                 HorizontalAlignment="Center"
-                                 VerticalAlignment="Center" />
-                    </Border>
-                    <TextBlock Grid.Column="1" Classes="body" Text="{Binding Instruction}" Margin="10,2,0,0" />
+                  <Grid ColumnDefinitions="Auto,*" Margin="0,0,0,9">
+                    <TextBlock Classes="body numeric"
+                               MinWidth="78"
+                               Margin="0,0,12,0"
+                               Foreground="{DynamicResource TextPrimary}"
+                               VerticalAlignment="Top">
+                      <TextBlock.Text>
+                        <MultiBinding StringFormat="{}{0} {1}">
+                          <Binding Path="Quantity" />
+                          <Binding Path="Unit" />
+                        </MultiBinding>
+                      </TextBlock.Text>
+                    </TextBlock>
+                    <TextBlock Grid.Column="1"
+                               Classes="body"
+                               Text="{Binding Name}"
+                               VerticalAlignment="Top" />
                   </Grid>
                 </DataTemplate>
               </ItemsControl.ItemTemplate>
             </ItemsControl>
           </StackPanel>
         </Border>
+
+        <!-- Directions, one numbered circle per step. -->
+        <Border Classes="card">
+          <StackPanel Spacing="12">
+            <Grid ColumnDefinitions="*,Auto">
+              <TextBlock Classes="label" Text="DIRECTIONS" VerticalAlignment="Center" />
+              <TextBlock Grid.Column="1" Classes="meta" Text="{Binding StepCountLabel}" />
+            </Grid>
+
+            <TextBlock Classes="muted" Text="No steps written yet." IsVisible="{Binding !HasSteps}" />
+
+            <ItemsControl ItemsSource="{Binding Recipe.Steps}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="domain:RecipeStep">
+                  <Grid ColumnDefinitions="Auto,*" Margin="0,0,0,12">
+                    <Border Width="28" Height="28" CornerRadius="14"
+                            VerticalAlignment="Top"
+                            Background="{DynamicResource AccentSoft}">
+                      <TextBlock Text="{Binding SortOrder}"
+                                 FontSize="{DynamicResource FontMeta}"
+                                 FontWeight="SemiBold"
+                                 Foreground="{DynamicResource Accent}"
+                                 HorizontalAlignment="Center"
+                                 VerticalAlignment="Center" />
+                    </Border>
+                    <TextBlock Grid.Column="1"
+                               Classes="body"
+                               Text="{Binding Instruction}"
+                               Margin="12,3,0,0" />
+                  </Grid>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </StackPanel>
+        </Border>
+
+        <!-- Notes are the "remember this next time" part of a family recipe. -->
+        <Border Classes="card" IsVisible="{Binding HasNotes}">
+          <StackPanel Spacing="10">
+            <TextBlock Classes="label" Text="NOTES" />
+            <TextBlock Classes="body" Text="{Binding Recipe.Notes}" />
+          </StackPanel>
+        </Border>
+
+        <WrapPanel IsVisible="{Binding HasTags}">
+          <ItemsControl ItemsSource="{Binding Recipe.Tags}">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                <WrapPanel />
+              </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="sys:String">
+                <Border Classes="pill" Margin="0,0,6,6">
+                  <StackPanel Orientation="Horizontal" Spacing="5">
+                    <Path Classes="icon sm" Data="{StaticResource IconTag}" />
+                    <TextBlock Classes="meta" Text="{Binding}" />
+                  </StackPanel>
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </WrapPanel>
 
         <TextBlock Classes="muted"
                    Text="{Binding Status}"
@@ -127,36 +188,70 @@
       </StackPanel>
     </ScrollViewer>
 
-    <StackPanel Grid.Row="1" Margin="16,0,16,16" Spacing="8" IsVisible="{Binding !IsConfirmingDelete}">
-      <Button Classes="primary" Content="▶  Cook" Command="{Binding CookCommand}" />
-      <Grid ColumnDefinitions="*,*,*">
-        <Button Grid.Column="0"
-                Classes="favorite"
-                Content="{Binding FavoriteLabel}"
-                Command="{Binding ToggleFavoriteCommand}"
-                Margin="0,0,5,0" />
-        <Button Grid.Column="1"
-                Classes="ghost"
-                Content="Edit"
-                Command="{Binding EditCommand}"
-                Margin="5,0" />
-        <Button Grid.Column="2"
-                Classes="danger"
-                Content="Delete"
-                Command="{Binding DeleteCommand}"
-                Margin="5,0,0,0" />
-      </Grid>
-    </StackPanel>
-
-    <Border Grid.Row="1" Classes="card" Margin="16,0,16,16" IsVisible="{Binding IsConfirmingDelete}">
+    <!-- The action bar stays put while the recipe scrolls. -->
+    <Border Grid.Row="1"
+            Background="{DynamicResource Surface}"
+            BorderBrush="{DynamicResource Border}"
+            BorderThickness="0,1,0,0"
+            Padding="18,12,18,14">
       <StackPanel Spacing="10">
-        <TextBlock Classes="h3" Text="Delete this recipe?" />
-        <TextBlock Classes="muted" Text="This cannot be undone." />
-        <StackPanel Orientation="Horizontal" Spacing="8">
-          <Button Classes="danger" Content="Delete recipe" Command="{Binding DeleteConfirmedCommand}" />
-          <Button Classes="primary" Content="Keep it" Command="{Binding KeepRecipeCommand}" />
-        </StackPanel>
+        <Button Classes="primary" Command="{Binding CookCommand}" IsVisible="{Binding HasSteps}">
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <Path Classes="icon onAccent" Data="{StaticResource IconPlay}" Fill="{DynamicResource OnAccent}" />
+            <TextBlock Text="Start cooking" VerticalAlignment="Center" Foreground="{DynamicResource OnAccent}" />
+          </StackPanel>
+        </Button>
+
+        <Grid ColumnDefinitions="*,*,*,*" >
+          <Button Grid.Column="0" Classes="bare" Command="{Binding ToggleFavoriteCommand}" Margin="0,2,0,2">
+            <StackPanel Spacing="4" HorizontalAlignment="Center">
+              <Path Classes="icon"
+                    Classes.favorite="{Binding IsFavorite}"
+                    Data="{StaticResource IconStar}"
+                    HorizontalAlignment="Center" />
+              <TextBlock Classes="meta" Text="{Binding FavoriteLabel}" HorizontalAlignment="Center" />
+            </StackPanel>
+          </Button>
+
+          <Button Grid.Column="1" Classes="bare" Command="{Binding EditCommand}">
+            <StackPanel Spacing="4" HorizontalAlignment="Center">
+              <Path Classes="icon" Data="{StaticResource IconPencil}" HorizontalAlignment="Center" />
+              <TextBlock Classes="meta" Text="Edit" HorizontalAlignment="Center" />
+            </StackPanel>
+          </Button>
+
+          <Button Grid.Column="2" Classes="bare" Command="{Binding ShareCommand}">
+            <StackPanel Spacing="4" HorizontalAlignment="Center">
+              <Path Classes="icon" Data="{StaticResource IconShare}" HorizontalAlignment="Center" />
+              <TextBlock Classes="meta" Text="Share" HorizontalAlignment="Center" />
+            </StackPanel>
+          </Button>
+
+          <Button Grid.Column="3" Classes="bare" Command="{Binding DeleteCommand}">
+            <StackPanel Spacing="4" HorizontalAlignment="Center">
+              <Path Classes="icon" Data="{StaticResource IconTrash}" Stroke="{DynamicResource Danger}" HorizontalAlignment="Center" />
+              <TextBlock Classes="meta" Text="Delete" HorizontalAlignment="Center" Foreground="{DynamicResource Danger}" />
+            </StackPanel>
+          </Button>
+        </Grid>
       </StackPanel>
+    </Border>
+
+    <!-- Deleting asks once, in place, with the safe choice on the right. -->
+    <Border Grid.Row="0" Grid.RowSpan="2"
+            IsVisible="{Binding IsConfirmingDelete}"
+            Background="{DynamicResource Scrim}">
+      <Border Classes="card" Margin="24" Padding="20" VerticalAlignment="Center">
+        <StackPanel Spacing="14">
+          <Path Classes="icon lg" Data="{StaticResource IconTrash}" Stroke="{DynamicResource Danger}" />
+          <TextBlock Classes="h2" Text="Delete this recipe?" />
+          <TextBlock Classes="muted" Text="It disappears from this device for good. This cannot be undone." />
+          <StackPanel Orientation="Horizontal" Spacing="10">
+            <Button Classes="primary" Content="Keep it" Command="{Binding KeepRecipeCommand}" />
+            <Button Classes="danger" Content="Delete" Command="{Binding DeleteConfirmedCommand}" />
+          </StackPanel>
+        </StackPanel>
+      </Border>
     </Border>
   </Grid>
 </UserControl>

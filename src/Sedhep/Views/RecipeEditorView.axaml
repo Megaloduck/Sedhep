@@ -4,30 +4,101 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:Sedhep.ViewModels"
              xmlns:domain="using:Sedhep.Domain"
-             mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="760"
+             xmlns:sys="using:System"
+             mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="820"
              x:Class="Sedhep.Views.RecipeEditorView"
              x:DataType="vm:RecipeEditorViewModel">
-  <Grid Classes="page" RowDefinitions="*,Auto">
-    <ScrollViewer Grid.Row="0">
-      <StackPanel Margin="16" Spacing="12">
-        <TextBlock Classes="h2" Text="{Binding Header}" />
+  <Grid Background="{DynamicResource Page}" RowDefinitions="Auto,*,Auto">
+    <!-- Header: leave, know where you are, save. -->
+    <Border Background="{DynamicResource Page}" Padding="12,12,12,6">
+      <Grid ColumnDefinitions="Auto,*,Auto">
+        <Button Classes="icon" Command="{Binding CancelCommand}" ToolTip.Tip="Cancel">
+          <Path Classes="icon" Data="{StaticResource IconClose}" />
+        </Button>
+        <TextBlock Grid.Column="1"
+                   Classes="h2"
+                   Text="{Binding Header}"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center" />
+        <Border Grid.Column="2" Width="42" />
+      </Grid>
+    </Border>
 
+    <ScrollViewer Grid.Row="1">
+      <StackPanel Margin="18,6,18,20" Spacing="14">
+        <!-- Photos first: the dish is what the cook wants to see. -->
+        <StackPanel Spacing="10">
+          <TextBlock Classes="label" Text="PHOTO" />
+          <WrapPanel>
+            <ItemsControl ItemsSource="{Binding Photos}">
+              <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                  <WrapPanel />
+                </ItemsPanelTemplate>
+              </ItemsControl.ItemsPanel>
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:RecipePhotoViewModel">
+                  <Panel Width="96" Height="96" Margin="0,0,10,10">
+                    <Border Classes="cover" Width="96" Height="96">
+                      <Grid>
+                        <Image Source="{Binding Image}" Stretch="UniformToFill" IsVisible="{Binding HasImage}" />
+                        <TextBlock Text="📷"
+                                   FontSize="26"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   IsVisible="{Binding !HasImage}" />
+                      </Grid>
+                    </Border>
+                    <Border Classes="pill" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5" IsVisible="{Binding IsCover}">
+                      <TextBlock Classes="label" Text="COVER" />
+                    </Border>
+                    <Button Classes="icon"
+                            Width="28" Height="28"
+                            CornerRadius="14"
+                            Background="{DynamicResource Surface}"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Top"
+                            Margin="0,-2,-2,0"
+                            Command="{Binding $parent[ItemsControl].((vm:RecipeEditorViewModel)DataContext).RemovePhotoCommand}"
+                            CommandParameter="{Binding}"
+                            ToolTip.Tip="Remove photo">
+                      <Path Classes="icon sm" Data="{StaticResource IconClose}" Stroke="{DynamicResource Danger}" />
+                    </Button>
+                  </Panel>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <Button Classes="outline"
+                    Width="96" Height="96"
+                    Padding="0"
+                    Margin="0,0,10,10"
+                    Click="OnAddPhotoClick">
+              <StackPanel Spacing="6" HorizontalAlignment="Center">
+                <Path Classes="icon" Data="{StaticResource IconCamera}" HorizontalAlignment="Center" />
+                <TextBlock Classes="meta" Text="Add photo" HorizontalAlignment="Center" />
+              </StackPanel>
+            </Button>
+          </WrapPanel>
+        </StackPanel>
+
+        <!-- Basics -->
         <Border Classes="card">
-          <StackPanel Spacing="10">
-            <TextBlock Classes="sectionHeader" Text="BASICS" />
-            <TextBox Watermark="Recipe name (needed to save)" Text="{Binding Title, Mode=TwoWay}" />
-            <TextBox Watermark="Short description"
+          <StackPanel Spacing="12">
+            <TextBlock Classes="label" Text="THE RECIPE" />
+            <TextBox Watermark="Name, e.g. Soto Ayam"
+                     Text="{Binding Title, Mode=TwoWay}"
+                     FontSize="{DynamicResource FontH3}"
+                     FontWeight="SemiBold" />
+            <TextBox Watermark="A line about the dish (optional)"
                      Text="{Binding Description, Mode=TwoWay}"
                      AcceptsReturn="True"
-                     Height="80"
+                     MinHeight="76"
                      TextWrapping="Wrap" />
-            <TextBox Watermark="Cuisine, e.g. Indonesian" Text="{Binding Cuisine, Mode=TwoWay}" />
 
-            <StackPanel Spacing="4">
-              <TextBlock Classes="muted" Text="Category" />
-              <ComboBox HorizontalAlignment="Stretch"
-                        ItemsSource="{Binding CategoryOptions}"
-                        SelectedItem="{Binding SelectedCategory, Mode=TwoWay}">
+            <StackPanel Spacing="6">
+              <TextBlock Classes="meta" Text="Category" />
+              <ComboBox ItemsSource="{Binding CategoryOptions}" SelectedItem="{Binding SelectedCategory, Mode=TwoWay}">
                 <ComboBox.ItemTemplate>
                   <DataTemplate x:DataType="vm:CategoryOption">
                     <TextBlock Text="{Binding Name}" />
@@ -37,116 +108,228 @@
             </StackPanel>
 
             <Grid ColumnDefinitions="*,*,*">
-              <StackPanel Grid.Column="0" Spacing="4" Margin="0,0,5,0">
-                <TextBlock Classes="muted" Text="Servings" />
-                <NumericUpDown Value="{Binding Servings}" Minimum="1" Maximum="50" />
+              <StackPanel Grid.Column="0" Spacing="6" Margin="0,0,5,0">
+                <TextBlock Classes="meta" Text="Servings" />
+                <TextBox Text="{Binding Servings, Mode=TwoWay}" />
               </StackPanel>
-              <StackPanel Grid.Column="1" Spacing="4" Margin="5,0">
-                <TextBlock Classes="muted" Text="Prep (min)" />
-                <NumericUpDown Value="{Binding PrepMinutes}" Minimum="0" Maximum="600" />
+              <StackPanel Grid.Column="1" Spacing="6" Margin="5,0">
+                <TextBlock Classes="meta" Text="Prep (min)" />
+                <TextBox Text="{Binding PrepMinutes, Mode=TwoWay}" />
               </StackPanel>
-              <StackPanel Grid.Column="2" Spacing="4" Margin="5,0,0,0">
-                <TextBlock Classes="muted" Text="Cook (min)" />
-                <NumericUpDown Value="{Binding CookMinutes}" Minimum="0" Maximum="600" />
+              <StackPanel Grid.Column="2" Spacing="6" Margin="5,0,0,0">
+                <TextBlock Classes="meta" Text="Cook (min)" />
+                <TextBox Text="{Binding CookMinutes, Mode=TwoWay}" />
               </StackPanel>
             </Grid>
           </StackPanel>
         </Border>
 
+        <!-- Ingredients: one row each, reorderable, removable. -->
+        <Border Classes="card">
+          <StackPanel Spacing="12">
+            <Grid ColumnDefinitions="*,Auto">
+              <TextBlock Classes="label" Text="INGREDIENTS" VerticalAlignment="Center" />
+              <TextBlock Grid.Column="1" Classes="meta" Text="Quantity, unit, then the thing" />
+            </Grid>
+
+            <TextBlock Classes="muted"
+                       Text="No ingredients yet. Add them one at a time — “5 shallots”, “1 kg chicken”."
+                       IsVisible="{Binding !HasIngredients}" />
+
+            <ItemsControl ItemsSource="{Binding IngredientRows}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:IngredientRowViewModel">
+                  <Border Classes="flat" Margin="0,0,0,8" Padding="10">
+                    <StackPanel Spacing="8">
+                      <Grid ColumnDefinitions="60,74,*">
+                        <TextBox Grid.Column="0" Margin="0,0,6,0" Watermark="Qty" Text="{Binding Model.Quantity, Mode=TwoWay}" />
+                        <TextBox Grid.Column="1" Margin="0,0,6,0" Watermark="Unit" Text="{Binding Model.Unit, Mode=TwoWay}" />
+                        <TextBox Grid.Column="2" Watermark="Ingredient" Text="{Binding Model.Name, Mode=TwoWay}" />
+                      </Grid>
+
+                      <Grid ColumnDefinitions="*,Auto">
+                        <TextBlock Classes="label"
+                                   Text="{Binding Number, StringFormat='Ingredient {0}'}"
+                                   VerticalAlignment="Center" />
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4">
+                          <Button Classes="icon" Width="34" Height="34" CornerRadius="11"
+                                  Command="{Binding $parent[ItemsControl].((vm:RecipeEditorViewModel)DataContext).MoveIngredientUpCommand}"
+                                  CommandParameter="{Binding}"
+                                  ToolTip.Tip="Move up">
+                            <Path Classes="icon sm" Data="{StaticResource IconArrowUp}" />
+                          </Button>
+                          <Button Classes="icon" Width="34" Height="34" CornerRadius="11"
+                                  Command="{Binding $parent[ItemsControl].((vm:RecipeEditorViewModel)DataContext).MoveIngredientDownCommand}"
+                                  CommandParameter="{Binding}"
+                                  ToolTip.Tip="Move down">
+                            <Path Classes="icon sm" Data="{StaticResource IconArrowDown}" />
+                          </Button>
+                          <Button Classes="icon" Width="34" Height="34" CornerRadius="11"
+                                  Command="{Binding $parent[ItemsControl].((vm:RecipeEditorViewModel)DataContext).RemoveIngredientCommand}"
+                                  CommandParameter="{Binding}"
+                                  ToolTip.Tip="Remove">
+                            <Path Classes="icon sm" Data="{StaticResource IconTrash}" Stroke="{DynamicResource Danger}" />
+                          </Button>
+                        </StackPanel>
+                      </Grid>
+                    </StackPanel>
+                  </Border>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <Button Classes="outline" Command="{Binding AddIngredientCommand}" HorizontalAlignment="Stretch">
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <Path Classes="icon sm" Data="{StaticResource IconPlus}" />
+                <TextBlock Text="Add ingredient" VerticalAlignment="Center" />
+              </StackPanel>
+            </Button>
+          </StackPanel>
+        </Border>
+
+        <!-- Directions -->
+        <Border Classes="card">
+          <StackPanel Spacing="12">
+            <TextBlock Classes="label" Text="DIRECTIONS" />
+            <TextBlock Classes="muted"
+                       Text="Nothing to follow yet. Write the first step the way you would say it out loud."
+                       IsVisible="{Binding !HasSteps}" />
+
+            <ItemsControl ItemsSource="{Binding StepRows}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:StepRowViewModel">
+                  <Border Classes="flat" Margin="0,0,0,8" Padding="10">
+                    <StackPanel Spacing="8">
+                      <Grid ColumnDefinitions="Auto,*">
+                        <Border Width="28" Height="28" CornerRadius="14"
+                                Background="{DynamicResource AccentSoft}"
+                                VerticalAlignment="Top">
+                          <TextBlock Text="{Binding Number}"
+                                     FontSize="{DynamicResource FontMeta}"
+                                     FontWeight="SemiBold"
+                                     Foreground="{DynamicResource Accent}"
+                                     HorizontalAlignment="Center"
+                                     VerticalAlignment="Center" />
+                        </Border>
+                        <TextBox Grid.Column="1"
+                                 Margin="10,0,0,0"
+                                 Watermark="What happens in this step?"
+                                 Text="{Binding Model.Instruction, Mode=TwoWay}"
+                                 AcceptsReturn="True"
+                                 MinHeight="64"
+                                 TextWrapping="Wrap" />
+                      </Grid>
+
+                      <Grid ColumnDefinitions="*,Auto,Auto">
+                        <TextBox Grid.Column="0"
+                                 Width="96"
+                                 HorizontalAlignment="Left"
+                                 Watermark="Timer (min)"
+                                 Text="{Binding Model.Minutes, Mode=TwoWay}" />
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4" Margin="0,0,6,0">
+                          <Button Classes="icon" Width="34" Height="34" CornerRadius="11"
+                                  Command="{Binding $parent[ItemsControl].((vm:RecipeEditorViewModel)DataContext).MoveStepUpCommand}"
+                                  CommandParameter="{Binding}"
+                                  ToolTip.Tip="Move up">
+                            <Path Classes="icon sm" Data="{StaticResource IconArrowUp}" />
+                          </Button>
+                          <Button Classes="icon" Width="34" Height="34" CornerRadius="11"
+                                  Command="{Binding $parent[ItemsControl].((vm:RecipeEditorViewModel)DataContext).MoveStepDownCommand}"
+                                  CommandParameter="{Binding}"
+                                  ToolTip.Tip="Move down">
+                            <Path Classes="icon sm" Data="{StaticResource IconArrowDown}" />
+                          </Button>
+                        </StackPanel>
+                        <Button Grid.Column="2" Classes="icon" Width="34" Height="34" CornerRadius="11"
+                                Command="{Binding $parent[ItemsControl].((vm:RecipeEditorViewModel)DataContext).RemoveStepCommand}"
+                                CommandParameter="{Binding}"
+                                ToolTip.Tip="Remove">
+                          <Path Classes="icon sm" Data="{StaticResource IconTrash}" Stroke="{DynamicResource Danger}" />
+                        </Button>
+                      </Grid>
+                    </StackPanel>
+                  </Border>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <Button Classes="outline" Command="{Binding AddStepCommand}" HorizontalAlignment="Stretch">
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <Path Classes="icon sm" Data="{StaticResource IconPlus}" />
+                <TextBlock Text="Add step" VerticalAlignment="Center" />
+              </StackPanel>
+            </Button>
+          </StackPanel>
+        </Border>
+
+        <!-- Notes -->
         <Border Classes="card">
           <StackPanel Spacing="10">
-            <TextBlock Classes="sectionHeader" Text="PHOTOS" />
-            <TextBlock Classes="muted"
-                       Text="Add a photo of the finished dish. The first one is used as the cover and stays on this device." />
-            <ItemsControl ItemsSource="{Binding Photos}">
+            <TextBlock Classes="label" Text="NOTES" />
+            <TextBox Watermark="The trick that makes it work, who taught it, what to change next time…"
+                     Text="{Binding Notes, Mode=TwoWay}"
+                     AcceptsReturn="True"
+                     MinHeight="92"
+                     TextWrapping="Wrap" />
+          </StackPanel>
+        </Border>
+
+        <!-- Tags -->
+        <Border Classes="card">
+          <StackPanel Spacing="10">
+            <TextBlock Classes="label" Text="TAGS" />
+            <TextBlock Classes="muted" Text="Optional. “spicy”, “birthday”, “mom’s” — whatever helps you find it." />
+
+            <ItemsControl ItemsSource="{Binding Tags}" IsVisible="{Binding HasTags}">
               <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
                   <WrapPanel />
                 </ItemsPanelTemplate>
               </ItemsControl.ItemsPanel>
               <ItemsControl.ItemTemplate>
-                <DataTemplate x:DataType="vm:RecipePhotoViewModel">
-                  <StackPanel Width="100" Margin="0,0,10,10" Spacing="6">
-                    <Border Height="100"
-                            CornerRadius="12"
-                            ClipToBounds="True"
-                            Background="{DynamicResource SedhepSurfaceMutedBrush}">
-                      <Grid>
-                        <Image Source="{Binding Image}" Stretch="UniformToFill" IsVisible="{Binding HasImage}" />
-                        <TextBlock Text="📷"
-                                   FontSize="28"
-                                   HorizontalAlignment="Center"
-                                   VerticalAlignment="Center"
-                                   IsVisible="{Binding !HasImage}" />
-                      </Grid>
-                    </Border>
-                    <Button Classes="danger"
-                            FontSize="12"
-                            MinHeight="34"
-                            Padding="8,4"
-                            Content="Remove"
-                            HorizontalAlignment="Stretch"
-                            Command="{Binding $parent[ItemsControl].((vm:RecipeEditorViewModel)DataContext).RemovePhotoCommand}"
-                            CommandParameter="{Binding}" />
-                  </StackPanel>
+                <DataTemplate x:DataType="sys:String">
+                  <Border Classes="pill" Margin="0,0,6,6">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                      <TextBlock Classes="meta" Text="{Binding}" VerticalAlignment="Center" />
+                      <Button Classes="bare" Width="18" Height="18"
+                              Command="{Binding $parent[ItemsControl].((vm:RecipeEditorViewModel)DataContext).RemoveTagCommand}"
+                              CommandParameter="{Binding}">
+                        <Path Classes="icon sm" Data="{StaticResource IconClose}" Width="12" Height="12" />
+                      </Button>
+                    </StackPanel>
+                  </Border>
                 </DataTemplate>
               </ItemsControl.ItemTemplate>
             </ItemsControl>
-            <Button Classes="ghost" Content="＋ Add photo" Click="OnAddPhotoClick" />
-          </StackPanel>
-        </Border>
 
-        <Border Classes="card">
-          <StackPanel Spacing="10">
-            <TextBlock Classes="sectionHeader" Text="INGREDIENTS" />
-            <ItemsControl ItemsSource="{Binding Ingredients}">
-              <ItemsControl.ItemTemplate>
-                <DataTemplate x:DataType="domain:Ingredient">
-                  <Grid ColumnDefinitions="70,80,*" Margin="0,0,0,8">
-                    <TextBox Grid.Column="0" Margin="0,0,6,0" Watermark="Qty" Text="{Binding Quantity, Mode=TwoWay}" />
-                    <TextBox Grid.Column="1" Margin="0,0,6,0" Watermark="Unit" Text="{Binding Unit, Mode=TwoWay}" />
-                    <TextBox Grid.Column="2" Watermark="Ingredient" Text="{Binding Name, Mode=TwoWay}" />
-                  </Grid>
-                </DataTemplate>
-              </ItemsControl.ItemTemplate>
-            </ItemsControl>
             <Grid ColumnDefinitions="*,Auto">
-              <Button Grid.Column="0" Classes="ghost" Content="＋ Add ingredient" Command="{Binding AddIngredientCommand}" Margin="0,0,8,0" />
-              <Button Grid.Column="1" Classes="ghost" Content="Remove last" Command="{Binding RemoveIngredientCommand}" />
-            </Grid>
-          </StackPanel>
-        </Border>
-
-        <Border Classes="card">
-          <StackPanel Spacing="10">
-            <TextBlock Classes="sectionHeader" Text="DIRECTIONS" />
-            <ItemsControl ItemsSource="{Binding Steps}">
-              <ItemsControl.ItemTemplate>
-                <DataTemplate x:DataType="domain:RecipeStep">
-                  <Grid ColumnDefinitions="64,*" Margin="0,0,0,8">
-                    <NumericUpDown Grid.Column="0" Margin="0,0,6,0" Minimum="1" Maximum="200" Value="{Binding SortOrder}" />
-                    <TextBox Grid.Column="1" Watermark="Step" Text="{Binding Instruction, Mode=TwoWay}" />
-                  </Grid>
-                </DataTemplate>
-              </ItemsControl.ItemTemplate>
-            </ItemsControl>
-            <Grid ColumnDefinitions="*,Auto">
-              <Button Grid.Column="0" Classes="ghost" Content="＋ Add step" Command="{Binding AddStepCommand}" Margin="0,0,8,0" />
-              <Button Grid.Column="1" Classes="ghost" Content="Remove last" Command="{Binding RemoveStepCommand}" />
+              <TextBox Grid.Column="0"
+                       Watermark="Add a tag and press Enter"
+                       Text="{Binding TagInput, Mode=TwoWay}"
+                       Margin="0,0,8,0">
+                <TextBox.KeyBindings>
+                  <KeyBinding Gesture="Enter" Command="{Binding AddTagCommand}" />
+                </TextBox.KeyBindings>
+              </TextBox>
+              <Button Grid.Column="1" Classes="outline" Content="Add" Command="{Binding AddTagCommand}" />
             </Grid>
           </StackPanel>
         </Border>
       </StackPanel>
     </ScrollViewer>
 
-    <StackPanel Grid.Row="1" Margin="16,0,16,16" Spacing="10">
-      <TextBlock Classes="muted"
-                 Text="{Binding Status}"
-                 IsVisible="{Binding Status, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
-      <Grid ColumnDefinitions="Auto,*">
-        <Button Grid.Column="0" Classes="ghost" Content="Cancel" Command="{Binding CancelCommand}" Margin="0,0,8,0" />
-        <Button Grid.Column="1" Classes="primary" Content="Save recipe" Command="{Binding SaveCommand}" />
-      </Grid>
-    </StackPanel>
+    <!-- Saving is always one tap away. -->
+    <Border Grid.Row="2"
+            Background="{DynamicResource Surface}"
+            BorderBrush="{DynamicResource Border}"
+            BorderThickness="0,1,0,0"
+            Padding="18,10,18,14">
+      <StackPanel Spacing="8">
+        <TextBlock Classes="muted"
+                   Text="{Binding Status}"
+                   IsVisible="{Binding Status, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+        <Button Classes="primary" Content="Save recipe" Command="{Binding SaveCommand}" HorizontalAlignment="Stretch" />
+      </StackPanel>
+    </Border>
   </Grid>
 </UserControl>

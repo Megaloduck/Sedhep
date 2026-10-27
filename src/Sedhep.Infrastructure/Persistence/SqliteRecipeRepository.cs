@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Data.Sqlite;
@@ -21,17 +22,19 @@ public sealed class SqliteRecipeRepository : IRecipeRepository
             SELECT DISTINCT
                 R.Id, R.Title, R.Description, R.CategoryId, C.Name AS CategoryName, R.Cuisine,
                 R.Servings, R.PrepMinutes, R.CookMinutes, R.IsFavorite, R.CreatedAt, R.UpdatedAt,
-                R.SourceDeviceId, R.Notes
+                R.SourceDeviceId, R.Notes, R.Revision, R.Tags
             FROM Recipes R
             LEFT JOIN Categories C ON C.Id = R.CategoryId";
 
     private readonly SqliteConnection _conn;
     private readonly ILogger<SqliteRecipeRepository> _logger;
+    private readonly string _deviceId;
 
-    public SqliteRecipeRepository(SqliteConnection conn, ILogger<SqliteRecipeRepository> logger)
+    public SqliteRecipeRepository(SqliteConnection conn, ILogger<SqliteRecipeRepository> logger, string deviceId = "")
     {
         _conn = conn;
         _logger = logger;
+        _deviceId = deviceId;
     }
 
     public async Task<IReadOnlyList<Recipe>> GetAllAsync(CancellationToken cancellationToken = default)
@@ -74,6 +77,7 @@ public sealed class SqliteRecipeRepository : IRecipeRepository
             WHERE R.Title LIKE @q
                OR R.Description LIKE @q
                OR R.Notes LIKE @q
+               OR R.Tags LIKE @q
                OR I.Name LIKE @q
                OR S.Instruction LIKE @q
             ORDER BY R.UpdatedAt DESC";
@@ -183,10 +187,41 @@ public sealed class SqliteRecipeRepository : IRecipeRepository
 
     public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        await using var cmd = _conn.CreateCommand();
-        cmd.CommandText = "DELETE FROM Recipes WHERE Id = @id";
-        cmd.Parameters.AddWithValue("@id", id.ToString());
-        await cmd.ExecuteNonQueryAsync(cancellationToken);
+        // The row goes, but a tombstone stays behind so synchronization can tell "deleted here"
+        // apart from "never seen here".
+        await using var tx = _conn.BeginTransaction();
+        try
+        {
+            await using (var tombstone = _conn.CreateCommand())
+            {
+                tombstone.Transaction = tx;
+                tombstone.CommandText = @"
+                    INSERT INTO DeletedRecipes (Id, DeletedAt, DeviceId, Revision)
+                    VALUES (@id, @deleted, @device, 1)
+                    ON CONFLICT(Id) DO UPDATE SET
+                        DeletedAt = @deleted,
+                        Revision = DeletedRecipes.Revision + 1";
+                tombstone.Parameters.AddWithValue("@id", id.ToString());
+                tombstone.Parameters.AddWithValue("@deleted", DateTimeOffset.UtcNow.ToString("O"));
+                tombstone.Parameters.AddWithValue("@device", _deviceId);
+                await tombstone.ExecuteNonQueryAsync(cancellationToken);
+            }
+
+            await using (var cmd = _conn.CreateCommand())
+            {
+                cmd.Transaction = tx;
+                cmd.CommandText = "DELETE FROM Recipes WHERE Id = @id";
+                cmd.Parameters.AddWithValue("@id", id.ToString());
+                await cmd.ExecuteNonQueryAsync(cancellationToken);
+            }
+
+            tx.Commit();
+        }
+        catch
+        {
+            tx.Rollback();
+            throw;
+        }
     }
 
     private async Task ClearChildrenAsync(Guid recipeId, SqliteTransaction tx, CancellationToken cancellationToken)
@@ -206,8 +241,8 @@ public sealed class SqliteRecipeRepository : IRecipeRepository
         await using var cmd = _conn.CreateCommand();
         cmd.Transaction = tx;
         cmd.CommandText = @"
-            INSERT INTO Recipes (Id, Title, Description, CategoryId, Cuisine, Servings, PrepMinutes, CookMinutes, IsFavorite, CreatedAt, UpdatedAt, SourceDeviceId, Notes)
-            VALUES (@id, @title, @desc, @cat, @cuisine, @servings, @prep, @cook, @fav, @created, @updated, @source, @notes)
+            INSERT INTO Recipes (Id, Title, Description, CategoryId, Cuisine, Servings, PrepMinutes, CookMinutes, IsFavorite, CreatedAt, UpdatedAt, SourceDeviceId, Notes, Revision, Tags)
+            VALUES (@id, @title, @desc, @cat, @cuisine, @servings, @prep, @cook, @fav, @created, @updated, @source, @notes, 1, @tags)
             ON CONFLICT(Id) DO UPDATE SET
                 Title = @title,
                 Description = @desc,
@@ -219,7 +254,10 @@ public sealed class SqliteRecipeRepository : IRecipeRepository
                 IsFavorite = @fav,
                 UpdatedAt = @updated,
                 SourceDeviceId = @source,
-                Notes = @notes";
+                Notes = @notes,
+                Tags = @tags,
+                Revision = Recipes.Revision + 1
+            RETURNING Revision";
         cmd.Parameters.AddWithValue("@id", recipe.Id.ToString());
         cmd.Parameters.AddWithValue("@title", recipe.Title);
         cmd.Parameters.AddWithValue("@desc", (object?)recipe.Description ?? DBNull.Value);
@@ -233,7 +271,13 @@ public sealed class SqliteRecipeRepository : IRecipeRepository
         cmd.Parameters.AddWithValue("@updated", recipe.UpdatedAt.ToString("O"));
         cmd.Parameters.AddWithValue("@source", recipe.SourceDeviceId);
         cmd.Parameters.AddWithValue("@notes", (object?)recipe.Notes ?? DBNull.Value);
-        await cmd.ExecuteNonQueryAsync(cancellationToken);
+        cmd.Parameters.AddWithValue("@tags", JsonSerializer.Serialize(recipe.Tags ?? Array.Empty<string>()));
+
+        var stored = await cmd.ExecuteScalarAsync(cancellationToken);
+        if (stored is long revision)
+        {
+            recipe.Revision = (int)revision;
+        }
     }
 
     private async Task InsertIngredientAsync(Ingredient ing, SqliteTransaction tx, CancellationToken cancellationToken)
@@ -304,8 +348,28 @@ public sealed class SqliteRecipeRepository : IRecipeRepository
             CreatedAt = DateTimeOffset.Parse(reader.GetString(reader.GetOrdinal("CreatedAt"))),
             UpdatedAt = DateTimeOffset.Parse(reader.GetString(reader.GetOrdinal("UpdatedAt"))),
             SourceDeviceId = reader.GetString(reader.GetOrdinal("SourceDeviceId")),
-            Notes = reader.IsDBNull(reader.GetOrdinal("Notes")) ? null : reader.GetString(reader.GetOrdinal("Notes"))
+            Notes = reader.IsDBNull(reader.GetOrdinal("Notes")) ? null : reader.GetString(reader.GetOrdinal("Notes")),
+            Revision = reader.IsDBNull(reader.GetOrdinal("Revision")) ? 1 : reader.GetInt32(reader.GetOrdinal("Revision")),
+            Tags = ReadTags(reader)
         };
+    }
+
+    private static List<string> ReadTags(SqliteDataReader reader)
+    {
+        var ordinal = reader.GetOrdinal("Tags");
+        if (reader.IsDBNull(ordinal))
+        {
+            return new List<string>();
+        }
+
+        try
+        {
+            return JsonSerializer.Deserialize<List<string>>(reader.GetString(ordinal)) ?? new List<string>();
+        }
+        catch (JsonException)
+        {
+            return new List<string>();
+        }
     }
 
     private async Task<List<Ingredient>> ReadIngredientsAsync(Guid recipeId, CancellationToken cancellationToken)

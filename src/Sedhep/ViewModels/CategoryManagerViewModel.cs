@@ -10,6 +10,51 @@ using Sedhep.Navigation;
 
 namespace Sedhep.ViewModels;
 
+/// <summary>One category in the manager, with the count of recipes filed under it.</summary>
+public sealed partial class CategoryRowViewModel : ViewModelBase
+{
+    public CategoryRowViewModel(Category model)
+    {
+        Model = model;
+        SavedName = model.Name;
+    }
+
+    public Category Model { get; }
+
+    /// <summary>The name as last stored, so a rename can be told apart from an edit in progress.</summary>
+    public string SavedName { get; set; }
+
+    [ObservableProperty]
+    private int _recipeCount;
+
+    public string Name
+    {
+        get => Model.Name;
+        set
+        {
+            if (Model.Name == value)
+            {
+                return;
+            }
+
+            Model.Name = value;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(IsChanged));
+        }
+    }
+
+    public bool IsChanged => !string.Equals(Model.Name.Trim(), SavedName, StringComparison.Ordinal);
+
+    public string UsageLabel => RecipeCount switch
+    {
+        0 => "No recipes",
+        1 => "1 recipe",
+        _ => $"{RecipeCount} recipes"
+    };
+
+    partial void OnRecipeCountChanged(int value) => OnPropertyChanged(nameof(UsageLabel));
+}
+
 /// <summary>
 /// Lets the user shape the category list. Deleting a category never deletes recipes: they simply
 /// become uncategorised, which is what the plan asks for.
@@ -20,9 +65,6 @@ public partial class CategoryManagerViewModel : ViewModelBase
     private readonly ICookbookNavigator _navigator;
     private readonly ILogger<CategoryManagerViewModel> _logger;
 
-    /// <summary>The names as last stored, so a rename can be told apart from an edit in progress.</summary>
-    private readonly Dictionary<Guid, string> _savedNames = new();
-
     [ObservableProperty]
     private string _newCategoryName = string.Empty;
 
@@ -30,7 +72,7 @@ public partial class CategoryManagerViewModel : ViewModelBase
     private string? _status;
 
     [ObservableProperty]
-    private Category? _pendingDelete;
+    private CategoryRowViewModel? _pendingDelete;
 
     [ObservableProperty]
     private bool _isConfirmingDelete;
@@ -38,7 +80,10 @@ public partial class CategoryManagerViewModel : ViewModelBase
     [ObservableProperty]
     private string? _pendingDeleteMessage;
 
-    public ObservableCollection<Category> Categories { get; } = new();
+    [ObservableProperty]
+    private bool _hasChanges;
+
+    public ObservableCollection<CategoryRowViewModel> Categories { get; } = new();
 
     public CategoryManagerViewModel(
         ICategoryRepository categories,
@@ -58,12 +103,17 @@ public partial class CategoryManagerViewModel : ViewModelBase
         {
             var all = await _categories.GetAllAsync();
             Categories.Clear();
-            _savedNames.Clear();
+
             foreach (var category in all)
             {
-                Categories.Add(category);
-                _savedNames[category.Id] = category.Name;
+                var row = new CategoryRowViewModel(category)
+                {
+                    RecipeCount = await _categories.CountRecipesAsync(category.Id)
+                };
+                Categories.Add(row);
             }
+
+            HasChanges = false;
         }
         catch (Exception ex)
         {
@@ -103,22 +153,24 @@ public partial class CategoryManagerViewModel : ViewModelBase
         {
             var renamed = 0;
             var skipped = 0;
-            foreach (var category in Categories)
+
+            foreach (var row in Categories)
             {
-                var name = category.Name.Trim();
+                var name = row.Model.Name.Trim();
                 if (name.Length == 0)
                 {
                     skipped++;
                     continue;
                 }
 
-                if (_savedNames.TryGetValue(category.Id, out var stored) && stored == name)
+                if (!row.IsChanged)
                 {
                     continue;
                 }
 
-                category.Name = name;
-                await _categories.SaveAsync(category);
+                row.Model.Name = name;
+                await _categories.SaveAsync(row.Model);
+                row.SavedName = name;
                 renamed++;
             }
 
@@ -135,21 +187,22 @@ public partial class CategoryManagerViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private async Task Delete(Category? category)
+    private async Task Delete(CategoryRowViewModel? row)
     {
-        if (category is null)
+        if (row is null)
         {
             return;
         }
 
         try
         {
-            var count = await _categories.CountRecipesAsync(category.Id);
-            PendingDelete = category;
+            var count = await _categories.CountRecipesAsync(row.Model.Id);
+            row.RecipeCount = count;
+            PendingDelete = row;
             IsConfirmingDelete = true;
             PendingDeleteMessage = count == 0
-                ? $"Delete “{category.Name}”? No recipes use it."
-                : $"Delete “{category.Name}”? {count} recipe(s) will move to “No category”.";
+                ? $"Delete “{row.Model.Name}”? No recipes use it."
+                : $"Delete “{row.Model.Name}”? {count} recipe(s) will move to “No category”.";
         }
         catch (Exception ex)
         {
@@ -169,20 +222,20 @@ public partial class CategoryManagerViewModel : ViewModelBase
     [RelayCommand]
     private async Task DeleteConfirmed()
     {
-        var category = PendingDelete;
-        if (category is null)
+        var row = PendingDelete;
+        if (row is null)
         {
             return;
         }
 
         try
         {
-            await _categories.DeleteAsync(category.Id);
+            await _categories.DeleteAsync(row.Model.Id);
             PendingDelete = null;
             PendingDeleteMessage = null;
             IsConfirmingDelete = false;
             await LoadAsync();
-            Status = $"Deleted “{category.Name}”. Its recipes are still in your cookbook.";
+            Status = $"Deleted “{row.Model.Name}”. Its recipes are still in your cookbook.";
         }
         catch (Exception ex)
         {
@@ -192,5 +245,5 @@ public partial class CategoryManagerViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private void Back() => _navigator.ShowCookbook();
+    private void Back() => _navigator.GoBack();
 }

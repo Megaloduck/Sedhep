@@ -2,29 +2,40 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using Sedhep.Domain;
+using Sedhep.Media;
 using Sedhep.Navigation;
 
 namespace Sedhep.ViewModels;
 
+public enum RecipeSort
+{
+    RecentlyUpdated,
+    NewestFirst,
+    Title
+}
+
 /// <summary>
-/// The cookbook home: search, category and favorites filters, and the list of recipes to open.
-/// Everything reads from the local database, so it works with no connectivity.
+/// The cookbook home: search, category filters and the list of recipes. The same page backs the
+/// Favorites tab, which only changes the filter and the wording.
 /// </summary>
 public partial class MainViewModel : ViewModelBase
 {
     private readonly IRecipeRepository _recipes;
     private readonly ICategoryRepository _categories;
-    private readonly ICookbookTransferService _transfer;
+    private readonly IRecipePhotoLoader _photoLoader;
     private readonly ICookbookNavigator _navigator;
     private readonly ILogger<MainViewModel> _logger;
 
     /// <summary>Guards against an older search finishing after a newer one.</summary>
     private int _loadVersion;
+
+    private CancellationTokenSource? _coverCts;
 
     [ObservableProperty]
     private string _searchText = string.Empty;
@@ -33,7 +44,7 @@ public partial class MainViewModel : ViewModelBase
     private bool _isFavoritesActive;
 
     [ObservableProperty]
-    private string _status = "Ready";
+    private string? _status;
 
     [ObservableProperty]
     private bool _isEmpty;
@@ -41,25 +52,73 @@ public partial class MainViewModel : ViewModelBase
     [ObservableProperty]
     private CategoryFilterViewModel? _selectedCategory;
 
-    public ObservableCollection<Recipe> Recipes { get; } = new();
+    [ObservableProperty]
+    private RecipeSort _sort = RecipeSort.RecentlyUpdated;
+
+    [ObservableProperty]
+    private string _headerTitle = "My cookbook";
+
+    [ObservableProperty]
+    private string _headerSubtitle = "Yours to keep, on this device.";
+
+    [ObservableProperty]
+    private string _countLabel = string.Empty;
+
+    [ObservableProperty]
+    private string _emptyTitle = "Your cookbook is empty";
+
+    [ObservableProperty]
+    private string _emptyMessage =
+        "Write down a recipe and it stays here — no account, no internet, no subscription.";
+
+    public ObservableCollection<RecipeCardViewModel> Recipes { get; } = new();
 
     public ObservableCollection<CategoryFilterViewModel> CategoryFilters { get; } = new();
+
+    public bool IsSortRecent => Sort == RecipeSort.RecentlyUpdated;
+
+    public bool IsSortNewest => Sort == RecipeSort.NewestFirst;
+
+    public bool IsSortTitle => Sort == RecipeSort.Title;
+
+    public bool IsSearching => !string.IsNullOrWhiteSpace(SearchText);
 
     public MainViewModel(
         IRecipeRepository recipes,
         ICategoryRepository categories,
-        ICookbookTransferService transfer,
+        IRecipePhotoLoader photoLoader,
         ICookbookNavigator navigator,
         ILogger<MainViewModel> logger)
     {
         _recipes = recipes;
         _categories = categories;
-        _transfer = transfer;
+        _photoLoader = photoLoader;
         _navigator = navigator;
         _logger = logger;
     }
 
-    partial void OnSearchTextChanged(string value) => _ = RefreshAsync();
+    partial void OnSearchTextChanged(string value)
+    {
+        OnPropertyChanged(nameof(IsSearching));
+        OnPropertyChanged(nameof(ShowWriteCta));
+        _ = RefreshAsync();
+    }
+
+    partial void OnIsFavoritesActiveChanged(bool value)
+    {
+        HeaderTitle = value ? "Favorites" : "My cookbook";
+        HeaderSubtitle = value
+            ? "The recipes you come back to."
+            : "Yours to keep, on this device.";
+    }
+
+    partial void OnSortChanged(RecipeSort value)
+    {
+        OnPropertyChanged(nameof(IsSortRecent));
+        OnPropertyChanged(nameof(IsSortNewest));
+        OnPropertyChanged(nameof(IsSortTitle));
+        _ = RefreshAsync();
+    }
 
     /// <summary>Loads the filter chips and the recipes; used when the page is first shown or the
     /// category list may have changed.</summary>
@@ -69,6 +128,7 @@ public partial class MainViewModel : ViewModelBase
         await RefreshAsync();
     }
 
+    /// <summary>Re-reads the cookbook, e.g. after returning from the editor.</summary>
     public async Task RefreshAsync()
     {
         var version = ++_loadVersion;
@@ -85,12 +145,15 @@ public partial class MainViewModel : ViewModelBase
             Recipes.Clear();
             foreach (var recipe in results)
             {
-                Recipes.Add(recipe);
+                Recipes.Add(new RecipeCardViewModel(recipe));
             }
 
             IsEmpty = Recipes.Count == 0;
-            Status = Describe(Recipes.Count);
+            CountLabel = Recipes.Count == 1 ? "1 recipe" : $"{Recipes.Count} recipes";
+            UpdateEmptyState();
             _logger.LogInformation("Cookbook home shows {Count} recipes", Recipes.Count);
+
+            _ = LoadCoversAsync(Recipes.ToList());
         }
         catch (Exception ex)
         {
@@ -98,6 +161,59 @@ public partial class MainViewModel : ViewModelBase
             Status = "Could not read your recipes";
         }
     }
+
+    private async Task LoadCoversAsync(IReadOnlyList<RecipeCardViewModel> cards)
+    {
+        _coverCts?.Cancel();
+        _coverCts = new CancellationTokenSource();
+        var token = _coverCts.Token;
+
+        foreach (var card in cards)
+        {
+            if (token.IsCancellationRequested)
+            {
+                return;
+            }
+
+            if (card.Recipe.CoverPhoto is { } photo)
+            {
+                try
+                {
+                    card.Cover = await _photoLoader.LoadAsync(photo, token);
+                }
+                catch (OperationCanceledException)
+                {
+                    return;
+                }
+            }
+        }
+    }
+
+    private void UpdateEmptyState()
+    {
+        // A search that found nothing is the most specific thing to say, so it wins.
+        if (IsSearching)
+        {
+            EmptyTitle = $"Nothing matched “{SearchText.Trim()}”";
+            EmptyMessage = "Try a different word, or search by an ingredient such as chicken.";
+            OnPropertyChanged(nameof(ShowWriteCta));
+            return;
+        }
+
+        if (IsFavoritesActive)
+        {
+            EmptyTitle = "No favorites yet";
+            EmptyMessage = "Open a recipe and tap the star to keep it close.";
+            OnPropertyChanged(nameof(ShowWriteCta));
+            return;
+        }
+
+        EmptyTitle = "Your cookbook is empty";
+        EmptyMessage = "Write down a recipe and it stays here — no account, no internet, no subscription.";
+        OnPropertyChanged(nameof(ShowWriteCta));
+    }
+
+    public bool ShowWriteCta => !IsSearching;
 
     private async Task LoadCategoryFiltersAsync()
     {
@@ -170,46 +286,26 @@ public partial class MainViewModel : ViewModelBase
             recipes = recipes.Where(r => r.IsFavorite).ToList();
         }
 
-        return recipes;
-    }
-
-    private string Describe(int count)
-    {
-        var noun = count == 1 ? "recipe" : "recipes";
-        var parts = new List<string>();
-
-        if (!string.IsNullOrWhiteSpace(SearchText))
+        return Sort switch
         {
-            parts.Add($"matching “{SearchText.Trim()}”");
-        }
-
-        if (SelectedCategory?.CategoryId is not null)
-        {
-            parts.Add($"in {SelectedCategory.Name}");
-        }
-
-        if (IsFavoritesActive)
-        {
-            parts.Add("in favorites");
-        }
-
-        return parts.Count == 0
-            ? $"{count} {noun}"
-            : $"{count} {noun} {string.Join(' ', parts)}";
+            RecipeSort.Title => recipes.OrderBy(r => r.Title, StringComparer.CurrentCultureIgnoreCase).ToList(),
+            RecipeSort.NewestFirst => recipes.OrderByDescending(r => r.CreatedAt).ToList(),
+            _ => recipes.OrderByDescending(r => r.UpdatedAt).ToList()
+        };
     }
 
     [RelayCommand]
     private void NewRecipe() => _navigator.ShowEditor(existing: null);
 
     [RelayCommand]
-    private void OpenRecipe(Recipe? recipe)
+    private void OpenRecipe(RecipeCardViewModel? card)
     {
-        if (recipe is null)
+        if (card is null)
         {
             return;
         }
 
-        _navigator.ShowRecipe(recipe);
+        _navigator.ShowRecipe(card.Recipe);
     }
 
     [RelayCommand]
@@ -224,37 +320,14 @@ public partial class MainViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private async Task ToggleFavorites()
-    {
-        IsFavoritesActive = !IsFavoritesActive;
-        await RefreshAsync();
-    }
+    private void SortRecent() => Sort = RecipeSort.RecentlyUpdated;
+
+    [RelayCommand]
+    private void SortNewest() => Sort = RecipeSort.NewestFirst;
+
+    [RelayCommand]
+    private void SortByTitle() => Sort = RecipeSort.Title;
 
     [RelayCommand]
     private void ManageCategories() => _navigator.ShowCategoryManager();
-
-    [RelayCommand]
-    private async Task Export()
-    {
-        Status = "Preparing cookbook file…";
-
-        try
-        {
-            using var stream = await _transfer.ExportCookbookAsync(
-                "cookbook-export",
-                Array.ConvertAll(Recipes.ToArray(), recipe => recipe.Id.ToString()));
-
-            _logger.LogInformation(
-                "Exported {Count} recipes as {Bytes:N0} bytes",
-                Recipes.Count,
-                stream.Length);
-
-            Status = $"Cookbook file ready — {Recipes.Count} recipes, {stream.Length:N0} bytes";
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Export failed");
-            Status = "Could not prepare the cookbook file";
-        }
-    }
 }

@@ -3,42 +3,94 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:Sedhep.ViewModels"
-             xmlns:domain="using:Sedhep.Domain"
-             mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="760"
+             mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="800"
              x:Class="Sedhep.Views.CookingModeView"
              x:DataType="vm:CookingModeViewModel">
-  <Grid Classes="page" RowDefinitions="Auto,*,Auto,Auto" Margin="20">
-    <StackPanel Grid.Row="0" Spacing="6">
-      <TextBlock Classes="h2" Text="{Binding Recipe.Title}" />
-      <TextBlock Classes="meta" Text="{Binding StepLabel}" />
-    </StackPanel>
+  <Grid Background="{DynamicResource Page}" RowDefinitions="Auto,Auto,*,Auto,Auto,Auto">
+    <!-- Nothing on this screen competes with the step. -->
+    <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" Margin="14,12,14,0">
+      <Button Classes="icon" Command="{Binding CloseCommand}" ToolTip.Tip="Back to the recipe">
+        <Path Classes="icon" Data="{StaticResource IconClose}" />
+      </Button>
+      <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="10,0">
+        <TextBlock Classes="meta"
+                   Text="{Binding Recipe.Title}"
+                   HorizontalAlignment="Center"
+                   TextTrimming="CharacterEllipsis"
+                   MaxLines="1" />
+        <TextBlock Classes="label"
+                   Text="{Binding StepLabel}"
+                   HorizontalAlignment="Center" />
+      </StackPanel>
+      <Button Grid.Column="2"
+              Classes="icon"
+              Command="{Binding ToggleIngredientsCommand}"
+              ToolTip.Tip="Show ingredients">
+        <Path Classes="icon" Data="{StaticResource IconBook}" />
+      </Button>
+    </Grid>
 
-    <Border Grid.Row="1" Classes="card" Margin="0,14" Padding="20" VerticalAlignment="Stretch">
-      <ScrollViewer>
-        <TextBlock Text="{Binding CurrentStep.Instruction}"
-                   FontSize="30"
-                   TextWrapping="Wrap"
-                   VerticalAlignment="Center"
-                   Foreground="{DynamicResource SedhepTextPrimaryBrush}" />
+    <ProgressBar Grid.Row="1"
+                 Margin="16,12,16,0"
+                 Minimum="0" Maximum="100"
+                 Value="{Binding ProgressPercent}"
+                 IsVisible="{Binding HasSteps}" />
+
+    <!-- One step, as large as the screen allows. -->
+    <Border Grid.Row="2" Classes="card" Margin="16,14,16,0" Padding="22" VerticalAlignment="Stretch">
+      <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Spacing="14" VerticalAlignment="Center">
+          <TextBlock Text="{Binding CurrentStep.Instruction}"
+                     FontSize="{DynamicResource FontCook}"
+                     LineHeight="38"
+                     FontWeight="Medium"
+                     TextWrapping="Wrap"
+                     Foreground="{DynamicResource TextPrimary}" />
+          <TextBlock Classes="muted"
+                     Text="This recipe has no steps written yet. Go back and add them in the editor."
+                     IsVisible="{Binding !HasSteps}" />
+        </StackPanel>
       </ScrollViewer>
     </Border>
 
-    <Border Grid.Row="2" Classes="card" Padding="14">
+    <!-- Timer for steps that carry one. -->
+    <Border Grid.Row="3" Classes="flat" Margin="16,10,16,0" IsVisible="{Binding HasTimer}">
+      <Grid ColumnDefinitions="Auto,*,Auto">
+        <Path Classes="icon" Data="{StaticResource IconTimer}" VerticalAlignment="Center" />
+        <StackPanel Grid.Column="1" Margin="10,0" VerticalAlignment="Center">
+          <TextBlock Classes="label" Text="STEP TIMER" />
+          <TextBlock Classes="h3" Text="{Binding TimerLabel, TargetNullValue='Ready'}" />
+        </StackPanel>
+        <Button Grid.Column="2"
+                Classes="outline"
+                MinHeight="38"
+                Padding="14,6"
+                Content="{Binding TimerButtonLabel}"
+                Command="{Binding ToggleTimerCommand}" />
+      </Grid>
+    </Border>
+
+    <!-- Ingredients, kept in view but out of the way. -->
+    <Border Grid.Row="4" Classes="card" Margin="16,10,16,0" Padding="14" IsVisible="{Binding AreIngredientsVisible}">
       <StackPanel Spacing="8">
-        <TextBlock Classes="sectionHeader" Text="INGREDIENTS" />
-        <ScrollViewer MaxHeight="150">
+        <Grid ColumnDefinitions="*,Auto">
+          <TextBlock Classes="label" Text="INGREDIENTS" VerticalAlignment="Center" />
+          <TextBlock Grid.Column="1" Classes="meta" Text="{Binding IngredientCountLabel}" />
+        </Grid>
+        <ScrollViewer MaxHeight="150" VerticalScrollBarVisibility="Auto">
           <ItemsControl ItemsSource="{Binding Ingredients}">
             <ItemsControl.ItemTemplate>
-              <DataTemplate x:DataType="domain:Ingredient">
-                <TextBlock FontSize="17" TextWrapping="Wrap" Margin="0,0,0,4">
-                  <TextBlock.Text>
-                    <MultiBinding StringFormat="{}{0} {1} {2}">
-                      <Binding Path="Quantity" />
-                      <Binding Path="Unit" />
-                      <Binding Path="Name" />
-                    </MultiBinding>
-                  </TextBlock.Text>
-                </TextBlock>
+              <DataTemplate x:DataType="vm:CookIngredientViewModel">
+                <CheckBox IsChecked="{Binding IsChecked, Mode=TwoWay}" Margin="0,0,0,4">
+                  <TextBlock TextWrapping="Wrap" FontSize="{DynamicResource FontBody}">
+                    <TextBlock.Text>
+                      <MultiBinding StringFormat="{}{0} {1}">
+                        <Binding Path="QuantityLabel" />
+                        <Binding Path="Name" />
+                      </MultiBinding>
+                    </TextBlock.Text>
+                  </TextBlock>
+                </CheckBox>
               </DataTemplate>
             </ItemsControl.ItemTemplate>
           </ItemsControl>
@@ -46,25 +98,24 @@
       </StackPanel>
     </Border>
 
-    <Grid Grid.Row="3" ColumnDefinitions="*,*,Auto" Margin="0,14,0,0">
+    <Grid Grid.Row="5" ColumnDefinitions="*,*" Margin="16,12,16,16">
       <Button Grid.Column="0"
-              Classes="ghost"
-              FontSize="17"
-              Margin="0,0,8,0"
-              Content="‹ Previous"
+              Classes="outline"
+              MinHeight="56"
+              Margin="0,0,5,0"
+              HorizontalAlignment="Stretch"
+              FontSize="{DynamicResource FontH3}"
+              Content="Previous"
               Command="{Binding PreviousCommand}"
               IsEnabled="{Binding CanGoPrevious}" />
       <Button Grid.Column="1"
               Classes="primary"
-              FontSize="17"
-              Margin="0,0,8,0"
-              Content="Next ›"
-              Command="{Binding NextCommand}"
-              IsEnabled="{Binding CanGoNext}" />
-      <Button Grid.Column="2"
-              Classes="ghost"
-              Content="Done"
-              Command="{Binding CloseCommand}" />
+              MinHeight="56"
+              Margin="5,0,0,0"
+              HorizontalAlignment="Stretch"
+              FontSize="{DynamicResource FontH3}"
+              Content="{Binding NextLabel}"
+              Command="{Binding NextCommand}" />
     </Grid>
   </Grid>
 </UserControl>

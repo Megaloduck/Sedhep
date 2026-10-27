@@ -1,5 +1,7 @@
 using System;
+using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -12,6 +14,7 @@ using Sedhep.Domain;
 using Sedhep.Infrastructure;
 using Sedhep.Media;
 using Sedhep.Navigation;
+using Sedhep.Services;
 using Sedhep.ViewModels;
 using Sedhep.Views;
 
@@ -34,24 +37,60 @@ public partial class App : Application
 
     public override void OnFrameworkInitializationCompleted()
     {
+        var logger = Services.GetRequiredService<ILogger<App>>();
+        logger.LogInformation("Sedhep starting");
+
         // Avoid duplicate validations from both Avalonia and the CommunityToolkit.
         // More info: https://docs.avaloniaui.net/docs/guides/development-guides/data-validation#manage-validationplugins
         DisableAvaloniaDataAnnotationValidation();
 
+        // Theme and text size are the user's, not the system's, once they have chosen them.
+        Services.GetRequiredService<AppearanceService>().Apply();
+        logger.LogInformation("Appearance applied");
+
         var shell = Services.GetRequiredService<ShellViewModel>();
+        logger.LogInformation("Shell created");
         shell.ShowCookbook();
+        logger.LogInformation("Cookbook shown");
 
         switch (ApplicationLifetime)
         {
             case IClassicDesktopStyleApplicationLifetime desktop:
                 desktop.MainWindow = new MainWindow { DataContext = shell };
+                desktop.ShutdownRequested += (_, _) => ShutDownServices();
                 break;
             case ISingleViewApplicationLifetime singleViewPlatform:
                 singleViewPlatform.MainView = new ShellView { DataContext = shell };
                 break;
         }
 
+        logger.LogInformation("Main window ready");
+
+        // Nearby sharing listens from the moment the app opens so a recipe can arrive at any time.
+        // It runs off the startup path: a slow or unusual network must never hold up the cookbook.
+        var nearby = Services.GetRequiredService<INearbyShareService>();
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await nearby.StartAsync();
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Nearby sharing could not start");
+            }
+        });
+
+        logger.LogInformation("Startup complete");
         base.OnFrameworkInitializationCompleted();
+    }
+
+    private void ShutDownServices()
+    {
+        if (_services?.GetService<INearbyShareService>() is { } nearby)
+        {
+            _ = nearby.StopAsync();
+        }
     }
 
     private static void ConfigureServices(IServiceCollection services)
@@ -60,15 +99,26 @@ public partial class App : Application
 
         services.AddLogging(builder =>
         {
+#if DEBUG
             builder.AddConsole().SetMinimumLevel(LogLevel.Debug);
+#else
+            builder.SetMinimumLevel(LogLevel.Warning);
+#endif
         });
 
+        services.AddSingleton(sandbox);
         services.AddSingleton<IClock, UtcClock>();
+
+        services.AddSingleton(sp => new AppSettingsStore(
+            sandbox.SettingsPath,
+            sp.GetRequiredService<ILogger<AppSettingsStore>>()));
+
+        services.AddSingleton<AppearanceService>();
+
         services.AddSingleton<IRecipePhotoStorage>(sp =>
             new FileSystemRecipePhotoStorage(
                 sandbox.PhotosDirectory,
                 sp.GetRequiredService<ILogger<FileSystemRecipePhotoStorage>>()));
-        services.AddSingleton<ICookbookTransferService, CookbookTransferService>();
         services.AddSingleton<IRecipePhotoLoader, RecipePhotoLoader>();
 
         // One open connection to the cookbook database, shared by every repository, created and
@@ -83,18 +133,39 @@ public partial class App : Application
 
         services.AddSingleton<IRecipeRepository>(sp => new SqliteRecipeRepository(
             sp.GetRequiredService<SqliteConnection>(),
-            sp.GetRequiredService<ILogger<SqliteRecipeRepository>>()));
+            sp.GetRequiredService<ILogger<SqliteRecipeRepository>>(),
+            sp.GetRequiredService<AppSettingsStore>().Current.DeviceId));
 
         services.AddSingleton<ICategoryRepository>(sp => new SqliteCategoryRepository(
             sp.GetRequiredService<SqliteConnection>(),
             sp.GetRequiredService<ILogger<SqliteCategoryRepository>>()));
 
+        services.AddSingleton<ICookbookFileService>(sp => new CookbookFileService(
+            sp.GetRequiredService<IRecipeRepository>(),
+            sp.GetRequiredService<ICategoryRepository>(),
+            sp.GetRequiredService<IRecipePhotoStorage>(),
+            sp.GetRequiredService<IClock>(),
+            sp.GetRequiredService<ILogger<CookbookFileService>>()));
+
+        services.AddSingleton<INearbyShareService>(sp => new LanPeerShareService(
+            sp.GetRequiredService<AppSettingsStore>(),
+            sp.GetRequiredService<ICookbookFileService>(),
+            sp.GetRequiredService<FileSystemAppSandbox>(),
+            sp.GetRequiredService<ILogger<LanPeerShareService>>()));
+
+        services.AddSingleton<IFileDialogService, FileDialogService>();
+
         // The shell owns navigation; page view models are built lazily through factories so that
         // this graph never has a construction cycle.
         services.AddSingleton<ShellViewModel>();
         services.AddSingleton<ICookbookNavigator>(sp => sp.GetRequiredService<ShellViewModel>());
-        services.AddSingleton<MainViewModel>();
-        services.AddSingleton<Func<MainViewModel>>(sp => sp.GetRequiredService<MainViewModel>);
+
+        services.AddSingleton<Func<MainViewModel>>(sp => () => new MainViewModel(
+            sp.GetRequiredService<IRecipeRepository>(),
+            sp.GetRequiredService<ICategoryRepository>(),
+            sp.GetRequiredService<IRecipePhotoLoader>(),
+            sp.GetRequiredService<ICookbookNavigator>(),
+            sp.GetRequiredService<ILogger<MainViewModel>>()));
 
         services.AddSingleton<Func<Recipe, RecipeViewModel>>(sp => recipe => new RecipeViewModel(
             sp.GetRequiredService<IRecipeRepository>(),
@@ -120,6 +191,24 @@ public partial class App : Application
             sp.GetRequiredService<ICategoryRepository>(),
             sp.GetRequiredService<ICookbookNavigator>(),
             sp.GetRequiredService<ILogger<CategoryManagerViewModel>>()));
+
+        services.AddSingleton<Func<SettingsViewModel>>(sp => () => new SettingsViewModel(
+            sp.GetRequiredService<AppSettingsStore>(),
+            sp.GetRequiredService<AppearanceService>(),
+            sp.GetRequiredService<IRecipeRepository>(),
+            sp.GetRequiredService<ICategoryRepository>(),
+            sp.GetRequiredService<FileSystemAppSandbox>(),
+            sp.GetRequiredService<ICookbookNavigator>(),
+            sp.GetRequiredService<ILogger<SettingsViewModel>>()));
+
+        services.AddSingleton<Func<Guid?, ShareViewModel>>(sp => recipeId => new ShareViewModel(
+            sp.GetRequiredService<ICookbookFileService>(),
+            sp.GetRequiredService<INearbyShareService>(),
+            sp.GetRequiredService<IRecipeRepository>(),
+            sp.GetRequiredService<IFileDialogService>(),
+            sp.GetRequiredService<ICookbookNavigator>(),
+            sp.GetRequiredService<ILogger<ShareViewModel>>(),
+            recipeId));
     }
 
     private static void DisableAvaloniaDataAnnotationValidation()

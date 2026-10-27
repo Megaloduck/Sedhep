@@ -3,121 +3,201 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:Sedhep.ViewModels"
-             xmlns:domain="using:Sedhep.Domain"
              mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="760"
              x:Class="Sedhep.Views.MainView"
              x:DataType="vm:MainViewModel">
-  <Grid Classes="page" RowDefinitions="Auto,*,Auto">
-    <StackPanel Grid.Row="0" Margin="16,16,16,6" Spacing="10">
-      <Grid ColumnDefinitions="*,Auto">
-        <StackPanel Spacing="2">
-          <TextBlock Classes="appTitle" Text="Sedhep" />
-          <TextBlock Classes="muted" Text="Your family cookbook, on this device" />
-        </StackPanel>
-        <Button Grid.Column="1"
-                Classes="ghost"
-                Content="Categories"
-                Command="{Binding ManageCategoriesCommand}"
+  <Grid RowDefinitions="Auto,*,Auto" Background="{DynamicResource Page}">
+    <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Disabled">
+      <StackPanel Margin="18,16,18,10" Spacing="14">
+        <!-- Where you are, and the one action that matters most. -->
+        <Grid ColumnDefinitions="*,Auto">
+          <StackPanel Spacing="3">
+            <StackPanel Orientation="Horizontal" Spacing="6">
+              <Path Classes="icon sm accent" Data="{StaticResource IconPot}" VerticalAlignment="Center" />
+              <TextBlock Classes="eyebrow" Text="SEDHEP" VerticalAlignment="Center" />
+            </StackPanel>
+            <TextBlock Classes="title" Text="{Binding HeaderTitle}" Margin="0,2,0,0" />
+            <TextBlock Classes="muted" Text="{Binding HeaderSubtitle}" />
+          </StackPanel>
+
+          <Button Grid.Column="1"
+                  Classes="icon accent"
+                  Command="{Binding NewRecipeCommand}"
+                  ToolTip.Tip="New recipe"
+                  VerticalAlignment="Top">
+            <Path Classes="icon lg onAccent" Data="{StaticResource IconPlus}" />
+          </Button>
+        </Grid>
+
+        <!-- Search works entirely offline; it reads the local database. -->
+        <Grid>
+          <TextBox Text="{Binding SearchText, Mode=TwoWay}"
+                   Watermark="Search recipes, ingredients, notes…"
+                   Padding="44,11,44,11" />
+          <Path Classes="icon sm"
+                Data="{StaticResource IconSearch}"
+                Margin="15,0,0,0"
+                IsHitTestVisible="False"
+                HorizontalAlignment="Left"
                 VerticalAlignment="Center" />
-      </Grid>
+          <Button Classes="bare"
+                  Width="34" Height="34"
+                  Margin="0,0,8,0"
+                  HorizontalAlignment="Right"
+                  VerticalAlignment="Center"
+                  IsVisible="{Binding IsSearching}"
+                  Command="{Binding ClearSearchCommand}"
+                  ToolTip.Tip="Clear search">
+            <Path Classes="icon sm" Data="{StaticResource IconClose}" />
+          </Button>
+        </Grid>
 
-      <TextBox Watermark="Search recipes, ingredients, notes…"
-               Text="{Binding SearchText, Mode=TwoWay}" />
+        <!-- Categories you can filter by, in one swipeable row. -->
+        <ScrollViewer HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled">
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <ItemsControl ItemsSource="{Binding CategoryFilters}">
+              <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                  <StackPanel Orientation="Horizontal" />
+                </ItemsPanelTemplate>
+              </ItemsControl.ItemsPanel>
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:CategoryFilterViewModel">
+                  <Button Classes="chip"
+                          Classes.active="{Binding IsActive}"
+                          Content="{Binding Name}"
+                          Command="{Binding SelectCommand}"
+                          CommandParameter="{Binding}"
+                          Margin="0,0,8,0" />
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </StackPanel>
+        </ScrollViewer>
 
-      <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
-        <StackPanel Orientation="Horizontal" Spacing="0">
-          <Button Classes="chip favorite"
-                  Classes.active="{Binding IsFavoritesActive}"
-                  Content="★ Favorites"
-                  Command="{Binding ToggleFavoritesCommand}" />
-          <ItemsControl ItemsSource="{Binding CategoryFilters}">
-            <ItemsControl.ItemsPanel>
-              <ItemsPanelTemplate>
-                <StackPanel Orientation="Horizontal" />
-              </ItemsPanelTemplate>
-            </ItemsControl.ItemsPanel>
-            <ItemsControl.ItemTemplate>
-              <DataTemplate x:DataType="vm:CategoryFilterViewModel">
-                <Button Classes="chip"
-                        Classes.active="{Binding IsActive}"
-                        Content="{Binding Name}"
-                        Command="{Binding SelectCommand}"
-                        CommandParameter="{Binding}" />
-              </DataTemplate>
-            </ItemsControl.ItemTemplate>
-          </ItemsControl>
-        </StackPanel>
-      </ScrollViewer>
+        <!-- How the list is ordered, and how much is in it. -->
+        <Grid ColumnDefinitions="Auto,*,Auto">
+          <StackPanel Orientation="Horizontal" Spacing="14">
+            <Button Classes="sort" Classes.active="{Binding IsSortRecent}" Content="Recent" Command="{Binding SortRecentCommand}" />
+            <Button Classes="sort" Classes.active="{Binding IsSortNewest}" Content="Newest" Command="{Binding SortNewestCommand}" />
+            <Button Classes="sort" Classes.active="{Binding IsSortTitle}" Content="A–Z" Command="{Binding SortByTitleCommand}" />
+          </StackPanel>
+          <TextBlock Grid.Column="2"
+                     Classes="meta"
+                     Text="{Binding CountLabel}"
+                     VerticalAlignment="Center" />
+        </Grid>
+      </StackPanel>
+    </ScrollViewer>
 
-      <Button Classes="primary"
-              Content="＋ New recipe"
-              Command="{Binding NewRecipeCommand}" />
-    </StackPanel>
-
+    <!-- The empty cookbook, or the empty result of a filter. -->
     <StackPanel Grid.Row="1"
                 IsVisible="{Binding IsEmpty}"
                 VerticalAlignment="Center"
                 HorizontalAlignment="Center"
-                Spacing="10"
-                Margin="36,24">
-      <TextBlock Text="🥘" FontSize="52" HorizontalAlignment="Center" />
-      <TextBlock Classes="h3" Text="No recipes here yet" HorizontalAlignment="Center" />
-      <TextBlock Classes="muted"
-                 TextAlignment="Center"
-                 Text="Tap “New recipe” to write down your first one. Everything stays on this device — no account, no internet." />
+                Spacing="12"
+                Margin="34,10,34,30"
+                MaxWidth="340">
+      <Border Width="88" Height="88" CornerRadius="44" Background="{DynamicResource SurfaceMuted}" HorizontalAlignment="Center">
+        <Path Classes="icon" Data="{StaticResource IconPot}" Width="38" Height="38" Stroke="{DynamicResource Accent}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+      </Border>
+      <TextBlock Classes="h2" Text="{Binding EmptyTitle}" TextAlignment="Center" />
+      <TextBlock Classes="muted" Text="{Binding EmptyMessage}" TextAlignment="Center" />
+      <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center" Margin="0,6,0,0">
+        <Button Classes="primary"
+                Content="Write a recipe"
+                IsVisible="{Binding ShowWriteCta}"
+                Command="{Binding NewRecipeCommand}" />
+        <Button Classes="outline"
+                Content="Clear search"
+                IsVisible="{Binding IsSearching}"
+                Command="{Binding ClearSearchCommand}" />
+      </StackPanel>
     </StackPanel>
 
+    <!-- One card per recipe: cover, name, and the three facts a cook looks for. -->
     <ListBox Grid.Row="1"
              ItemsSource="{Binding Recipes}"
+             IsVisible="{Binding !IsEmpty}"
              Background="Transparent"
              BorderThickness="0"
-             Margin="10,4,10,0">
+             Padding="12,2,12,12"
+             SelectionMode="Single">
+      <ListBox.Styles>
+        <Style Selector="ListBoxItem">
+          <Setter Property="Padding" Value="0" />
+          <Setter Property="Margin" Value="0,0,0,10" />
+          <Setter Property="CornerRadius" Value="18" />
+          <Setter Property="Background" Value="Transparent" />
+          <Setter Property="Focusable" Value="False" />
+        </Style>
+        <Style Selector="ListBoxItem /template/ ContentPresenter">
+          <Setter Property="Background" Value="Transparent" />
+        </Style>
+        <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter">
+          <Setter Property="Background" Value="Transparent" />
+        </Style>
+        <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
+          <Setter Property="Background" Value="Transparent" />
+        </Style>
+      </ListBox.Styles>
       <ListBox.ItemTemplate>
-        <DataTemplate x:DataType="domain:Recipe">
-          <Button Command="{Binding $parent[ListBox].((vm:MainViewModel)DataContext).OpenRecipeCommand}"
-                  CommandParameter="{Binding}"
-                  Classes="ghost"
+        <DataTemplate x:DataType="vm:RecipeCardViewModel">
+          <Button Classes="bare"
                   HorizontalAlignment="Stretch"
                   HorizontalContentAlignment="Stretch"
-                  Margin="0,0,0,10"
-                  Padding="14">
-            <Grid ColumnDefinitions="*,Auto">
-              <StackPanel Spacing="6">
-                <TextBlock Classes="h3" Text="{Binding Title}" />
-                <StackPanel Orientation="Horizontal" Spacing="8">
-                  <Border Classes="pill"
-                          VerticalAlignment="Center"
-                          IsVisible="{Binding CategoryName, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
-                    <TextBlock Classes="muted" Text="{Binding CategoryName}" />
-                  </Border>
+                  Command="{Binding $parent[ListBox].((vm:MainViewModel)DataContext).OpenRecipeCommand}"
+                  CommandParameter="{Binding}">
+            <Border Classes="card" Padding="12" BoxShadow="0 6 18 -10 #26140A00">
+              <Grid ColumnDefinitions="Auto,*,Auto">
+                <Border Classes="cover" Width="76" Height="76">
+                  <Grid>
+                    <Image Source="{Binding Cover}" Stretch="UniformToFill" IsVisible="{Binding HasCover}" />
+                    <Border Background="{DynamicResource AccentSoft}" IsVisible="{Binding !HasCover}">
+                      <TextBlock Text="{Binding Initial}"
+                                 FontSize="27"
+                                 FontWeight="Bold"
+                                 Foreground="{DynamicResource Accent}"
+                                 HorizontalAlignment="Center"
+                                 VerticalAlignment="Center" />
+                    </Border>
+                  </Grid>
+                </Border>
+
+                <StackPanel Grid.Column="1" Margin="14,0,10,0" VerticalAlignment="Center" Spacing="5">
+                  <TextBlock Classes="h3"
+                             Text="{Binding Title}"
+                             MaxLines="2"
+                             TextTrimming="CharacterEllipsis" />
                   <TextBlock Classes="meta"
-                             VerticalAlignment="Center"
-                             Text="{Binding TotalMinutes, StringFormat='{}{0} min'}" />
-                  <TextBlock Classes="meta"
-                             VerticalAlignment="Center"
-                             Text="{Binding Servings, StringFormat='{}{0} servings'}" />
+                             Text="{Binding MetaLine}"
+                             MaxLines="1"
+                             TextTrimming="CharacterEllipsis" />
                 </StackPanel>
-                <TextBlock Classes="muted"
-                           Text="{Binding Description}"
-                           MaxLines="2"
-                           TextTrimming="CharacterEllipsis" />
-              </StackPanel>
-              <TextBlock Grid.Column="1"
-                         Text="★"
-                         FontSize="20"
-                         Margin="8,0,0,0"
-                         VerticalAlignment="Center"
-                         Foreground="{DynamicResource SedhepFavoriteBrush}"
-                         IsVisible="{Binding IsFavorite}" />
-            </Grid>
+
+                <StackPanel Grid.Column="2" VerticalAlignment="Center" Spacing="8">
+                  <Path Classes="icon sm"
+                        Classes.favorite="{Binding IsFavorite}"
+                        Data="{StaticResource IconStar}"
+                        IsVisible="{Binding IsFavorite}"
+                        HorizontalAlignment="Center" />
+                  <Path Classes="icon sm"
+                        Data="{StaticResource IconChevronRight}"
+                        Stroke="{DynamicResource TextTertiary}"
+                        HorizontalAlignment="Center" />
+                </StackPanel>
+              </Grid>
+            </Border>
           </Button>
         </DataTemplate>
       </ListBox.ItemTemplate>
     </ListBox>
 
-    <TextBlock Grid.Row="2"
-               Classes="muted"
-               Margin="16,6,16,12"
-               Text="{Binding Status}" />
+    <Border Grid.Row="2"
+            Classes="toast"
+            Margin="16,0,16,12"
+            IsVisible="{Binding Status, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+      <TextBlock Classes="muted" Text="{Binding Status}" />
+    </Border>
   </Grid>
 </UserControl>

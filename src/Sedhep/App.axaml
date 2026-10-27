@@ -3,7 +3,7 @@
              xmlns:local="using:Sedhep"
              x:Class="Sedhep.App"
              RequestedThemeVariant="Default">
-             <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
+    <!-- "Default" follows the system theme; the Settings page can pin Light or Dark. -->
 
     <Application.DataTemplates>
         <local:ViewLocator/>
@@ -13,6 +13,7 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceInclude Source="avares://Sedhep/Styles/Palette.axaml" />
+                <ResourceInclude Source="avares://Sedhep/Styles/Icons.axaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>

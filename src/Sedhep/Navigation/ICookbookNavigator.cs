@@ -1,5 +1,6 @@
 // Licensed under the MIT license. See LICENSE in the project root.
 
+using System;
 using Sedhep.Domain;
 
 namespace Sedhep.Navigation;
@@ -11,6 +12,13 @@ namespace Sedhep.Navigation;
 public interface ICookbookNavigator
 {
     void ShowCookbook();
+
+    void ShowFavorites();
+
+    void ShowSettings();
+
+    /// <summary>Opens the sharing page, optionally with a recipe already chosen.</summary>
+    void ShowShare(Guid? recipeId = null);
 
     void ShowRecipe(Recipe recipe);
 

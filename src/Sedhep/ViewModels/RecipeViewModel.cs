@@ -2,6 +2,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
+using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
@@ -12,8 +13,7 @@ using Sedhep.Navigation;
 namespace Sedhep.ViewModels;
 
 /// <summary>
-/// A single recipe as the user reads it, with the actions the plan puts on this screen:
-/// favorite, cook, edit and delete.
+/// A single recipe as the user reads and cooks from it: favourite, cook, edit, share and delete.
 /// </summary>
 public partial class RecipeViewModel : ViewModelBase
 {
@@ -29,10 +29,24 @@ public partial class RecipeViewModel : ViewModelBase
     private bool _isConfirmingDelete;
 
     [ObservableProperty]
-    private bool _hasPhoto;
+    private bool _hasPhotos;
 
     [ObservableProperty]
     private string? _status;
+
+    [ObservableProperty]
+    private bool _isFavorite;
+
+    [ObservableProperty]
+    private Bitmap? _coverImage;
+
+    public bool HasCover => CoverImage is not null;
+
+    partial void OnCoverImageChanged(Bitmap? value) => OnPropertyChanged(nameof(HasCover));
+
+    public string Initial => string.IsNullOrWhiteSpace(Recipe.Title)
+        ? "?"
+        : Recipe.Title.Trim()[..1].ToUpperInvariant();
 
     public ObservableCollection<RecipePhotoViewModel> Photos { get; } = new();
 
@@ -48,12 +62,13 @@ public partial class RecipeViewModel : ViewModelBase
         _photoLoader = photoLoader;
         _logger = logger;
         Recipe = recipe;
+        IsFavorite = recipe.IsFavorite;
 
         // Only the photos of the recipe being looked at are decoded.
         _ = LoadPhotosAsync();
     }
 
-    public string FavoriteLabel => Recipe.IsFavorite ? "★ Favorite" : "☆ Favorite";
+    public string FavoriteLabel => IsFavorite ? "Saved" : "Save";
 
     public string CategoryLabel => string.IsNullOrWhiteSpace(Recipe.CategoryName)
         ? "No category"
@@ -62,6 +77,22 @@ public partial class RecipeViewModel : ViewModelBase
     public bool HasIngredients => Recipe.Ingredients.Count > 0;
 
     public bool HasSteps => Recipe.Steps.Count > 0;
+
+    public bool HasNotes => !string.IsNullOrWhiteSpace(Recipe.Notes);
+
+    public bool HasDescription => !string.IsNullOrWhiteSpace(Recipe.Description);
+
+    public bool HasTags => Recipe.Tags.Count > 0;
+
+    public bool HasTime => Recipe.TotalMinutes > 0;
+
+    public string TimeLabel => Recipe.TotalMinutes < 60
+        ? $"{Recipe.TotalMinutes} min"
+        : $"{Recipe.TotalMinutes / 60} h {Recipe.TotalMinutes % 60:00} min";
+
+    public string ServingsLabel => Recipe.Servings == 1 ? "1 serving" : $"{Recipe.Servings} servings";
+
+    public string StepCountLabel => Recipe.Steps.Count == 1 ? "1 step" : $"{Recipe.Steps.Count} steps";
 
     private async Task LoadPhotosAsync()
     {
@@ -72,16 +103,19 @@ public partial class RecipeViewModel : ViewModelBase
 
         foreach (var photo in ordered)
         {
-            var thumbnail = new RecipePhotoViewModel(photo);
-            Photos.Add(thumbnail);
+            Photos.Add(new RecipePhotoViewModel(photo));
         }
 
-        HasPhoto = Photos.Count > 0;
+        HasPhotos = Photos.Count > 0;
+        OnPropertyChanged(nameof(Photos));
 
         foreach (var thumbnail in Photos)
         {
             thumbnail.Image = await _photoLoader.LoadAsync(thumbnail.Photo);
         }
+
+        CoverImage = Photos.FirstOrDefault(p => p.Photo.IsCover)?.Image ?? Photos.FirstOrDefault()?.Image;
+        OnPropertyChanged(nameof(HasCover));
     }
 
     [RelayCommand]
@@ -89,17 +123,18 @@ public partial class RecipeViewModel : ViewModelBase
     {
         try
         {
-            Recipe.IsFavorite = !Recipe.IsFavorite;
+            IsFavorite = !IsFavorite;
+            Recipe.IsFavorite = IsFavorite;
             Recipe.UpdatedAt = DateTimeOffset.UtcNow;
             await _recipes.SaveAsync(Recipe);
 
-            OnPropertyChanged(nameof(Recipe));
             OnPropertyChanged(nameof(FavoriteLabel));
-            Status = Recipe.IsFavorite ? "Saved to favorites" : "Removed from favorites";
+            Status = IsFavorite ? "Kept in favorites" : "Removed from favorites";
         }
         catch (Exception ex)
         {
-            Recipe.IsFavorite = !Recipe.IsFavorite;
+            IsFavorite = !IsFavorite;
+            Recipe.IsFavorite = IsFavorite;
             _logger.LogError(ex, "Failed to change the favorite state");
             Status = "Could not save that change";
         }
@@ -110,6 +145,9 @@ public partial class RecipeViewModel : ViewModelBase
 
     [RelayCommand]
     private void Edit() => _navigator.ShowEditor(Recipe);
+
+    [RelayCommand]
+    private void Share() => _navigator.ShowShare(Recipe.Id);
 
     [RelayCommand]
     private void Delete()

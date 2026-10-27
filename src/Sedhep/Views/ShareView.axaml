@@ -1,0 +1,140 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:Sedhep.ViewModels"
+             xmlns:domain="using:Sedhep.Domain"
+             mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="800"
+             x:Class="Sedhep.Views.ShareView"
+             x:DataType="vm:ShareViewModel">
+  <Grid Background="{DynamicResource Page}" RowDefinitions="Auto,*">
+    <Border Padding="12,12,12,4">
+      <Grid ColumnDefinitions="Auto,*,Auto">
+        <Button Classes="icon" Command="{Binding BackCommand}" ToolTip.Tip="Back">
+          <Path Classes="icon" Data="{StaticResource IconChevronLeft}" />
+        </Button>
+        <TextBlock Grid.Column="1" Classes="h2" Text="Share &amp; backup" HorizontalAlignment="Center" VerticalAlignment="Center" />
+        <Border Grid.Column="2" Width="42" />
+      </Grid>
+    </Border>
+
+    <ScrollViewer Grid.Row="1">
+      <StackPanel Margin="18,6,18,24" Spacing="14">
+        <!-- What will be sent -->
+        <Border Classes="card" IsVisible="{Binding HasSingleRecipe}">
+          <StackPanel Spacing="12">
+            <TextBlock Classes="label" Text="WHAT TO SEND" />
+            <Grid ColumnDefinitions="*,*">
+              <Button Grid.Column="0"
+                      Classes="chip"
+                      Margin="0,0,4,0"
+                      Classes.active="{Binding ShareSingle}"
+                      Content="{Binding SingleRecipeLabel}"
+                      Command="{Binding ChooseSingleCommand}" />
+              <Button Grid.Column="1"
+                      Classes="chip"
+                      Margin="4,0,0,0"
+                      Classes.active="{Binding IsCookbookScope}"
+                      Content="Whole cookbook"
+                      Command="{Binding ChooseCookbookCommand}" />
+            </Grid>
+            <TextBlock Classes="muted" Text="{Binding ScopeHint}" />
+          </StackPanel>
+        </Border>
+
+        <!-- Nearby phones -->
+        <Border Classes="card">
+          <StackPanel Spacing="12">
+            <Grid ColumnDefinitions="*,Auto">
+              <TextBlock Classes="label" Text="NEARBY PHONES" VerticalAlignment="Center" />
+              <Button Grid.Column="1" Classes="bare" Command="{Binding RefreshNearbyCommand}">
+                <TextBlock Classes="meta" Text="Look again" Foreground="{DynamicResource Accent}" />
+              </Button>
+            </Grid>
+
+            <StackPanel Spacing="6" IsVisible="{Binding !HasDevices}">
+              <Grid ColumnDefinitions="Auto,*">
+                <Path Classes="icon" Data="{StaticResource IconNearby}" Stroke="{DynamicResource Accent}" />
+                <TextBlock Grid.Column="1" Margin="10,0,0,0" Classes="body" Text="Looking for phones on this Wi-Fi…" IsVisible="{Binding IsLooking}" VerticalAlignment="Center" />
+                <TextBlock Grid.Column="1" Margin="10,0,0,0" Classes="body" Text="No phones found yet." IsVisible="{Binding !IsLooking}" VerticalAlignment="Center" />
+              </Grid>
+              <TextBlock Classes="muted"
+                         Text="Open Sedhep on the other phone and keep it on this screen. Both devices need to be on the same Wi-Fi." />
+            </StackPanel>
+
+            <ItemsControl ItemsSource="{Binding Devices}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="domain:NearbyDevice">
+                  <Border Classes="flat" Margin="0,0,0,8" Padding="12">
+                    <Grid ColumnDefinitions="Auto,*,Auto">
+                      <Border Width="36" Height="36" CornerRadius="12" Background="{DynamicResource Surface}">
+                        <Path Classes="icon sm" Data="{StaticResource IconNearby}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                      </Border>
+                      <StackPanel Grid.Column="1" Margin="12,0,8,0" VerticalAlignment="Center" Spacing="2">
+                        <TextBlock Classes="h3" Text="{Binding DisplayName}" TextTrimming="CharacterEllipsis" MaxLines="1" />
+                        <TextBlock Classes="meta" Text="Ready to receive" />
+                      </StackPanel>
+                      <Button Grid.Column="2"
+                              Classes="primary"
+                              MinHeight="38"
+                              Padding="16,6"
+                              Content="Send"
+                              Command="{Binding $parent[ItemsControl].((vm:ShareViewModel)DataContext).SendToCommand}"
+                              CommandParameter="{Binding}" />
+                    </Grid>
+                  </Border>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <StackPanel Spacing="8" IsVisible="{Binding IsSending}">
+              <ProgressBar Minimum="0" Maximum="100" Value="{Binding Progress}" />
+              <TextBlock Classes="muted" Text="{Binding Status}" />
+            </StackPanel>
+
+            <TextBlock Classes="muted"
+                       Text="The other phone must accept before anything is sent. The transfer is encrypted on the way."
+                       IsVisible="{Binding !IsSending}" />
+          </StackPanel>
+        </Border>
+
+        <!-- Files -->
+        <Border Classes="card">
+          <StackPanel Spacing="12">
+            <TextBlock Classes="label" Text="COOKBOOK FILE" />
+            <TextBlock Classes="muted"
+                       Text="A .cookbook file holds your recipes and photos. Use it for a backup, for moving to a new phone, or to keep a copy somewhere safe." />
+
+            <Button Classes="outline" Command="{Binding ExportFileCommand}" HorizontalAlignment="Stretch">
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <Path Classes="icon sm" Data="{StaticResource IconDownload}" />
+                <TextBlock Text="Save the cookbook to a file" VerticalAlignment="Center" />
+              </StackPanel>
+            </Button>
+
+            <Button Classes="outline" Command="{Binding ImportFileCommand}" HorizontalAlignment="Stretch">
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <Path Classes="icon sm" Data="{StaticResource IconFolder}" />
+                <TextBlock Text="Open a cookbook file" VerticalAlignment="Center" />
+              </StackPanel>
+            </Button>
+
+            <TextBlock Classes="muted"
+                       Text="{Binding FileStatus}"
+                       IsVisible="{Binding FileStatus, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+          </StackPanel>
+        </Border>
+
+        <Border Classes="flat">
+          <Grid ColumnDefinitions="Auto,*">
+            <Path Classes="icon sm" Data="{StaticResource IconInfo}" Stroke="{DynamicResource TextTertiary}" VerticalAlignment="Top" />
+            <TextBlock Grid.Column="1"
+                       Margin="10,0,0,0"
+                       Classes="muted"
+                       Text="Only accept a recipe when the person sending it is with you. Sedhep never sends anything on its own." />
+          </Grid>
+        </Border>
+      </StackPanel>
+    </ScrollViewer>
+  </Grid>
+</UserControl>
