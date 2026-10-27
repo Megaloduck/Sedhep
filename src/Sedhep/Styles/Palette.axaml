@@ -1,0 +1,35 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <!--
+    Semantic colours for the cookbook. Every brush is defined for both themes so the app keeps
+    its contrast whether the device is in light or dark mode.
+  -->
+  <ResourceDictionary.ThemeDictionaries>
+    <ResourceDictionary x:Key="Light">
+      <SolidColorBrush x:Key="SedhepPageBackgroundBrush" Color="#FBF6F0" />
+      <SolidColorBrush x:Key="SedhepSurfaceBrush" Color="#FFFFFF" />
+      <SolidColorBrush x:Key="SedhepSurfaceMutedBrush" Color="#F4EBE1" />
+      <SolidColorBrush x:Key="SedhepBorderBrush" Color="#E6D8C8" />
+      <SolidColorBrush x:Key="SedhepAccentBrush" Color="#B8560F" />
+      <SolidColorBrush x:Key="SedhepAccentHoverBrush" Color="#9C470B" />
+      <SolidColorBrush x:Key="SedhepAccentTextBrush" Color="#FFFFFF" />
+      <SolidColorBrush x:Key="SedhepTextPrimaryBrush" Color="#2B2117" />
+      <SolidColorBrush x:Key="SedhepTextSecondaryBrush" Color="#6B5D4D" />
+      <SolidColorBrush x:Key="SedhepFavoriteBrush" Color="#B57A00" />
+      <SolidColorBrush x:Key="SedhepDangerBrush" Color="#A8271D" />
+    </ResourceDictionary>
+    <ResourceDictionary x:Key="Dark">
+      <SolidColorBrush x:Key="SedhepPageBackgroundBrush" Color="#14110D" />
+      <SolidColorBrush x:Key="SedhepSurfaceBrush" Color="#211C16" />
+      <SolidColorBrush x:Key="SedhepSurfaceMutedBrush" Color="#2C251D" />
+      <SolidColorBrush x:Key="SedhepBorderBrush" Color="#3B3228" />
+      <SolidColorBrush x:Key="SedhepAccentBrush" Color="#E28A45" />
+      <SolidColorBrush x:Key="SedhepAccentHoverBrush" Color="#EF9C5B" />
+      <SolidColorBrush x:Key="SedhepAccentTextBrush" Color="#1E1409" />
+      <SolidColorBrush x:Key="SedhepTextPrimaryBrush" Color="#F4ECE1" />
+      <SolidColorBrush x:Key="SedhepTextSecondaryBrush" Color="#B7A894" />
+      <SolidColorBrush x:Key="SedhepFavoriteBrush" Color="#F0BE4E" />
+      <SolidColorBrush x:Key="SedhepDangerBrush" Color="#F08B80" />
+    </ResourceDictionary>
+  </ResourceDictionary.ThemeDictionaries>
+</ResourceDictionary>

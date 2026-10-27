@@ -1,0 +1,70 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:Sedhep.ViewModels"
+             xmlns:domain="using:Sedhep.Domain"
+             mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="760"
+             x:Class="Sedhep.Views.CookingModeView"
+             x:DataType="vm:CookingModeViewModel">
+  <Grid Classes="page" RowDefinitions="Auto,*,Auto,Auto" Margin="20">
+    <StackPanel Grid.Row="0" Spacing="6">
+      <TextBlock Classes="h2" Text="{Binding Recipe.Title}" />
+      <TextBlock Classes="meta" Text="{Binding StepLabel}" />
+    </StackPanel>
+
+    <Border Grid.Row="1" Classes="card" Margin="0,14" Padding="20" VerticalAlignment="Stretch">
+      <ScrollViewer>
+        <TextBlock Text="{Binding CurrentStep.Instruction}"
+                   FontSize="30"
+                   TextWrapping="Wrap"
+                   VerticalAlignment="Center"
+                   Foreground="{DynamicResource SedhepTextPrimaryBrush}" />
+      </ScrollViewer>
+    </Border>
+
+    <Border Grid.Row="2" Classes="card" Padding="14">
+      <StackPanel Spacing="8">
+        <TextBlock Classes="sectionHeader" Text="INGREDIENTS" />
+        <ScrollViewer MaxHeight="150">
+          <ItemsControl ItemsSource="{Binding Ingredients}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="domain:Ingredient">
+                <TextBlock FontSize="17" TextWrapping="Wrap" Margin="0,0,0,4">
+                  <TextBlock.Text>
+                    <MultiBinding StringFormat="{}{0} {1} {2}">
+                      <Binding Path="Quantity" />
+                      <Binding Path="Unit" />
+                      <Binding Path="Name" />
+                    </MultiBinding>
+                  </TextBlock.Text>
+                </TextBlock>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </ScrollViewer>
+      </StackPanel>
+    </Border>
+
+    <Grid Grid.Row="3" ColumnDefinitions="*,*,Auto" Margin="0,14,0,0">
+      <Button Grid.Column="0"
+              Classes="ghost"
+              FontSize="17"
+              Margin="0,0,8,0"
+              Content="‹ Previous"
+              Command="{Binding PreviousCommand}"
+              IsEnabled="{Binding CanGoPrevious}" />
+      <Button Grid.Column="1"
+              Classes="primary"
+              FontSize="17"
+              Margin="0,0,8,0"
+              Content="Next ›"
+              Command="{Binding NextCommand}"
+              IsEnabled="{Binding CanGoNext}" />
+      <Button Grid.Column="2"
+              Classes="ghost"
+              Content="Done"
+              Command="{Binding CloseCommand}" />
+    </Grid>
+  </Grid>
+</UserControl>

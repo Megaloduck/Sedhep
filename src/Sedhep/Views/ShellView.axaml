@@ -1,0 +1,9 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:Sedhep.ViewModels"
+             x:Class="Sedhep.Views.ShellView"
+             x:DataType="vm:ShellViewModel">
+  <Grid Classes="page">
+    <ContentControl Content="{Binding Current}" />
+  </Grid>
+</UserControl>

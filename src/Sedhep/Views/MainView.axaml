@@ -1,0 +1,123 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:Sedhep.ViewModels"
+             xmlns:domain="using:Sedhep.Domain"
+             mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="760"
+             x:Class="Sedhep.Views.MainView"
+             x:DataType="vm:MainViewModel">
+  <Grid Classes="page" RowDefinitions="Auto,*,Auto">
+    <StackPanel Grid.Row="0" Margin="16,16,16,6" Spacing="10">
+      <Grid ColumnDefinitions="*,Auto">
+        <StackPanel Spacing="2">
+          <TextBlock Classes="appTitle" Text="Sedhep" />
+          <TextBlock Classes="muted" Text="Your family cookbook, on this device" />
+        </StackPanel>
+        <Button Grid.Column="1"
+                Classes="ghost"
+                Content="Categories"
+                Command="{Binding ManageCategoriesCommand}"
+                VerticalAlignment="Center" />
+      </Grid>
+
+      <TextBox Watermark="Search recipes, ingredients, notes…"
+               Text="{Binding SearchText, Mode=TwoWay}" />
+
+      <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+        <StackPanel Orientation="Horizontal" Spacing="0">
+          <Button Classes="chip favorite"
+                  Classes.active="{Binding IsFavoritesActive}"
+                  Content="★ Favorites"
+                  Command="{Binding ToggleFavoritesCommand}" />
+          <ItemsControl ItemsSource="{Binding CategoryFilters}">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                <StackPanel Orientation="Horizontal" />
+              </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:CategoryFilterViewModel">
+                <Button Classes="chip"
+                        Classes.active="{Binding IsActive}"
+                        Content="{Binding Name}"
+                        Command="{Binding SelectCommand}"
+                        CommandParameter="{Binding}" />
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </StackPanel>
+      </ScrollViewer>
+
+      <Button Classes="primary"
+              Content="＋ New recipe"
+              Command="{Binding NewRecipeCommand}" />
+    </StackPanel>
+
+    <StackPanel Grid.Row="1"
+                IsVisible="{Binding IsEmpty}"
+                VerticalAlignment="Center"
+                HorizontalAlignment="Center"
+                Spacing="10"
+                Margin="36,24">
+      <TextBlock Text="🥘" FontSize="52" HorizontalAlignment="Center" />
+      <TextBlock Classes="h3" Text="No recipes here yet" HorizontalAlignment="Center" />
+      <TextBlock Classes="muted"
+                 TextAlignment="Center"
+                 Text="Tap “New recipe” to write down your first one. Everything stays on this device — no account, no internet." />
+    </StackPanel>
+
+    <ListBox Grid.Row="1"
+             ItemsSource="{Binding Recipes}"
+             Background="Transparent"
+             BorderThickness="0"
+             Margin="10,4,10,0">
+      <ListBox.ItemTemplate>
+        <DataTemplate x:DataType="domain:Recipe">
+          <Button Command="{Binding $parent[ListBox].((vm:MainViewModel)DataContext).OpenRecipeCommand}"
+                  CommandParameter="{Binding}"
+                  Classes="ghost"
+                  HorizontalAlignment="Stretch"
+                  HorizontalContentAlignment="Stretch"
+                  Margin="0,0,0,10"
+                  Padding="14">
+            <Grid ColumnDefinitions="*,Auto">
+              <StackPanel Spacing="6">
+                <TextBlock Classes="h3" Text="{Binding Title}" />
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <Border Classes="pill"
+                          VerticalAlignment="Center"
+                          IsVisible="{Binding CategoryName, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                    <TextBlock Classes="muted" Text="{Binding CategoryName}" />
+                  </Border>
+                  <TextBlock Classes="meta"
+                             VerticalAlignment="Center"
+                             Text="{Binding TotalMinutes, StringFormat='{}{0} min'}" />
+                  <TextBlock Classes="meta"
+                             VerticalAlignment="Center"
+                             Text="{Binding Servings, StringFormat='{}{0} servings'}" />
+                </StackPanel>
+                <TextBlock Classes="muted"
+                           Text="{Binding Description}"
+                           MaxLines="2"
+                           TextTrimming="CharacterEllipsis" />
+              </StackPanel>
+              <TextBlock Grid.Column="1"
+                         Text="★"
+                         FontSize="20"
+                         Margin="8,0,0,0"
+                         VerticalAlignment="Center"
+                         Foreground="{DynamicResource SedhepFavoriteBrush}"
+                         IsVisible="{Binding IsFavorite}" />
+            </Grid>
+          </Button>
+        </DataTemplate>
+      </ListBox.ItemTemplate>
+    </ListBox>
+
+    <TextBlock Grid.Row="2"
+               Classes="muted"
+               Margin="16,6,16,12"
+               Text="{Binding Status}" />
+  </Grid>
+</UserControl>

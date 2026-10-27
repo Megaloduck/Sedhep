@@ -1,0 +1,135 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <!-- Typography -->
+  <Style Selector="TextBlock.appTitle">
+    <Setter Property="FontSize" Value="30" />
+    <Setter Property="FontWeight" Value="Bold" />
+    <Setter Property="Foreground" Value="{DynamicResource SedhepTextPrimaryBrush}" />
+  </Style>
+  <Style Selector="TextBlock.h2">
+    <Setter Property="FontSize" Value="22" />
+    <Setter Property="FontWeight" Value="Bold" />
+    <Setter Property="Foreground" Value="{DynamicResource SedhepTextPrimaryBrush}" />
+  </Style>
+  <Style Selector="TextBlock.h3">
+    <Setter Property="FontSize" Value="17" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="Foreground" Value="{DynamicResource SedhepTextPrimaryBrush}" />
+  </Style>
+  <Style Selector="TextBlock.sectionHeader">
+    <Setter Property="FontSize" Value="13" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="Foreground" Value="{DynamicResource SedhepTextSecondaryBrush}" />
+    <Setter Property="Margin" Value="0,0,0,6" />
+  </Style>
+  <Style Selector="TextBlock.body">
+    <Setter Property="FontSize" Value="15" />
+    <Setter Property="TextWrapping" Value="Wrap" />
+    <Setter Property="Foreground" Value="{DynamicResource SedhepTextPrimaryBrush}" />
+  </Style>
+  <Style Selector="TextBlock.muted">
+    <Setter Property="FontSize" Value="13" />
+    <Setter Property="TextWrapping" Value="Wrap" />
+    <Setter Property="Foreground" Value="{DynamicResource SedhepTextSecondaryBrush}" />
+  </Style>
+  <Style Selector="TextBlock.meta">
+    <Setter Property="FontSize" Value="13" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="Foreground" Value="{DynamicResource SedhepTextSecondaryBrush}" />
+  </Style>
+
+  <!-- Containers -->
+  <Style Selector="Border.card">
+    <Setter Property="Background" Value="{DynamicResource SedhepSurfaceBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource SedhepBorderBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="16" />
+    <Setter Property="Padding" Value="16" />
+  </Style>
+  <Style Selector="Border.pill">
+    <Setter Property="Background" Value="{DynamicResource SedhepSurfaceMutedBrush}" />
+    <Setter Property="CornerRadius" Value="999" />
+    <Setter Property="Padding" Value="10,5" />
+    <Setter Property="Margin" Value="0,0,6,6" />
+  </Style>
+
+  <!-- Buttons: big, obvious touch targets -->
+  <Style Selector="Button">
+    <Setter Property="MinHeight" Value="44" />
+    <Setter Property="CornerRadius" Value="12" />
+    <Setter Property="FontSize" Value="15" />
+    <Setter Property="Padding" Value="16,10" />
+  </Style>
+  <Style Selector="Button.primary">
+    <Setter Property="Background" Value="{DynamicResource SedhepAccentBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource SedhepAccentTextBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource SedhepAccentBrush}" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="HorizontalContentAlignment" Value="Center" />
+  </Style>
+  <Style Selector="Button.primary:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource SedhepAccentHoverBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource SedhepAccentHoverBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource SedhepAccentTextBrush}" />
+  </Style>
+  <Style Selector="Button.ghost">
+    <Setter Property="Background" Value="{DynamicResource SedhepSurfaceBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource SedhepTextPrimaryBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource SedhepBorderBrush}" />
+  </Style>
+  <Style Selector="Button.danger">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Foreground" Value="{DynamicResource SedhepDangerBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource SedhepDangerBrush}" />
+  </Style>
+  <Style Selector="Button.chip">
+    <Setter Property="Background" Value="{DynamicResource SedhepSurfaceMutedBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource SedhepTextPrimaryBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource SedhepBorderBrush}" />
+    <Setter Property="CornerRadius" Value="999" />
+    <Setter Property="MinHeight" Value="36" />
+    <Setter Property="Padding" Value="14,6" />
+    <Setter Property="FontSize" Value="13" />
+    <Setter Property="Margin" Value="0,0,8,0" />
+  </Style>
+  <Style Selector="Button.chip.active">
+    <Setter Property="Background" Value="{DynamicResource SedhepAccentBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource SedhepAccentTextBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource SedhepAccentBrush}" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+  </Style>
+  <Style Selector="Button.chip.favorite">
+    <Setter Property="Foreground" Value="{DynamicResource SedhepFavoriteBrush}" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+  </Style>
+  <Style Selector="Button.favorite">
+    <Setter Property="Foreground" Value="{DynamicResource SedhepFavoriteBrush}" />
+    <Setter Property="Background" Value="{DynamicResource SedhepSurfaceBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource SedhepBorderBrush}" />
+  </Style>
+
+  <!-- Inputs -->
+  <Style Selector="TextBox">
+    <Setter Property="MinHeight" Value="44" />
+    <Setter Property="CornerRadius" Value="12" />
+    <Setter Property="Background" Value="{DynamicResource SedhepSurfaceBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource SedhepBorderBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource SedhepTextPrimaryBrush}" />
+    <Setter Property="FontSize" Value="15" />
+  </Style>
+  <Style Selector="ComboBox">
+    <Setter Property="MinHeight" Value="44" />
+    <Setter Property="CornerRadius" Value="12" />
+    <Setter Property="Background" Value="{DynamicResource SedhepSurfaceBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource SedhepBorderBrush}" />
+    <Setter Property="FontSize" Value="15" />
+  </Style>
+
+  <!-- Pages -->
+  <Style Selector="ScrollViewer.page">
+    <Setter Property="Background" Value="{DynamicResource SedhepPageBackgroundBrush}" />
+  </Style>
+  <Style Selector="Grid.page">
+    <Setter Property="Background" Value="{DynamicResource SedhepPageBackgroundBrush}" />
+  </Style>
+</Styles>

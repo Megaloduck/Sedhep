@@ -1,0 +1,152 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:Sedhep.ViewModels"
+             xmlns:domain="using:Sedhep.Domain"
+             mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="760"
+             x:Class="Sedhep.Views.RecipeEditorView"
+             x:DataType="vm:RecipeEditorViewModel">
+  <Grid Classes="page" RowDefinitions="*,Auto">
+    <ScrollViewer Grid.Row="0">
+      <StackPanel Margin="16" Spacing="12">
+        <TextBlock Classes="h2" Text="{Binding Header}" />
+
+        <Border Classes="card">
+          <StackPanel Spacing="10">
+            <TextBlock Classes="sectionHeader" Text="BASICS" />
+            <TextBox Watermark="Recipe name (needed to save)" Text="{Binding Title, Mode=TwoWay}" />
+            <TextBox Watermark="Short description"
+                     Text="{Binding Description, Mode=TwoWay}"
+                     AcceptsReturn="True"
+                     Height="80"
+                     TextWrapping="Wrap" />
+            <TextBox Watermark="Cuisine, e.g. Indonesian" Text="{Binding Cuisine, Mode=TwoWay}" />
+
+            <StackPanel Spacing="4">
+              <TextBlock Classes="muted" Text="Category" />
+              <ComboBox HorizontalAlignment="Stretch"
+                        ItemsSource="{Binding CategoryOptions}"
+                        SelectedItem="{Binding SelectedCategory, Mode=TwoWay}">
+                <ComboBox.ItemTemplate>
+                  <DataTemplate x:DataType="vm:CategoryOption">
+                    <TextBlock Text="{Binding Name}" />
+                  </DataTemplate>
+                </ComboBox.ItemTemplate>
+              </ComboBox>
+            </StackPanel>
+
+            <Grid ColumnDefinitions="*,*,*">
+              <StackPanel Grid.Column="0" Spacing="4" Margin="0,0,5,0">
+                <TextBlock Classes="muted" Text="Servings" />
+                <NumericUpDown Value="{Binding Servings}" Minimum="1" Maximum="50" />
+              </StackPanel>
+              <StackPanel Grid.Column="1" Spacing="4" Margin="5,0">
+                <TextBlock Classes="muted" Text="Prep (min)" />
+                <NumericUpDown Value="{Binding PrepMinutes}" Minimum="0" Maximum="600" />
+              </StackPanel>
+              <StackPanel Grid.Column="2" Spacing="4" Margin="5,0,0,0">
+                <TextBlock Classes="muted" Text="Cook (min)" />
+                <NumericUpDown Value="{Binding CookMinutes}" Minimum="0" Maximum="600" />
+              </StackPanel>
+            </Grid>
+          </StackPanel>
+        </Border>
+
+        <Border Classes="card">
+          <StackPanel Spacing="10">
+            <TextBlock Classes="sectionHeader" Text="PHOTOS" />
+            <TextBlock Classes="muted"
+                       Text="Add a photo of the finished dish. The first one is used as the cover and stays on this device." />
+            <ItemsControl ItemsSource="{Binding Photos}">
+              <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                  <WrapPanel />
+                </ItemsPanelTemplate>
+              </ItemsControl.ItemsPanel>
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:RecipePhotoViewModel">
+                  <StackPanel Width="100" Margin="0,0,10,10" Spacing="6">
+                    <Border Height="100"
+                            CornerRadius="12"
+                            ClipToBounds="True"
+                            Background="{DynamicResource SedhepSurfaceMutedBrush}">
+                      <Grid>
+                        <Image Source="{Binding Image}" Stretch="UniformToFill" IsVisible="{Binding HasImage}" />
+                        <TextBlock Text="📷"
+                                   FontSize="28"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   IsVisible="{Binding !HasImage}" />
+                      </Grid>
+                    </Border>
+                    <Button Classes="danger"
+                            FontSize="12"
+                            MinHeight="34"
+                            Padding="8,4"
+                            Content="Remove"
+                            HorizontalAlignment="Stretch"
+                            Command="{Binding $parent[ItemsControl].((vm:RecipeEditorViewModel)DataContext).RemovePhotoCommand}"
+                            CommandParameter="{Binding}" />
+                  </StackPanel>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <Button Classes="ghost" Content="＋ Add photo" Click="OnAddPhotoClick" />
+          </StackPanel>
+        </Border>
+
+        <Border Classes="card">
+          <StackPanel Spacing="10">
+            <TextBlock Classes="sectionHeader" Text="INGREDIENTS" />
+            <ItemsControl ItemsSource="{Binding Ingredients}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="domain:Ingredient">
+                  <Grid ColumnDefinitions="70,80,*" Margin="0,0,0,8">
+                    <TextBox Grid.Column="0" Margin="0,0,6,0" Watermark="Qty" Text="{Binding Quantity, Mode=TwoWay}" />
+                    <TextBox Grid.Column="1" Margin="0,0,6,0" Watermark="Unit" Text="{Binding Unit, Mode=TwoWay}" />
+                    <TextBox Grid.Column="2" Watermark="Ingredient" Text="{Binding Name, Mode=TwoWay}" />
+                  </Grid>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <Grid ColumnDefinitions="*,Auto">
+              <Button Grid.Column="0" Classes="ghost" Content="＋ Add ingredient" Command="{Binding AddIngredientCommand}" Margin="0,0,8,0" />
+              <Button Grid.Column="1" Classes="ghost" Content="Remove last" Command="{Binding RemoveIngredientCommand}" />
+            </Grid>
+          </StackPanel>
+        </Border>
+
+        <Border Classes="card">
+          <StackPanel Spacing="10">
+            <TextBlock Classes="sectionHeader" Text="DIRECTIONS" />
+            <ItemsControl ItemsSource="{Binding Steps}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="domain:RecipeStep">
+                  <Grid ColumnDefinitions="64,*" Margin="0,0,0,8">
+                    <NumericUpDown Grid.Column="0" Margin="0,0,6,0" Minimum="1" Maximum="200" Value="{Binding SortOrder}" />
+                    <TextBox Grid.Column="1" Watermark="Step" Text="{Binding Instruction, Mode=TwoWay}" />
+                  </Grid>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <Grid ColumnDefinitions="*,Auto">
+              <Button Grid.Column="0" Classes="ghost" Content="＋ Add step" Command="{Binding AddStepCommand}" Margin="0,0,8,0" />
+              <Button Grid.Column="1" Classes="ghost" Content="Remove last" Command="{Binding RemoveStepCommand}" />
+            </Grid>
+          </StackPanel>
+        </Border>
+      </StackPanel>
+    </ScrollViewer>
+
+    <StackPanel Grid.Row="1" Margin="16,0,16,16" Spacing="10">
+      <TextBlock Classes="muted"
+                 Text="{Binding Status}"
+                 IsVisible="{Binding Status, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+      <Grid ColumnDefinitions="Auto,*">
+        <Button Grid.Column="0" Classes="ghost" Content="Cancel" Command="{Binding CancelCommand}" Margin="0,0,8,0" />
+        <Button Grid.Column="1" Classes="primary" Content="Save recipe" Command="{Binding SaveCommand}" />
+      </Grid>
+    </StackPanel>
+  </Grid>
+</UserControl>
