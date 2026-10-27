@@ -47,6 +47,41 @@
         </StackPanel>
       </Border>
 
+      <!-- Where the cookbook lives. A desktop folder the user can open, copy and change. -->
+      <Border Classes="card">
+        <StackPanel Spacing="12">
+          <TextBlock Classes="label" Text="COOKBOOK LOCATION" />
+
+          <Border Classes="flat">
+            <StackPanel Spacing="4">
+              <TextBlock Classes="meta" Text="{Binding LocationSourceText}" />
+              <SelectableTextBlock Classes="body" Text="{Binding StorageFolder}" TextWrapping="Wrap" />
+              <TextBlock Classes="meta"
+                         Text="{Binding DatabaseFileName, StringFormat='{}{0} and the photos folder live here.'}" />
+            </StackPanel>
+          </Border>
+
+          <Grid ColumnDefinitions="*,*" IsVisible="{Binding CanChangeLocation}">
+            <Button Grid.Column="0"
+                    Classes="outline"
+                    Content="Open folder"
+                    Command="{Binding OpenFolderCommand}"
+                    Margin="0,0,4,0"
+                    HorizontalAlignment="Stretch" />
+            <Button Grid.Column="1"
+                    Classes="outline"
+                    Content="Change folder…"
+                    Command="{Binding ChangeLocationCommand}"
+                    Margin="4,0,0,0"
+                    HorizontalAlignment="Stretch" />
+          </Grid>
+
+          <TextBlock Classes="muted"
+                     IsVisible="{Binding CanChangeLocation}"
+                     Text="Changing the folder restarts Sedhep. Your recipes are only moved when you ask for a copy." />
+        </StackPanel>
+      </Border>
+
       <!-- The cookbook itself -->
       <Border Classes="card">
         <StackPanel Spacing="14">
@@ -124,11 +159,6 @@
 
           <TextBlock Classes="muted"
                      Text="A private family cookbook. Your recipes stay on this device unless you choose to send them." />
-
-          <StackPanel Spacing="2">
-            <TextBlock Classes="label" Text="STORED IN" />
-            <TextBlock Classes="muted" Text="{Binding StoragePath}" TextWrapping="Wrap" />
-          </StackPanel>
 
           <TextBlock Classes="muted"
                      Text="{Binding RecipeCountLabel, StringFormat='{}{0} in this cookbook'}" />

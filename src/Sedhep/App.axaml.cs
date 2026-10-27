@@ -7,6 +7,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
+using Avalonia.Platform;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -109,22 +110,6 @@ public partial class App : Application
 
     private void ShowStartupError(Exception exception)
     {
-        string path;
-        string message;
-        string? hint = null;
-
-        if (exception is CookbookStorageException storage)
-        {
-            path = storage.Path;
-            message = storage.Message;
-        }
-        else
-        {
-            path = _services?.GetService<FileSystemAppSandbox>()?.RootDirectory ?? string.Empty;
-            message = exception.Message;
-            hint = "This is unexpected. The details are in the log next to the app's output.";
-        }
-
         try
         {
             _services?.GetService<ILogger<App>>()?.LogError(exception, "Sedhep could not start");
@@ -134,7 +119,13 @@ public partial class App : Application
             // Logging must not hide the original failure.
         }
 
-        var view = new StartupErrorView(message, path, hint);
+        var viewModel = new StartupErrorViewModel(
+            exception,
+            _services?.GetService<FileSystemAppSandbox>(),
+            _services?.GetService<IDialogService>(),
+            _services?.GetService<IDesktopService>());
+
+        var view = new StartupErrorView(viewModel);
 
         switch (ApplicationLifetime)
         {
@@ -142,12 +133,13 @@ public partial class App : Application
                 var window = new Window
                 {
                     Title = "Sedhep",
-                    Width = 432,
-                    Height = 620,
-                    MinWidth = 380,
-                    MinHeight = 460,
+                    Width = 580,
+                    Height = 700,
+                    MinWidth = 460,
+                    MinHeight = 540,
                     WindowStartupLocation = WindowStartupLocation.CenterScreen,
-                    Content = view
+                    Content = view,
+                    Icon = TryLoadWindowIcon()
                 };
 
                 if (Current?.TryFindResource("Page", out var page) == true && page is Avalonia.Media.IBrush brush)
@@ -164,6 +156,19 @@ public partial class App : Application
         }
     }
 
+    private static WindowIcon? TryLoadWindowIcon()
+    {
+        try
+        {
+            return new WindowIcon(AssetLoader.Open(new Uri("avares://Sedhep/Assets/app-icon.ico")));
+        }
+        catch (Exception)
+        {
+            // The icon is a nicety; a missing resource must not stop the recovery screen.
+            return null;
+        }
+    }
+
     private void ShutDownServices()
     {
         if (_services?.GetService<INearbyShareService>() is { } nearby)
@@ -174,8 +179,6 @@ public partial class App : Application
 
     private static void ConfigureServices(IServiceCollection services)
     {
-        var sandbox = new FileSystemAppSandbox();
-
         services.AddLogging(builder =>
         {
 #if DEBUG
@@ -185,30 +188,33 @@ public partial class App : Application
 #endif
         });
 
-        services.AddSingleton(sandbox);
+        // The location note is read before the cookbook, because it decides where the cookbook is.
+        services.AddSingleton(_ => new CookbookLocationStore());
+        services.AddSingleton(sp => new FileSystemAppSandbox(sp.GetRequiredService<CookbookLocationStore>()));
+
         services.AddSingleton<IClock, UtcClock>();
 
         services.AddSingleton(sp => new AppSettingsStore(
-            sandbox.SettingsPath,
+            sp.GetRequiredService<FileSystemAppSandbox>().SettingsPath,
             sp.GetRequiredService<ILogger<AppSettingsStore>>()));
 
         services.AddSingleton<AppearanceService>();
 
         services.AddSingleton<IRecipePhotoStorage>(sp =>
             new FileSystemRecipePhotoStorage(
-                sandbox.PhotosDirectory,
+                sp.GetRequiredService<FileSystemAppSandbox>().PhotosDirectory,
                 sp.GetRequiredService<ILogger<FileSystemRecipePhotoStorage>>()));
         services.AddSingleton<IRecipePhotoLoader, RecipePhotoLoader>();
 
         // One open connection to the cookbook database, shared by every repository, created and
-        // migrated on first use.
-        services.AddSingleton(sp =>
-        {
-            var dbFixture = new SqliteDatabaseFixture(
-                sandbox.DatabasePath,
-                sp.GetRequiredService<ILogger<SqliteDatabaseFixture>>());
-            return dbFixture.OpenConnection();
-        });
+        // migrated on first use. Keeping it behind the holder means the recovery screen can be
+        // shown without trying to open a database that may be unreachable.
+        services.AddSingleton(sp => new CookbookDatabase(
+            sp.GetRequiredService<FileSystemAppSandbox>().DatabasePath,
+            sp.GetRequiredService<ILogger<SqliteDatabaseFixture>>(),
+            sp.GetRequiredService<ILogger<CookbookDatabase>>()));
+
+        services.AddSingleton(sp => sp.GetRequiredService<CookbookDatabase>().Connection);
 
         services.AddSingleton<IRecipeRepository>(sp => new SqliteRecipeRepository(
             sp.GetRequiredService<SqliteConnection>(),
@@ -233,6 +239,12 @@ public partial class App : Application
             sp.GetRequiredService<ILogger<LanPeerShareService>>()));
 
         services.AddSingleton<IFileDialogService, FileDialogService>();
+
+        // Desktop recovery and the folder chooser. The services are registered on every platform;
+        // they report IsDesktop false where the shell cannot open folders or restart the app.
+        services.AddSingleton<IDesktopService, DesktopService>();
+        services.AddSingleton<IDialogService, DialogService>();
+        services.AddSingleton<CookbookLocationService>();
 
         // The shell owns navigation; page view models are built lazily through factories so that
         // this graph never has a construction cycle.
@@ -277,6 +289,9 @@ public partial class App : Application
             sp.GetRequiredService<IRecipeRepository>(),
             sp.GetRequiredService<ICategoryRepository>(),
             sp.GetRequiredService<FileSystemAppSandbox>(),
+            sp.GetRequiredService<CookbookLocationService>(),
+            sp.GetRequiredService<IDialogService>(),
+            sp.GetRequiredService<IDesktopService>(),
             sp.GetRequiredService<ICookbookNavigator>(),
             sp.GetRequiredService<ILogger<SettingsViewModel>>()));
 

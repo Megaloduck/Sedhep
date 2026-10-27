@@ -1,0 +1,126 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:Sedhep.ViewModels"
+        x:Class="Sedhep.Views.CookbookLocationWindow"
+        x:DataType="vm:CookbookLocationViewModel"
+        Title="Cookbook folder"
+        Width="580"
+        Height="660"
+        MinWidth="480"
+        MinHeight="540"
+        ShowInTaskbar="False"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource Page}"
+        Icon="/Assets/app-icon.ico">
+  <Grid RowDefinitions="*,Auto">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+      <StackPanel Margin="28,24,28,20" Spacing="16">
+        <StackPanel Spacing="4">
+          <TextBlock Classes="eyebrow" Text="STORAGE" />
+          <TextBlock Classes="title" Text="Where the cookbook lives" />
+          <TextBlock Classes="muted"
+                     Text="Sedhep keeps cookbook.db and the photos folder together. Choose any folder you can write to." />
+        </StackPanel>
+
+        <Border Classes="card">
+          <StackPanel Spacing="8">
+            <Grid ColumnDefinitions="*,Auto">
+              <TextBlock Classes="label" Text="CURRENT FOLDER" VerticalAlignment="Center" />
+              <Border Grid.Column="1" Classes="pill">
+                <TextBlock Classes="meta" Text="{Binding CurrentSourceText}" />
+              </Border>
+            </Grid>
+            <SelectableTextBlock Classes="body" Text="{Binding CurrentFolder}" TextWrapping="Wrap" />
+          </StackPanel>
+        </Border>
+
+        <Border Classes="card">
+          <StackPanel Spacing="12">
+            <TextBlock Classes="label" Text="USE ANOTHER FOLDER" />
+
+            <Button Classes="outline"
+                    Click="OnBrowseClick"
+                    HorizontalAlignment="Stretch"
+                    AutomationProperties.Name="Choose a folder"
+                    IsEnabled="{Binding !IsBusy}">
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <Path Classes="icon sm" Data="{StaticResource IconFolder}" />
+                <TextBlock Text="Choose a folder…" VerticalAlignment="Center" />
+              </StackPanel>
+            </Button>
+
+            <Border Classes="flat" IsVisible="{Binding HasTarget}">
+              <StackPanel Spacing="6">
+                <SelectableTextBlock Classes="body" Text="{Binding TargetFolder}" TextWrapping="Wrap" />
+                <TextBlock Classes="meta" Text="{Binding TargetSummary}" IsVisible="{Binding HasTargetSummary}" />
+                <TextBlock Classes="meta"
+                           Text="{Binding TargetProblem}"
+                           Foreground="{DynamicResource Danger}"
+                           IsVisible="{Binding HasTargetProblem}" />
+              </StackPanel>
+            </Border>
+
+            <CheckBox Content="Copy my current cookbook into this folder"
+                      IsChecked="{Binding CopyCurrent}"
+                      IsVisible="{Binding ShowCopyOption}"
+                      IsEnabled="{Binding !IsBusy}" />
+            <TextBlock Classes="muted"
+                       Text="cookbook.db, the photos and the app settings are copied. Your current cookbook is left exactly where it is."
+                       IsVisible="{Binding ShowCopyOption}" />
+
+            <Button Classes="link"
+                    Content="Use the default folder instead"
+                    Command="{Binding UseDefaultCommand}"
+                    IsVisible="{Binding CanUseDefault}"
+                    IsEnabled="{Binding !IsBusy}"
+                    HorizontalAlignment="Left" />
+          </StackPanel>
+        </Border>
+
+        <Border Classes="flat" IsVisible="{Binding HasTarget}">
+          <Grid ColumnDefinitions="Auto,*">
+            <Path Classes="icon sm" Data="{StaticResource IconInfo}" VerticalAlignment="Top" />
+            <TextBlock Grid.Column="1"
+                       Margin="10,0,0,0"
+                       Classes="muted"
+                       Text="Sedhep restarts when you confirm, so the new folder is opened cleanly. Nothing is moved or deleted unless you leave the copy box ticked." />
+          </Grid>
+        </Border>
+
+        <TextBlock Classes="muted"
+                   Foreground="{DynamicResource Danger}"
+                   Text="{Binding Error}"
+                   IsVisible="{Binding HasError}" />
+      </StackPanel>
+    </ScrollViewer>
+
+    <Border Grid.Row="1"
+            Background="{DynamicResource Surface}"
+            BorderBrush="{DynamicResource Border}"
+            BorderThickness="0,1,0,0"
+            Padding="18,12,18,14">
+      <Grid ColumnDefinitions="*,Auto">
+        <TextBlock Classes="meta"
+                   Text="{Binding RememberText}"
+                   TextWrapping="Wrap"
+                   ToolTip.Tip="{Binding RememberPath}"
+                   Margin="0,0,16,0"
+                   VerticalAlignment="Center" />
+        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+          <Button Classes="outline"
+                  Content="Cancel"
+                  Click="OnCancelClick"
+                  IsCancel="True"
+                  MinWidth="96"
+                  IsEnabled="{Binding !IsBusy}" />
+          <Button Classes="primary"
+                  Content="Use this folder"
+                  Command="{Binding UseThisFolderCommand}"
+                  IsDefault="True"
+                  MinWidth="140"
+                  IsEnabled="{Binding !IsBusy}" />
+        </StackPanel>
+      </Grid>
+    </Border>
+  </Grid>
+</Window>

@@ -78,6 +78,12 @@
     <Setter Property="VerticalContentAlignment" Value="Center" />
   </Style>
 
+  <!-- A disabled button should look disabled even with our own primary/outline brushes. -->
+  <Style Selector="Button:disabled">
+    <Setter Property="Opacity" Value="0.45" />
+    <Setter Property="Cursor" Value="Arrow" />
+  </Style>
+
   <!-- Primary: one per screen, the thing the user came to do. -->
   <Style Selector="Button.primary">
     <Setter Property="Foreground" Value="{DynamicResource OnAccent}" />
@@ -376,6 +382,16 @@
     <Setter Property="BorderBrush" Value="{DynamicResource Border}" />
     <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
     <Setter Property="HorizontalAlignment" Value="Stretch" />
+  </Style>
+
+  <!-- A plain checkbox, used for the "copy my cookbook" choice on desktop. -->
+  <Style Selector="CheckBox">
+    <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
+    <Setter Property="FontSize" Value="{DynamicResource FontBody}" />
+    <Setter Property="MinHeight" Value="32" />
+  </Style>
+  <Style Selector="CheckBox:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
   </Style>
 
   <Style Selector="ProgressBar">

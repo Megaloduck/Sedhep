@@ -7,7 +7,8 @@ namespace Sedhep.Infrastructure;
 
 /// <summary>
 /// Where the cookbook lives on the device. Keeping the database, photos and preferences under one
-/// folder makes the whole cookbook portable: copy the folder, keep the recipes.
+/// folder makes the whole cookbook portable: copy the folder, keep the recipes. The folder can be
+/// the default one, one the user chose in the app, or one named on the command line.
 /// </summary>
 public sealed class FileSystemAppSandbox
 {
@@ -17,28 +18,44 @@ public sealed class FileSystemAppSandbox
     /// </summary>
     public const string DataDirectoryVariable = "SEDHEP_DATA_DIR";
 
+    /// <summary>
+    /// Set by the desktop host alongside <see cref="DataDirectoryVariable"/> when <c>--data-dir</c>
+    /// is used, so the argument applies to this run only and does not outrank a folder the user
+    /// chooses in the app.
+    /// </summary>
+    public const string OneShotVariable = "SEDHEP_DATA_DIR_ONCE";
+
     public FileSystemAppSandbox()
+        : this(new CookbookLocationStore())
     {
-        var overrideRoot = Environment.GetEnvironmentVariable(DataDirectoryVariable);
-        RootDirectory = string.IsNullOrWhiteSpace(overrideRoot)
-            ? Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "Sedhep")
-            : overrideRoot;
-
-        DatabasePath = Path.Combine(RootDirectory, "cookbook.db");
-        PhotosDirectory = Path.Combine(RootDirectory, "photos");
-
-        Problem = Probe();
     }
 
-    public string RootDirectory { get; }
+    public FileSystemAppSandbox(CookbookLocationStore store)
+    {
+        var environment = Environment.GetEnvironmentVariable(DataDirectoryVariable);
+        var commandLine = Environment.GetEnvironmentVariable(OneShotVariable) is not null ? environment : null;
+
+        Location = CookbookLocationResolver.Resolve(
+            commandLine,
+            store.SavedDirectory,
+            environment,
+            store.DefaultDataDirectory);
+
+        DatabasePath = Path.Combine(RootDirectory, CookbookFolder.DatabaseFileName);
+        PhotosDirectory = Path.Combine(RootDirectory, CookbookFolder.PhotosFolderName);
+
+        Problem = CookbookFolder.Probe(RootDirectory);
+    }
+
+    public CookbookLocation Location { get; }
+
+    public string RootDirectory => Location.Directory;
 
     public string DatabasePath { get; }
 
     public string PhotosDirectory { get; }
 
-    public string SettingsPath => Path.Combine(RootDirectory, "settings.json");
+    public string SettingsPath => Path.Combine(RootDirectory, CookbookFolder.SettingsFileName);
 
     /// <summary>Null when the folder is usable; otherwise a sentence explaining what is wrong.</summary>
     public string? Problem { get; }
@@ -48,21 +65,4 @@ public sealed class FileSystemAppSandbox
     /// else, so the app reports the problem instead of relocating the user's data.
     /// </summary>
     public bool HasExistingCookbook => File.Exists(DatabasePath);
-
-    private string? Probe()
-    {
-        try
-        {
-            Directory.CreateDirectory(RootDirectory);
-
-            var probe = Path.Combine(RootDirectory, $".sedhep-write-check-{Guid.NewGuid():N}");
-            File.WriteAllText(probe, "ok");
-            File.Delete(probe);
-            return null;
-        }
-        catch (Exception ex)
-        {
-            return $"The folder is not writable by this app ({ex.GetType().Name}).";
-        }
-    }
 }

@@ -1,0 +1,22 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Sedhep.Views.NoticeWindow"
+        Title="Sedhep"
+        Width="470"
+        SizeToContent="Height"
+        CanResize="False"
+        ShowInTaskbar="False"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource Page}"
+        Icon="/Assets/app-icon.ico">
+  <StackPanel Margin="24" Spacing="16">
+    <TextBlock Classes="h2" x:Name="TitleText" />
+    <TextBlock Classes="body" x:Name="MessageText" TextWrapping="Wrap" />
+    <Button Classes="primary"
+            Content="OK"
+            HorizontalAlignment="Right"
+            MinWidth="96"
+            IsDefault="True"
+            Click="OnOkClick" />
+  </StackPanel>
+</Window>

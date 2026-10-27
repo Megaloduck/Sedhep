@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using Avalonia;
+using Sedhep.Infrastructure;
 
 namespace Sedhep.Desktop;
 
@@ -18,8 +19,10 @@ sealed class Program
     }
 
     /// <summary>
-    /// <c>--data-dir &lt;folder&gt;</c> keeps the cookbook somewhere else, which is how a portable
-    /// install is set up and how the app is pointed at a folder it is allowed to write to.
+    /// <c>--data-dir &lt;folder&gt;</c> keeps the cookbook somewhere else for this run, which is how
+    /// a portable install is set up and how the app is pointed at a folder it is allowed to write
+    /// to. The second variable marks it as a one-run choice: a folder picked inside the app is
+    /// remembered and wins on the next start.
     /// </summary>
     private static void ApplyDataDirectoryArgument(string[] args)
     {
@@ -31,7 +34,10 @@ sealed class Program
                 continue;
             }
 
-            Environment.SetEnvironmentVariable("SEDHEP_DATA_DIR", Path.GetFullPath(args[i + 1]));
+            Environment.SetEnvironmentVariable(
+                FileSystemAppSandbox.DataDirectoryVariable,
+                Path.GetFullPath(args[i + 1]));
+            Environment.SetEnvironmentVariable(FileSystemAppSandbox.OneShotVariable, "1");
             return;
         }
     }

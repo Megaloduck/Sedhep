@@ -39,7 +39,8 @@ and the user chooses “Keep my version” or “Use the incoming version”, on
 ![A recipe that exists in both cookbooks](docs/screenshots/conflict.png)
 
 **Settings.** Light, dark or system theme, three text sizes that scale the whole app (cooking mode
-included), the device name other phones see, and where the cookbook is stored.
+included), the device name other phones see, and where the cookbook is stored. On the desktop the
+cookbook location is a folder you can open, copy and change from this page.
 
 | | | |
 |---|---|---|
@@ -91,8 +92,29 @@ head selected, the IDE tries to deploy to an emulator instead of starting the de
 - `photos/` — one folder per recipe
 - `settings.json` — device name, theme, text size
 
-To keep the cookbook somewhere else — a portable install, a folder you control, or a machine where
-the default folder is read-only — use either form:
+### Choosing the folder on the desktop
+
+The folder is a normal folder on disk, and the desktop app can open it, move to another one, or
+copy the cookbook between them:
+
+- **Settings → Cookbook location → Change folder…** opens the native folder picker. Pick any folder
+  you can write to. If it already contains `cookbook.db`, Sedhep opens that cookbook. If it is
+  empty and the current folder has a cookbook, Sedhep offers to copy `cookbook.db`, the photos and
+  the settings there — the original folder is left exactly as it was.
+- The recovery screen shown when the folder cannot be written offers the same picker. A cookbook in
+  a read-only, admin-owned or sandboxed folder can be copied to a folder Sedhep can use instead of
+  leaving the app at a dead end.
+- The choice is remembered and Sedhep restarts to open the new folder cleanly.
+
+The note that remembers the folder is `%APPDATA%\Sedhep\cookbook-location.json`. Because a profile
+can itself be locked down, Sedhep also tries the local profile, the app's own folder and the temp
+folder, and uses the first note it can read. If none of them can be written, the app says so rather
+than pretending the choice will survive a restart.
+
+### Command line and environment
+
+To keep the cookbook somewhere else for a run — a portable install, a demo, or a machine where the
+default folder is read-only — use either form:
 
 ```bash
 Sedhep.Desktop.exe --data-dir "D:\Sedhep"
@@ -100,9 +122,13 @@ Sedhep.Desktop.exe --data-dir "D:\Sedhep"
 set SEDHEP_DATA_DIR=D:\Sedhep
 ```
 
-If the folder cannot be written, Sedhep does not crash: it opens a screen that names the folder,
-says what is wrong, and offers to open it in the file manager. Your cookbook is never moved or
-deleted behind your back — a read-only location is reported, not worked around.
+`--data-dir` applies to that run only. A folder chosen inside the app is remembered and wins on
+later starts; `SEDHEP_DATA_DIR` is used when no folder has been chosen in the app.
+
+If the folder cannot be written, Sedhep does not crash: it opens a recovery screen that names the
+folder, explains the likely cause, and offers to choose another folder (copying the cookbook if you
+ask), copy the folder path, or open it in the file manager. Your cookbook is never moved or deleted
+behind your back — a read-only location is reported, not silently worked around.
 
 ## Tests
 

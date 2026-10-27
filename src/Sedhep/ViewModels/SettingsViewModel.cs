@@ -21,6 +21,9 @@ public partial class SettingsViewModel : ViewModelBase
     private readonly IRecipeRepository _recipes;
     private readonly ICategoryRepository _categories;
     private readonly FileSystemAppSandbox _sandbox;
+    private readonly CookbookLocationService _locations;
+    private readonly IDialogService _dialogs;
+    private readonly IDesktopService _desktop;
     private readonly ICookbookNavigator _navigator;
     private readonly ILogger<SettingsViewModel> _logger;
 
@@ -45,6 +48,9 @@ public partial class SettingsViewModel : ViewModelBase
         IRecipeRepository recipes,
         ICategoryRepository categories,
         FileSystemAppSandbox sandbox,
+        CookbookLocationService locations,
+        IDialogService dialogs,
+        IDesktopService desktop,
         ICookbookNavigator navigator,
         ILogger<SettingsViewModel> logger)
     {
@@ -53,6 +59,9 @@ public partial class SettingsViewModel : ViewModelBase
         _recipes = recipes;
         _categories = categories;
         _sandbox = sandbox;
+        _locations = locations;
+        _dialogs = dialogs;
+        _desktop = desktop;
         _navigator = navigator;
         _logger = logger;
 
@@ -68,7 +77,13 @@ public partial class SettingsViewModel : ViewModelBase
             ? $"{version.Major}.{version.Minor}.{version.Build}"
             : "1.0";
 
-    public string StoragePath => _sandbox.DatabasePath;
+    public string StorageFolder => _sandbox.RootDirectory;
+
+    public string LocationSourceText => _locations.CurrentSourceText;
+
+    public bool CanChangeLocation => _dialogs.CanShowCookbookLocation;
+
+    public string DatabaseFileName => CookbookFolder.DatabaseFileName;
 
     public bool IsSystemTheme => _settings.Current.Theme == "system";
 
@@ -166,4 +181,18 @@ public partial class SettingsViewModel : ViewModelBase
 
     [RelayCommand]
     private void OpenShare() => _navigator.ShowShare();
+
+    /// <summary>Opens the cookbook folder in the desktop file manager.</summary>
+    [RelayCommand]
+    private void OpenFolder() => _desktop.OpenFolder(_sandbox.RootDirectory);
+
+    /// <summary>
+    /// The same chooser the error screen offers. It restarts Sedhep after the dialog closes, so the
+    /// list behind this page is built against the new folder next time.
+    /// </summary>
+    [RelayCommand]
+    private async Task ChangeLocation()
+    {
+        await _dialogs.ShowCookbookLocationAsync();
+    }
 }

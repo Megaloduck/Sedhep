@@ -1,14 +1,16 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="Sedhep.Views.StartupErrorView">
+             xmlns:vm="clr-namespace:Sedhep.ViewModels"
+             x:Class="Sedhep.Views.StartupErrorView"
+             x:DataType="vm:StartupErrorViewModel">
   <Grid Background="{DynamicResource Page}" RowDefinitions="*,Auto">
     <ScrollViewer VerticalScrollBarVisibility="Auto">
       <StackPanel VerticalAlignment="Center"
                   HorizontalAlignment="Center"
-                  MaxWidth="380"
-                  Spacing="14"
-                  Margin="28,24">
-        <Border Width="76" Height="76" CornerRadius="38" Background="{DynamicResource DangerSoft}" HorizontalAlignment="Center">
+                  MaxWidth="500"
+                  Spacing="12"
+                  Margin="30,18">
+        <Border Width="74" Height="74" CornerRadius="37" Background="{DynamicResource DangerSoft}" HorizontalAlignment="Center">
           <Path Classes="icon lg"
                 Data="{StaticResource IconInfo}"
                 Width="30" Height="30"
@@ -17,39 +19,87 @@
                 VerticalAlignment="Center" />
         </Border>
 
-        <TextBlock Classes="h2" Text="Sedhep could not open your cookbook" TextAlignment="Center" />
-        <TextBlock Classes="muted" x:Name="MessageText" TextAlignment="Center" />
+        <StackPanel Spacing="6">
+          <TextBlock Classes="title" Text="Sedhep could not open your cookbook" TextAlignment="Center" />
+          <TextBlock Classes="muted" Text="{Binding Message}" TextAlignment="Center" />
+        </StackPanel>
 
-        <Border Classes="flat">
-          <StackPanel Spacing="4">
-            <TextBlock Classes="label" Text="COOKBOOK FOLDER" />
-            <TextBlock Classes="meta" x:Name="PathText" TextWrapping="Wrap" />
+        <Border Classes="card">
+          <StackPanel Spacing="10">
+            <Grid ColumnDefinitions="*,Auto">
+              <TextBlock Classes="label" Text="COOKBOOK FOLDER" VerticalAlignment="Center" />
+              <Border Grid.Column="1" Classes="pill">
+                <TextBlock Classes="meta" Text="{Binding SourceText}" />
+              </Border>
+            </Grid>
+
+            <SelectableTextBlock Classes="body" Text="{Binding FolderPath}" TextWrapping="Wrap" />
+
+            <TextBlock Classes="muted"
+                       IsVisible="{Binding FolderHasCookbook}"
+                       Text="Your cookbook is still in this folder. Sedhep can copy it to a folder it is allowed to write to." />
+
+            <Grid ColumnDefinitions="*,*" IsVisible="{Binding IsDesktop}">
+              <Button Grid.Column="0"
+                      Classes="outline"
+                      Content="Open folder"
+                      Command="{Binding OpenFolderCommand}"
+                      Margin="0,0,4,0"
+                      HorizontalAlignment="Stretch" />
+              <Button Grid.Column="1"
+                      Classes="outline"
+                      Content="{Binding CopyPathLabel}"
+                      Command="{Binding CopyPathCommand}"
+                      Margin="4,0,0,0"
+                      HorizontalAlignment="Stretch" />
+            </Grid>
           </StackPanel>
         </Border>
 
-        <TextBlock Classes="muted" x:Name="HintText" TextAlignment="Center" />
+        <TextBlock Classes="muted"
+                   IsVisible="{Binding CanChooseFolder}"
+                   Text="Pick any folder you can write to. If it already contains cookbook.db, Sedhep opens it; if it is empty, Sedhep starts a new cookbook and can copy the current one first." />
+
+        <TextBlock Classes="muted" Text="{Binding Hint}" TextAlignment="Center" />
 
         <TextBlock Classes="muted"
                    TextAlignment="Center"
                    Text="Nothing has been deleted or moved. Your recipes are still wherever they were." />
+
+        <TextBlock Classes="meta"
+                   TextAlignment="Center"
+                   Foreground="{DynamicResource TextTertiary}"
+                   Text="{Binding Footnote}" />
       </StackPanel>
     </ScrollViewer>
 
     <Border Grid.Row="1"
+            IsVisible="{Binding IsDesktop}"
             Background="{DynamicResource Surface}"
             BorderBrush="{DynamicResource Border}"
             BorderThickness="0,1,0,0"
             Padding="18,12,18,16">
       <StackPanel Spacing="8">
-        <Button Classes="outline"
-                x:Name="OpenFolderButton"
-                Content="Open the folder"
-                HorizontalAlignment="Stretch"
-                Click="OnOpenFolderClick" />
         <Button Classes="primary"
-                Content="Close Sedhep"
+                Content="Choose a folder…"
+                Command="{Binding ChooseFolderCommand}"
                 HorizontalAlignment="Stretch"
-                Click="OnCloseClick" />
+                IsDefault="True"
+                IsVisible="{Binding CanChooseFolder}" />
+        <Grid ColumnDefinitions="*,*">
+          <Button Grid.Column="0"
+                  Classes="outline"
+                  Content="Try again"
+                  Command="{Binding TryAgainCommand}"
+                  Margin="0,0,4,0"
+                  HorizontalAlignment="Stretch" />
+          <Button Grid.Column="1"
+                  Classes="outline"
+                  Content="Close Sedhep"
+                  Command="{Binding CloseCommand}"
+                  Margin="4,0,0,0"
+                  HorizontalAlignment="Stretch" />
+        </Grid>
       </StackPanel>
     </Border>
   </Grid>
