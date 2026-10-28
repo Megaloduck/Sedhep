@@ -80,7 +80,7 @@ public partial class App : Application
         switch (ApplicationLifetime)
         {
             case IClassicDesktopStyleApplicationLifetime desktop:
-                desktop.MainWindow = new MainWindow { DataContext = shell };
+                desktop.MainWindow = CreateMainWindow(shell);
                 desktop.ShutdownRequested += (_, _) => ShutDownServices();
                 break;
             case ISingleViewApplicationLifetime singleViewPlatform:
@@ -106,6 +106,54 @@ public partial class App : Application
         });
 
         logger.LogInformation("Startup complete");
+    }
+
+    /// <summary>
+    /// The cookbook window, opened at the size it was left in. A narrow window is a valid choice
+    /// on a desk, so the minimum stays small: the shell turns back into tabs there.
+    /// </summary>
+    private static Window CreateMainWindow(ShellViewModel shell)
+    {
+        var settings = Services.GetRequiredService<AppSettingsStore>();
+        var window = new MainWindow { DataContext = shell };
+
+        if (settings.Current.WindowWidth is { } width && settings.Current.WindowHeight is { } height)
+        {
+            window.Width = Math.Max(window.MinWidth, width);
+            window.Height = Math.Max(window.MinHeight, height);
+        }
+
+        KeepOnScreen(window);
+
+        window.Closing += (_, _) =>
+        {
+            // A maximised window keeps the size it will return to, not the screen's.
+            if (window.WindowState != WindowState.Normal)
+            {
+                return;
+            }
+
+            var current = settings.Current;
+            current.WindowWidth = window.Bounds.Width;
+            current.WindowHeight = window.Bounds.Height;
+            settings.Save(current);
+        };
+
+        return window;
+    }
+
+    /// <summary>A window sized on a monitor that is no longer here must not open off-screen.</summary>
+    private static void KeepOnScreen(Window window)
+    {
+        var screen = window.Screens.Primary;
+        if (screen is null)
+        {
+            return;
+        }
+
+        var scaling = screen.Scaling > 0 ? screen.Scaling : 1.0;
+        window.Width = Math.Max(window.MinWidth, Math.Min(window.Width, screen.WorkingArea.Width / scaling));
+        window.Height = Math.Max(window.MinHeight, Math.Min(window.Height, screen.WorkingArea.Height / scaling));
     }
 
     private void ShowStartupError(Exception exception)

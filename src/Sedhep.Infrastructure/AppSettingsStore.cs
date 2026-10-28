@@ -24,6 +24,14 @@ public sealed class AppSettings
     /// <summary>1.0 is the default type size; larger values make the whole cookbook easier to read.</summary>
     public double TextScale { get; set; } = 1.0;
 
+    /// <summary>
+    /// Where the cook left the window on a desktop. Null means "use the size the window asks for",
+    /// which is what every phone and older settings file gets.
+    /// </summary>
+    public double? WindowWidth { get; set; }
+
+    public double? WindowHeight { get; set; }
+
     public static string DefaultDeviceName()
     {
         var machine = Environment.MachineName;

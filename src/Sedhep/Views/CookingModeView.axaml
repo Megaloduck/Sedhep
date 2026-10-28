@@ -5,6 +5,7 @@
              xmlns:vm="clr-namespace:Sedhep.ViewModels"
              mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="800"
              x:Class="Sedhep.Views.CookingModeView"
+             Focusable="True"
              x:DataType="vm:CookingModeViewModel">
   <Grid Background="{DynamicResource Page}" RowDefinitions="Auto,Auto,*,Auto,Auto,Auto">
     <!-- Nothing on this screen competes with the step. -->
@@ -53,7 +54,8 @@
       </ScrollViewer>
     </Border>
 
-    <!-- Timer for steps that carry one: the one place in the app that glows Burly Wood. -->
+    <!-- Timer for steps that carry one: the one place in the app that glows Burly Wood.
+         Steps advance with the arrow keys, PageUp/PageDown, Space, and Esc goes back. -->
     <Border Grid.Row="3"
             Classes="flat"
             Background="{DynamicResource HighlightSoft}"
@@ -65,7 +67,7 @@
               Stroke="{DynamicResource HighlightInk}"
               VerticalAlignment="Center" />
         <StackPanel Grid.Column="1" Margin="10,0" VerticalAlignment="Center">
-          <TextBlock Classes="label" Text="STEP TIMER" Foreground="{DynamicResource HighlightInk}" />
+          <TextBlock Classes="label" Text="{Binding TimerTitle}" Foreground="{DynamicResource HighlightInk}" />
           <TextBlock Classes="h3" Text="{Binding TimerLabel, TargetNullValue='Ready'}" />
         </StackPanel>
         <Button Grid.Column="2"

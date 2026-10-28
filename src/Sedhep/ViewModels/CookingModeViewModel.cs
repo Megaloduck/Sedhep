@@ -82,6 +82,16 @@ public partial class CookingModeViewModel : ViewModelBase
 
     public bool HasTimer => CurrentStep?.Minutes is > 0;
 
+    /// <summary>A timer should say what it is timing, and for how long, without being remembered.</summary>
+    public string TimerTitle
+    {
+        get
+        {
+            var minutes = CurrentStep?.Minutes;
+            return minutes is > 0 ? $"TIMER · {minutes} MIN" : "TIMER";
+        }
+    }
+
     public int IngredientCount => Ingredients.Count;
 
     public string IngredientCountLabel => Ingredients.Count == 1
@@ -183,5 +193,6 @@ public partial class CookingModeViewModel : ViewModelBase
         OnPropertyChanged(nameof(ProgressPercent));
         OnPropertyChanged(nameof(NextLabel));
         OnPropertyChanged(nameof(HasTimer));
+        OnPropertyChanged(nameof(TimerTitle));
     }
 }

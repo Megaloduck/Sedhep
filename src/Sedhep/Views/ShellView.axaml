@@ -3,12 +3,72 @@
              xmlns:vm="clr-namespace:Sedhep.ViewModels"
              x:Class="Sedhep.Views.ShellView"
              x:DataType="vm:ShellViewModel">
-  <Grid RowDefinitions="*,Auto" Background="{DynamicResource Page}">
-    <!-- The page itself. Recipe, editor and cooking screens push over the tabs. -->
-    <ContentControl Grid.Row="0" Content="{Binding Current}" />
+  <!--
+    One shell, two chromes. A wide window keeps its destinations in a rail down the left; a narrow
+    one keeps them under the thumb. The ViewModel decides which, from the width the view reports.
+  -->
+  <Grid RowDefinitions="*,Auto" ColumnDefinitions="Auto,*" Background="{DynamicResource Page}">
+    <!-- The rail: where you can go, always in the same place. -->
+    <Border Grid.Row="0"
+            Grid.Column="0"
+            Width="208"
+            IsVisible="{Binding IsRailVisible}"
+            Background="{DynamicResource Surface}"
+            BorderBrush="{DynamicResource Border}"
+            BorderThickness="0,0,1,0"
+            Padding="12,16,12,14">
+      <Grid RowDefinitions="Auto,*,Auto">
+        <StackPanel Orientation="Horizontal" Spacing="7" Margin="8,0,0,0">
+          <Path Classes="icon sm accent" Data="{StaticResource IconPot}" VerticalAlignment="Center" />
+          <TextBlock Classes="eyebrow" Text="SEDHEP" VerticalAlignment="Center" />
+        </StackPanel>
+
+        <StackPanel Grid.Row="1" Spacing="4" Margin="0,20,0,0">
+          <Button Classes="rail"
+                  Classes.active="{Binding IsCookbookTab}"
+                  Command="{Binding ShowCookbookTabCommand}"
+                  ToolTip.Tip="Everything you have cooked">
+            <StackPanel Orientation="Horizontal" Spacing="11">
+              <Path Classes="icon" Data="{StaticResource IconBook}" VerticalAlignment="Center" />
+              <TextBlock Text="Cookbook" VerticalAlignment="Center" />
+            </StackPanel>
+          </Button>
+
+          <Button Classes="rail"
+                  Classes.active="{Binding IsFavoritesTab}"
+                  Command="{Binding ShowFavoritesTabCommand}"
+                  ToolTip.Tip="Only the recipes you starred">
+            <StackPanel Orientation="Horizontal" Spacing="11">
+              <Path Classes="icon" Data="{StaticResource IconHeart}" VerticalAlignment="Center" />
+              <TextBlock Text="Favorites" VerticalAlignment="Center" />
+            </StackPanel>
+          </Button>
+        </StackPanel>
+
+        <!-- Preferences live apart from the cookbook, at the foot of the rail. -->
+        <Button Grid.Row="2"
+                Classes="rail"
+                Classes.active="{Binding IsSettingsTab}"
+                Command="{Binding ShowSettingsTabCommand}"
+                ToolTip.Tip="Appearance, cookbook folder and sharing">
+          <StackPanel Orientation="Horizontal" Spacing="11">
+            <Path Classes="icon" Data="{StaticResource IconSliders}" VerticalAlignment="Center" />
+            <TextBlock Text="Settings" VerticalAlignment="Center" />
+          </StackPanel>
+        </Button>
+      </Grid>
+    </Border>
+
+    <!-- The page itself. Recipe, editor and cooking screens push over the top-level pages. -->
+    <ContentControl Grid.Row="0"
+                    Grid.Column="1"
+                    Content="{Binding Current}"
+                    HorizontalAlignment="Stretch"
+                    MaxWidth="980" />
 
     <!-- Status of the last transfer, kept out of the way until there is something to say. -->
     <Border Grid.Row="0"
+            Grid.Column="1"
             Classes="toast"
             Margin="16,0,16,12"
             VerticalAlignment="Bottom"
@@ -16,8 +76,10 @@
       <TextBlock Classes="muted" Text="{Binding OfferStatus}" />
     </Border>
 
-    <!-- Bottom navigation: the three places the plan asks for. -->
+    <!-- Bottom navigation: the three places the plan asks for, on a phone-sized window. -->
     <Border Grid.Row="1"
+            Grid.Column="0"
+            Grid.ColumnSpan="2"
             IsVisible="{Binding IsTabBarVisible}"
             Background="{DynamicResource Surface}"
             BorderBrush="{DynamicResource Border}"
@@ -60,7 +122,10 @@
     </Border>
 
     <!-- An arriving recipe is a deliberate interruption: it is never accepted automatically. -->
-    <Border Grid.Row="0" Grid.RowSpan="2"
+    <Border Grid.Row="0"
+            Grid.RowSpan="2"
+            Grid.Column="0"
+            Grid.ColumnSpan="2"
             IsVisible="{Binding HasIncomingOffer}"
             Background="{DynamicResource Scrim}">
       <Border Classes="card" Margin="24" Padding="20" VerticalAlignment="Center">

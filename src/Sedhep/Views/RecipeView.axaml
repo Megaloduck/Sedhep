@@ -77,88 +77,103 @@
             </Border>
           </WrapPanel>
 
-          <TextBlock Classes="body" Text="{Binding Recipe.Description}" IsVisible="{Binding HasDescription}" />
+          <!-- Prose keeps a readable measure; the cards around it may use the whole column. -->
+          <TextBlock Classes="body"
+                     MaxWidth="620"
+                     HorizontalAlignment="Left"
+                     Text="{Binding Recipe.Description}"
+                     IsVisible="{Binding HasDescription}" />
         </StackPanel>
 
-        <!-- Ingredients read as a column of numbers first, names second. -->
-        <Border Classes="card">
-          <StackPanel Spacing="12">
-            <Grid ColumnDefinitions="*,Auto">
-              <TextBlock Classes="label" Text="INGREDIENTS" VerticalAlignment="Center" />
-              <TextBlock Grid.Column="1"
-                         Classes="meta"
-                         Text="{Binding Recipe.Servings, StringFormat='{}{0} servings'}" />
-            </Grid>
+        <!-- Ingredients and method: stacked on a phone, side by side on a desk. -->
+        <Grid x:Name="MethodGrid"
+              ColumnDefinitions="*"
+              RowDefinitions="Auto,Auto">
+          <!-- Ingredients read as a column of numbers first, names second. -->
+          <Border x:Name="IngredientsCard" Classes="card">
+            <StackPanel Spacing="12">
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Classes="label" Text="INGREDIENTS" VerticalAlignment="Center" />
+                <TextBlock Grid.Column="1"
+                           Classes="meta"
+                           Text="{Binding Recipe.Servings, StringFormat='{}{0} servings'}" />
+              </Grid>
 
-            <TextBlock Classes="muted" Text="No ingredients listed yet." IsVisible="{Binding !HasIngredients}" />
+              <TextBlock Classes="muted" Text="No ingredients listed yet." IsVisible="{Binding !HasIngredients}" />
 
-            <ItemsControl ItemsSource="{Binding Recipe.Ingredients}">
-              <ItemsControl.ItemTemplate>
-                <DataTemplate x:DataType="domain:Ingredient">
-                  <Grid ColumnDefinitions="Auto,*" Margin="0,0,0,9">
-                    <TextBlock Classes="body numeric"
-                               MinWidth="78"
-                               Margin="0,0,12,0"
-                               Foreground="{DynamicResource TextPrimary}"
-                               VerticalAlignment="Top">
-                      <TextBlock.Text>
-                        <MultiBinding StringFormat="{}{0} {1}">
-                          <Binding Path="Quantity" />
-                          <Binding Path="Unit" />
-                        </MultiBinding>
-                      </TextBlock.Text>
-                    </TextBlock>
-                    <TextBlock Grid.Column="1"
-                               Classes="body"
-                               Text="{Binding Name}"
-                               VerticalAlignment="Top" />
-                  </Grid>
-                </DataTemplate>
-              </ItemsControl.ItemTemplate>
-            </ItemsControl>
-          </StackPanel>
-        </Border>
+              <ItemsControl ItemsSource="{Binding Recipe.Ingredients}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="domain:Ingredient">
+                    <Grid ColumnDefinitions="Auto,*" Margin="0,0,0,9">
+                      <TextBlock Classes="body numeric"
+                                 MinWidth="78"
+                                 Margin="0,0,12,0"
+                                 Foreground="{DynamicResource TextPrimary}"
+                                 VerticalAlignment="Top">
+                        <TextBlock.Text>
+                          <MultiBinding StringFormat="{}{0} {1}">
+                            <Binding Path="Quantity" />
+                            <Binding Path="Unit" />
+                          </MultiBinding>
+                        </TextBlock.Text>
+                      </TextBlock>
+                      <TextBlock Grid.Column="1"
+                                 Classes="body"
+                                 Text="{Binding Name}"
+                                 VerticalAlignment="Top" />
+                    </Grid>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
+          </Border>
 
-        <!-- Directions, one numbered circle per step. -->
-        <Border Classes="card">
-          <StackPanel Spacing="12">
-            <Grid ColumnDefinitions="*,Auto">
-              <TextBlock Classes="label" Text="DIRECTIONS" VerticalAlignment="Center" />
-              <TextBlock Grid.Column="1" Classes="meta" Text="{Binding StepCountLabel}" />
-            </Grid>
+          <!-- Directions, one numbered circle per step. -->
+          <Border x:Name="DirectionsCard" Grid.Row="1" Classes="card">
+            <StackPanel Spacing="12">
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Classes="label" Text="DIRECTIONS" VerticalAlignment="Center" />
+                <TextBlock Grid.Column="1" Classes="meta" Text="{Binding StepCountLabel}" />
+              </Grid>
 
-            <TextBlock Classes="muted" Text="No steps written yet." IsVisible="{Binding !HasSteps}" />
+              <TextBlock Classes="muted" Text="No steps written yet." IsVisible="{Binding !HasSteps}" />
 
-            <ItemsControl ItemsSource="{Binding Recipe.Steps}">
-              <ItemsControl.ItemTemplate>
-                <DataTemplate x:DataType="domain:RecipeStep">
-                  <Grid ColumnDefinitions="Auto,*" Margin="0,0,0,12">
-                    <Border Width="28" Height="28" CornerRadius="14"
-                            VerticalAlignment="Top"
-                            Background="{DynamicResource AccentSoft}">
-                      <TextBlock Text="{Binding SortOrder}"
-                                 FontSize="{DynamicResource FontMeta}"
-                                 FontWeight="SemiBold"
-                                 Foreground="{DynamicResource AccentInk}"
-                                 HorizontalAlignment="Center"
-                                 VerticalAlignment="Center" />
-                    </Border>
-                    <TextBlock Grid.Column="1"
-                               Classes="body"
-                               Text="{Binding Instruction}"
-                               Margin="12,3,0,0" />
-                  </Grid>
-                </DataTemplate>
-              </ItemsControl.ItemTemplate>
-            </ItemsControl>
-          </StackPanel>
-        </Border>
+              <ItemsControl ItemsSource="{Binding Recipe.Steps}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="domain:RecipeStep">
+                    <Grid ColumnDefinitions="Auto,*" Margin="0,0,0,12">
+                      <Border Width="28" Height="28" CornerRadius="14"
+                              VerticalAlignment="Top"
+                              Background="{DynamicResource AccentSoft}">
+                        <TextBlock Text="{Binding SortOrder}"
+                                   FontSize="{DynamicResource FontMeta}"
+                                   FontWeight="SemiBold"
+                                   Foreground="{DynamicResource AccentInk}"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center" />
+                      </Border>
+                      <TextBlock Grid.Column="1"
+                                 Classes="body"
+                                 MaxWidth="620"
+                                 HorizontalAlignment="Left"
+                                 Text="{Binding Instruction}"
+                                 Margin="12,3,0,0" />
+                    </Grid>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
+          </Border>
+        </Grid>
 
         <!-- Notes are the "remember this next time" part of a family recipe. -->
         <Border Classes="card" IsVisible="{Binding HasNotes}">
           <StackPanel Spacing="10">
             <TextBlock Classes="label" Text="NOTES" />
-            <TextBlock Classes="body" Text="{Binding Recipe.Notes}" />
+            <TextBlock Classes="body"
+                       MaxWidth="620"
+                       HorizontalAlignment="Left"
+                       Text="{Binding Recipe.Notes}" />
           </StackPanel>
         </Border>
 

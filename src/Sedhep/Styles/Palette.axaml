@@ -30,9 +30,10 @@
       <!-- Dark Slate Gray, a shade deeper so a sandy button label still clears 5:1. -->
       <SolidColorBrush x:Key="OnAccent" Color="#1F433C" />
 
+      <!-- The quiet greys still clear 4.5:1 on paper; the labels that use them are only 11.5px. -->
       <SolidColorBrush x:Key="TextPrimary" Color="#241C15" />
       <SolidColorBrush x:Key="TextSecondary" Color="#6F6152" />
-      <SolidColorBrush x:Key="TextTertiary" Color="#8B7B67" />
+      <SolidColorBrush x:Key="TextTertiary" Color="#7A6A57" />
 
       <!-- Light Sea Green -->
       <SolidColorBrush x:Key="Favorite" Color="#299C8E" />
