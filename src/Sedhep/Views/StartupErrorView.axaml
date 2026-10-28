@@ -14,7 +14,7 @@
           <Path Classes="icon lg"
                 Data="{StaticResource IconInfo}"
                 Width="30" Height="30"
-                Stroke="{DynamicResource Danger}"
+                Stroke="{DynamicResource DangerInk}"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center" />
         </Border>

@@ -55,7 +55,7 @@
                 <TextBlock Classes="meta" Text="{Binding TargetSummary}" IsVisible="{Binding HasTargetSummary}" />
                 <TextBlock Classes="meta"
                            Text="{Binding TargetProblem}"
-                           Foreground="{DynamicResource Danger}"
+                           Foreground="{DynamicResource DangerInk}"
                            IsVisible="{Binding HasTargetProblem}" />
               </StackPanel>
             </Border>
@@ -88,7 +88,7 @@
         </Border>
 
         <TextBlock Classes="muted"
-                   Foreground="{DynamicResource Danger}"
+                   Foreground="{DynamicResource DangerInk}"
                    Text="{Binding Error}"
                    IsVisible="{Binding HasError}" />
       </StackPanel>

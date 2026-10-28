@@ -149,7 +149,7 @@
           <TextBlock Classes="label" Text="ABOUT" />
           <StackPanel Orientation="Horizontal" Spacing="10">
             <Border Width="40" Height="40" CornerRadius="14" Background="{DynamicResource AccentSoft}">
-              <Path Classes="icon" Data="{StaticResource IconPot}" Stroke="{DynamicResource Accent}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+              <Path Classes="icon" Data="{StaticResource IconPot}" Stroke="{DynamicResource AccentInk}" HorizontalAlignment="Center" VerticalAlignment="Center" />
             </Border>
             <StackPanel VerticalAlignment="Center">
               <TextBlock Classes="h3" Text="Sedhep" />

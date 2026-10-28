@@ -48,13 +48,13 @@
             <Grid ColumnDefinitions="*,Auto">
               <TextBlock Classes="label" Text="NEARBY PHONES" VerticalAlignment="Center" />
               <Button Grid.Column="1" Classes="bare" Command="{Binding RefreshNearbyCommand}">
-                <TextBlock Classes="meta" Text="Look again" Foreground="{DynamicResource Accent}" />
+                <TextBlock Classes="meta" Text="Look again" Foreground="{DynamicResource AccentInk}" />
               </Button>
             </Grid>
 
             <StackPanel Spacing="6" IsVisible="{Binding !HasDevices}">
               <Grid ColumnDefinitions="Auto,*">
-                <Path Classes="icon" Data="{StaticResource IconNearby}" Stroke="{DynamicResource Accent}" />
+                <Path Classes="icon" Data="{StaticResource IconNearby}" Stroke="{DynamicResource AccentInk}" />
                 <TextBlock Grid.Column="1" Margin="10,0,0,0" Classes="body" Text="Looking for phones on this Wi-Fi…" IsVisible="{Binding IsLooking}" VerticalAlignment="Center" />
                 <TextBlock Grid.Column="1" Margin="10,0,0,0" Classes="body" Text="No phones found yet." IsVisible="{Binding !IsLooking}" VerticalAlignment="Center" />
               </Grid>
@@ -144,7 +144,7 @@
       <Border Classes="card" Margin="24" Padding="20" VerticalAlignment="Center">
         <StackPanel Spacing="14">
           <Border Classes="pill accent" HorizontalAlignment="Left">
-            <TextBlock Classes="label" Text="SAME RECIPE, TWO VERSIONS" Foreground="{DynamicResource Accent}" />
+            <TextBlock Classes="label" Text="SAME RECIPE, TWO VERSIONS" Foreground="{DynamicResource AccentInk}" />
           </Border>
 
           <StackPanel Spacing="4">

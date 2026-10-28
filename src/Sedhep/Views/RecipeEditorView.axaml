@@ -62,7 +62,7 @@
                             Command="{Binding $parent[ItemsControl].((vm:RecipeEditorViewModel)DataContext).RemovePhotoCommand}"
                             CommandParameter="{Binding}"
                             ToolTip.Tip="Remove photo">
-                      <Path Classes="icon sm" Data="{StaticResource IconClose}" Stroke="{DynamicResource Danger}" />
+                      <Path Classes="icon sm" Data="{StaticResource IconClose}" Stroke="{DynamicResource DangerInk}" />
                     </Button>
                   </Panel>
                 </DataTemplate>
@@ -168,7 +168,7 @@
                                   Command="{Binding $parent[ItemsControl].((vm:RecipeEditorViewModel)DataContext).RemoveIngredientCommand}"
                                   CommandParameter="{Binding}"
                                   ToolTip.Tip="Remove">
-                            <Path Classes="icon sm" Data="{StaticResource IconTrash}" Stroke="{DynamicResource Danger}" />
+                            <Path Classes="icon sm" Data="{StaticResource IconTrash}" Stroke="{DynamicResource DangerInk}" />
                           </Button>
                         </StackPanel>
                       </Grid>
@@ -207,7 +207,7 @@
                           <TextBlock Text="{Binding Number}"
                                      FontSize="{DynamicResource FontMeta}"
                                      FontWeight="SemiBold"
-                                     Foreground="{DynamicResource Accent}"
+                                     Foreground="{DynamicResource AccentInk}"
                                      HorizontalAlignment="Center"
                                      VerticalAlignment="Center" />
                         </Border>
@@ -244,7 +244,7 @@
                                 Command="{Binding $parent[ItemsControl].((vm:RecipeEditorViewModel)DataContext).RemoveStepCommand}"
                                 CommandParameter="{Binding}"
                                 ToolTip.Tip="Remove">
-                          <Path Classes="icon sm" Data="{StaticResource IconTrash}" Stroke="{DynamicResource Danger}" />
+                          <Path Classes="icon sm" Data="{StaticResource IconTrash}" Stroke="{DynamicResource DangerInk}" />
                         </Button>
                       </Grid>
                     </StackPanel>
@@ -337,7 +337,7 @@
             Background="{DynamicResource Scrim}">
       <Border Classes="card" Margin="24" Padding="20" VerticalAlignment="Center">
         <StackPanel Spacing="14">
-          <Path Classes="icon lg" Data="{StaticResource IconInfo}" Stroke="{DynamicResource Accent}" />
+          <Path Classes="icon lg" Data="{StaticResource IconInfo}" Stroke="{DynamicResource AccentInk}" />
           <TextBlock Classes="h2" Text="Leave without saving?" />
           <TextBlock Classes="muted" Text="The changes you made to this recipe have not been saved." />
           <StackPanel Spacing="8">

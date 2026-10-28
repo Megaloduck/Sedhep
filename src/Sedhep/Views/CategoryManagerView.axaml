@@ -36,7 +36,7 @@
                             Command="{Binding $parent[ItemsControl].((vm:CategoryManagerViewModel)DataContext).DeleteCommand}"
                             CommandParameter="{Binding}"
                             ToolTip.Tip="Delete category">
-                      <Path Classes="icon sm" Data="{StaticResource IconTrash}" Stroke="{DynamicResource Danger}" />
+                      <Path Classes="icon sm" Data="{StaticResource IconTrash}" Stroke="{DynamicResource DangerInk}" />
                     </Button>
                   </Grid>
                   <TextBlock Classes="label" Text="{Binding UsageLabel}" />
@@ -65,7 +65,7 @@
 
         <Border Classes="card" IsVisible="{Binding IsConfirmingDelete}">
           <StackPanel Spacing="12">
-            <Path Classes="icon lg" Data="{StaticResource IconTrash}" Stroke="{DynamicResource Danger}" />
+            <Path Classes="icon lg" Data="{StaticResource IconTrash}" Stroke="{DynamicResource DangerInk}" />
             <TextBlock Classes="h3" Text="{Binding PendingDeleteMessage}" />
             <TextBlock Classes="muted" Text="The recipes stay in your cookbook." />
             <StackPanel Orientation="Horizontal" Spacing="10">

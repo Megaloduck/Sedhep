@@ -53,12 +53,19 @@
       </ScrollViewer>
     </Border>
 
-    <!-- Timer for steps that carry one. -->
-    <Border Grid.Row="3" Classes="flat" Margin="16,10,16,0" IsVisible="{Binding HasTimer}">
+    <!-- Timer for steps that carry one: the one place in the app that glows Burly Wood. -->
+    <Border Grid.Row="3"
+            Classes="flat"
+            Background="{DynamicResource HighlightSoft}"
+            Margin="16,10,16,0"
+            IsVisible="{Binding HasTimer}">
       <Grid ColumnDefinitions="Auto,*,Auto">
-        <Path Classes="icon" Data="{StaticResource IconTimer}" VerticalAlignment="Center" />
+        <Path Classes="icon"
+              Data="{StaticResource IconTimer}"
+              Stroke="{DynamicResource HighlightInk}"
+              VerticalAlignment="Center" />
         <StackPanel Grid.Column="1" Margin="10,0" VerticalAlignment="Center">
-          <TextBlock Classes="label" Text="STEP TIMER" />
+          <TextBlock Classes="label" Text="STEP TIMER" Foreground="{DynamicResource HighlightInk}" />
           <TextBlock Classes="h3" Text="{Binding TimerLabel, TargetNullValue='Ready'}" />
         </StackPanel>
         <Button Grid.Column="2"

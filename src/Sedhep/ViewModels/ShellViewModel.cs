@@ -16,6 +16,12 @@ namespace Sedhep.ViewModels;
 /// </summary>
 public partial class ShellViewModel : ViewModelBase, ICookbookNavigator
 {
+    /// <summary>
+    /// Past this width the shell stops acting like a phone: the tabs move to a rail down the left
+    /// and the content sits in one readable column.
+    /// </summary>
+    public const double WideBreakpoint = 760;
+
     private readonly Func<MainViewModel> _cookbookFactory;
     private readonly Func<Recipe, RecipeViewModel> _recipeFactory;
     private readonly Func<Recipe?, RecipeEditorViewModel> _editorFactory;
@@ -36,6 +42,9 @@ public partial class ShellViewModel : ViewModelBase, ICookbookNavigator
 
     [ObservableProperty]
     private string? _offerStatus;
+
+    [ObservableProperty]
+    private bool _isWideLayout;
 
     public ShellViewModel(
         Func<MainViewModel> cookbookFactory,
@@ -79,8 +88,14 @@ public partial class ShellViewModel : ViewModelBase, ICookbookNavigator
 
     public bool HasIncomingOffer => IncomingOffer is not null;
 
+    /// <summary>
+    /// A wide window keeps its destinations in a rail that never moves: finding your way back to
+    /// the cookbook is chrome, not a step in the recipe. Cooking mode stays immersive.
+    /// </summary>
+    public bool IsRailVisible => IsWideLayout && Current is not CookingModeViewModel;
+
     /// <summary>The tab bar belongs to the three top-level pages, not to a recipe being read.</summary>
-    public bool IsTabBarVisible => Current is MainViewModel or SettingsViewModel;
+    public bool IsTabBarVisible => !IsWideLayout && Current is MainViewModel or SettingsViewModel;
 
     public bool IsCookbookTab => Current is MainViewModel { IsFavoritesActive: false };
 
@@ -153,10 +168,18 @@ public partial class ShellViewModel : ViewModelBase, ICookbookNavigator
     private void Show(ViewModelBase page)
     {
         Current = page;
+        OnPropertyChanged(nameof(IsRailVisible));
         OnPropertyChanged(nameof(IsTabBarVisible));
         OnPropertyChanged(nameof(IsCookbookTab));
         OnPropertyChanged(nameof(IsFavoritesTab));
         OnPropertyChanged(nameof(IsSettingsTab));
+    }
+
+    /// <summary>Resizing across the breakpoint swaps one navigation for the other.</summary>
+    partial void OnIsWideLayoutChanged(bool value)
+    {
+        OnPropertyChanged(nameof(IsRailVisible));
+        OnPropertyChanged(nameof(IsTabBarVisible));
     }
 
     private void OnCookbookPropertyChanged(object? sender, PropertyChangedEventArgs e)

@@ -25,7 +25,7 @@
         <Border Classes="cover" Height="200">
           <Panel>
             <Image Source="{Binding CoverImage}" Stretch="UniformToFill" IsVisible="{Binding HasCover}" />
-            <Border Background="{DynamicResource SurfaceMuted}" IsVisible="{Binding !HasCover}">
+            <Border Background="{DynamicResource SurfaceSunken}" IsVisible="{Binding !HasCover}">
               <Grid>
                 <Path Classes="icon"
                       Data="{StaticResource IconPot}"
@@ -38,7 +38,7 @@
                 <TextBlock Text="{Binding Initial}"
                            FontSize="72"
                            FontWeight="Bold"
-                           Foreground="{DynamicResource Accent}"
+                           Foreground="{DynamicResource AccentInk}"
                            Opacity="0.9"
                            HorizontalAlignment="Center"
                            VerticalAlignment="Center" />
@@ -69,10 +69,10 @@
                 <TextBlock Classes="meta" Text="{Binding ServingsLabel}" />
               </StackPanel>
             </Border>
-            <Border Classes="pill accent" Margin="0,0,6,6" IsVisible="{Binding IsFavorite}">
+            <Border Classes="pill favorite" Margin="0,0,6,6" IsVisible="{Binding IsFavorite}">
               <StackPanel Orientation="Horizontal" Spacing="5">
-                <Path Classes="icon sm" Data="{StaticResource IconStar}" Fill="{DynamicResource Favorite}" Stroke="{DynamicResource Favorite}" />
-                <TextBlock Classes="meta" Text="Favorite" Foreground="{DynamicResource Favorite}" />
+                <Path Classes="icon sm" Data="{StaticResource IconStar}" Fill="{DynamicResource Favorite}" Stroke="{DynamicResource FavoriteInk}" />
+                <TextBlock Classes="meta" Text="Favorite" Foreground="{DynamicResource FavoriteInk}" />
               </StackPanel>
             </Border>
           </WrapPanel>
@@ -139,7 +139,7 @@
                       <TextBlock Text="{Binding SortOrder}"
                                  FontSize="{DynamicResource FontMeta}"
                                  FontWeight="SemiBold"
-                                 Foreground="{DynamicResource Accent}"
+                                 Foreground="{DynamicResource AccentInk}"
                                  HorizontalAlignment="Center"
                                  VerticalAlignment="Center" />
                     </Border>
@@ -229,8 +229,8 @@
 
           <Button Grid.Column="3" Classes="bare" Command="{Binding DeleteCommand}">
             <StackPanel Spacing="4" HorizontalAlignment="Center">
-              <Path Classes="icon" Data="{StaticResource IconTrash}" Stroke="{DynamicResource Danger}" HorizontalAlignment="Center" />
-              <TextBlock Classes="meta" Text="Delete" HorizontalAlignment="Center" Foreground="{DynamicResource Danger}" />
+              <Path Classes="icon" Data="{StaticResource IconTrash}" Stroke="{DynamicResource DangerInk}" HorizontalAlignment="Center" />
+              <TextBlock Classes="meta" Text="Delete" HorizontalAlignment="Center" Foreground="{DynamicResource DangerInk}" />
             </StackPanel>
           </Button>
         </Grid>
@@ -243,7 +243,7 @@
             Background="{DynamicResource Scrim}">
       <Border Classes="card" Margin="24" Padding="20" VerticalAlignment="Center">
         <StackPanel Spacing="14">
-          <Path Classes="icon lg" Data="{StaticResource IconTrash}" Stroke="{DynamicResource Danger}" />
+          <Path Classes="icon lg" Data="{StaticResource IconTrash}" Stroke="{DynamicResource DangerInk}" />
           <TextBlock Classes="h2" Text="Delete this recipe?" />
           <TextBlock Classes="muted" Text="It disappears from this device for good. This cannot be undone." />
           <StackPanel Orientation="Horizontal" Spacing="10">

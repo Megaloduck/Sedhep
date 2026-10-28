@@ -4,7 +4,7 @@
         x:Class="Sedhep.Views.MainWindow"
         Icon="/Assets/app-icon.ico"
         Title="Sedhep"
-        Width="432" Height="860"
+        Width="432" Height="760"
         MinWidth="380" MinHeight="560"
         Background="{DynamicResource Page}"
         WindowStartupLocation="CenterScreen">

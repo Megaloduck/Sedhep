@@ -99,7 +99,7 @@
                 Margin="34,10,34,30"
                 MaxWidth="340">
       <Border Width="88" Height="88" CornerRadius="44" Background="{DynamicResource SurfaceMuted}" HorizontalAlignment="Center">
-        <Path Classes="icon" Data="{StaticResource IconPot}" Width="38" Height="38" Stroke="{DynamicResource Accent}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+        <Path Classes="icon" Data="{StaticResource IconPot}" Width="38" Height="38" Stroke="{DynamicResource AccentInk}" HorizontalAlignment="Center" VerticalAlignment="Center" />
       </Border>
       <TextBlock Classes="h2" Text="{Binding EmptyTitle}" TextAlignment="Center" />
       <TextBlock Classes="muted" Text="{Binding EmptyMessage}" TextAlignment="Center" />
@@ -157,7 +157,7 @@
                       <TextBlock Text="{Binding Initial}"
                                  FontSize="27"
                                  FontWeight="Bold"
-                                 Foreground="{DynamicResource Accent}"
+                                 Foreground="{DynamicResource AccentInk}"
                                  HorizontalAlignment="Center"
                                  VerticalAlignment="Center" />
                     </Border>

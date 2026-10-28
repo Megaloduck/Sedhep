@@ -68,7 +68,7 @@
           <Border Classes="pill accent" HorizontalAlignment="Left">
             <StackPanel Orientation="Horizontal" Spacing="6">
               <Path Classes="icon sm accent" Data="{StaticResource IconNearby}" />
-              <TextBlock Classes="label" Text="RECIPE ARRIVING" Foreground="{DynamicResource Accent}" />
+              <TextBlock Classes="label" Text="RECIPE ARRIVING" Foreground="{DynamicResource AccentInk}" />
             </StackPanel>
           </Border>
 
