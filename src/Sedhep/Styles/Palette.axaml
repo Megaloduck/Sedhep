@@ -1,98 +1,97 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <!--
-    Sedhep's palette is warm and paper-like: an heirloom recipe notebook rather than a social feed.
-    Every colour comes from five brand hues, so the cookbook stays readable in a dim kitchen.
+    Sedhep borrows the inspiration's Mediterranean palette: blue-green ink, teal controls, and
+    restrained golden warmth. Recipes stay the focus on quiet paper-like surfaces in either theme.
 
-      Sandy Brown      #F3A361   the accent: the pot, the primary action, "here"
-      Light Sea Green  #299C8E   kept and working: favourites, success
-      Tomato           #E77051   destructive and wrong
-      Dark Slate Gray  #265349   the ink on top of the accent, and the whole night theme
-      Burly Wood       #E8C369   warmth: progress and the step timer
+      Blue-green       #264653   deep ink and the night palette
+      Teal             #2A9D8F   primary accent, selection and controls
+      Golden yellow    #E9C46A   timer and measurement emphasis
+      Warm orange      #F4A261   secondary warmth
+      Coral            #E76F51   destructive actions
 
-    The brand hues are mid-tones, so they carry text only through their darker "Ink" shades
-    (and the lighter ones in the dark theme). Fills use the exact swatch.
+    Interactive text uses contrast-safe ink shades; full-strength hues are reserved for fills.
   -->
   <ResourceDictionary.ThemeDictionaries>
     <ResourceDictionary x:Key="Light">
-      <SolidColorBrush x:Key="Page" Color="#FBF6ED" />
-      <SolidColorBrush x:Key="Surface" Color="#FFFFFF" />
-      <SolidColorBrush x:Key="SurfaceMuted" Color="#F4EADB" />
-      <SolidColorBrush x:Key="SurfaceSunken" Color="#EDDFCB" />
-      <SolidColorBrush x:Key="Border" Color="#E7D8C3" />
-      <SolidColorBrush x:Key="BorderStrong" Color="#D6C3A7" />
+      <SolidColorBrush x:Key="Page" Color="#FAF6F0" />
+      <SolidColorBrush x:Key="Surface" Color="#FFFDF9" />
+      <SolidColorBrush x:Key="SurfaceMuted" Color="#EFE8DE" />
+      <SolidColorBrush x:Key="SurfaceSunken" Color="#E7D8C7" />
+      <SolidColorBrush x:Key="Border" Color="#E2D5C5" />
+      <SolidColorBrush x:Key="BorderStrong" Color="#C8B6A5" />
 
       <!-- Sandy Brown: the swatch for fills, a burnt shade for anything that has to be read. -->
-      <SolidColorBrush x:Key="Accent" Color="#F3A361" />
-      <SolidColorBrush x:Key="AccentHover" Color="#DE8A44" />
-      <SolidColorBrush x:Key="AccentInk" Color="#B4611F" />
-      <SolidColorBrush x:Key="AccentSoft" Color="#FBE7D2" />
+      <SolidColorBrush x:Key="Accent" Color="#2A9D8F" />
+      <SolidColorBrush x:Key="AccentHover" Color="#238A7E" />
+      <SolidColorBrush x:Key="AccentInk" Color="#17665D" />
+      <SolidColorBrush x:Key="AccentSoft" Color="#DCEFEA" />
       <!-- Dark Slate Gray, a shade deeper so a sandy button label still clears 5:1. -->
-      <SolidColorBrush x:Key="OnAccent" Color="#1F433C" />
+      <SolidColorBrush x:Key="OnAccent" Color="#092D2E" />
 
       <!-- The quiet greys still clear 4.5:1 on paper; the labels that use them are only 11.5px. -->
-      <SolidColorBrush x:Key="TextPrimary" Color="#241C15" />
-      <SolidColorBrush x:Key="TextSecondary" Color="#6F6152" />
-      <SolidColorBrush x:Key="TextTertiary" Color="#7A6A57" />
+      <SolidColorBrush x:Key="TextPrimary" Color="#203139" />
+      <SolidColorBrush x:Key="TextSecondary" Color="#59676B" />
+      <SolidColorBrush x:Key="TextTertiary" Color="#59676B" />
 
       <!-- Light Sea Green -->
-      <SolidColorBrush x:Key="Favorite" Color="#299C8E" />
-      <SolidColorBrush x:Key="FavoriteInk" Color="#1B7C70" />
-      <SolidColorBrush x:Key="FavoriteSoft" Color="#DFF1ED" />
-      <SolidColorBrush x:Key="Success" Color="#299C8E" />
-      <SolidColorBrush x:Key="SuccessInk" Color="#1B7C70" />
-      <SolidColorBrush x:Key="SuccessSoft" Color="#DFF1ED" />
+      <SolidColorBrush x:Key="Favorite" Color="#2A9D8F" />
+      <SolidColorBrush x:Key="FavoriteInk" Color="#17665D" />
+      <SolidColorBrush x:Key="FavoriteSoft" Color="#DCEFEA" />
+      <SolidColorBrush x:Key="Success" Color="#2A9D8F" />
+      <SolidColorBrush x:Key="SuccessInk" Color="#17665D" />
+      <SolidColorBrush x:Key="SuccessSoft" Color="#DCEFEA" />
 
       <!-- Tomato -->
-      <SolidColorBrush x:Key="Danger" Color="#E77051" />
-      <SolidColorBrush x:Key="DangerInk" Color="#B8432A" />
-      <SolidColorBrush x:Key="DangerSoft" Color="#FBE3DC" />
+      <SolidColorBrush x:Key="Danger" Color="#E76F51" />
+      <SolidColorBrush x:Key="DangerInk" Color="#B94C38" />
+      <SolidColorBrush x:Key="DangerSoft" Color="#FBE5DE" />
 
       <!-- Burly Wood -->
-      <SolidColorBrush x:Key="Highlight" Color="#E8C369" />
-      <SolidColorBrush x:Key="HighlightInk" Color="#8A6414" />
-      <SolidColorBrush x:Key="HighlightSoft" Color="#FBF0D3" />
+      <SolidColorBrush x:Key="Highlight" Color="#E9C46A" />
+      <SolidColorBrush x:Key="HighlightInk" Color="#755515" />
+      <SolidColorBrush x:Key="HighlightSoft" Color="#F8EFCF" />
 
-      <SolidColorBrush x:Key="CardShadow" Color="#1F265349" />
-      <SolidColorBrush x:Key="Scrim" Color="#99265349" />
+      <SolidColorBrush x:Key="CardShadow" Color="#1F264653" />
+      <SolidColorBrush x:Key="Scrim" Color="#99264653" />
     </ResourceDictionary>
 
     <ResourceDictionary x:Key="Dark">
       <!-- The night theme is Dark Slate Gray, taken down to candlelight. -->
-      <SolidColorBrush x:Key="Page" Color="#0E1B18" />
-      <SolidColorBrush x:Key="Surface" Color="#16241F" />
-      <SolidColorBrush x:Key="SurfaceMuted" Color="#1C2E28" />
-      <SolidColorBrush x:Key="SurfaceSunken" Color="#233A33" />
-      <SolidColorBrush x:Key="Border" Color="#2A423B" />
-      <SolidColorBrush x:Key="BorderStrong" Color="#37534B" />
+      <SolidColorBrush x:Key="Page" Color="#162E35" />
+      <SolidColorBrush x:Key="Surface" Color="#1D3942" />
+      <SolidColorBrush x:Key="SurfaceMuted" Color="#264653" />
+      <SolidColorBrush x:Key="SurfaceSunken" Color="#304F59" />
+      <SolidColorBrush x:Key="Border" Color="#37535B" />
+      <SolidColorBrush x:Key="BorderStrong" Color="#4B6970" />
 
-      <SolidColorBrush x:Key="Accent" Color="#F3A361" />
-      <SolidColorBrush x:Key="AccentHover" Color="#F9BC90" />
-      <SolidColorBrush x:Key="AccentInk" Color="#F7B383" />
-      <SolidColorBrush x:Key="AccentSoft" Color="#3B2A1A" />
-      <SolidColorBrush x:Key="OnAccent" Color="#14332C" />
+      <SolidColorBrush x:Key="Accent" Color="#2A9D8F" />
+      <SolidColorBrush x:Key="AccentHover" Color="#41B4A3" />
+      <SolidColorBrush x:Key="AccentInk" Color="#76D8C7" />
+      <SolidColorBrush x:Key="AccentSoft" Color="#183D3D" />
+      <SolidColorBrush x:Key="OnAccent" Color="#08282D" />
 
       <SolidColorBrush x:Key="TextPrimary" Color="#F3EBE0" />
       <SolidColorBrush x:Key="TextSecondary" Color="#AAB7B0" />
       <SolidColorBrush x:Key="TextTertiary" Color="#83968E" />
 
-      <SolidColorBrush x:Key="Favorite" Color="#4CBCAC" />
-      <SolidColorBrush x:Key="FavoriteInk" Color="#5EC9BA" />
-      <SolidColorBrush x:Key="FavoriteSoft" Color="#12332D" />
-      <SolidColorBrush x:Key="Success" Color="#4CBCAC" />
-      <SolidColorBrush x:Key="SuccessInk" Color="#5EC9BA" />
-      <SolidColorBrush x:Key="SuccessSoft" Color="#12332D" />
+      <SolidColorBrush x:Key="Favorite" Color="#48BBA8" />
+      <SolidColorBrush x:Key="FavoriteInk" Color="#76D8C7" />
+      <SolidColorBrush x:Key="FavoriteSoft" Color="#183D3D" />
+      <SolidColorBrush x:Key="Success" Color="#48BBA8" />
+      <SolidColorBrush x:Key="SuccessInk" Color="#76D8C7" />
+      <SolidColorBrush x:Key="SuccessSoft" Color="#183D3D" />
 
-      <SolidColorBrush x:Key="Danger" Color="#E77051" />
-      <SolidColorBrush x:Key="DangerInk" Color="#F4947C" />
-      <SolidColorBrush x:Key="DangerSoft" Color="#3B221C" />
+      <SolidColorBrush x:Key="Danger" Color="#E76F51" />
+      <SolidColorBrush x:Key="DangerInk" Color="#F39A82" />
+      <SolidColorBrush x:Key="DangerSoft" Color="#442A27" />
 
-      <SolidColorBrush x:Key="Highlight" Color="#E8C369" />
-      <SolidColorBrush x:Key="HighlightInk" Color="#F0D593" />
-      <SolidColorBrush x:Key="HighlightSoft" Color="#3A301A" />
+      <SolidColorBrush x:Key="Highlight" Color="#E9C46A" />
+      <SolidColorBrush x:Key="HighlightInk" Color="#F1D98E" />
+      <SolidColorBrush x:Key="HighlightSoft" Color="#40391F" />
 
       <SolidColorBrush x:Key="CardShadow" Color="#80101815" />
-      <SolidColorBrush x:Key="Scrim" Color="#B30B1512" />
+      <SolidColorBrush x:Key="Scrim" Color="#B30D2026" />
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
 

@@ -3,11 +3,8 @@
              xmlns:vm="clr-namespace:Sedhep.ViewModels"
              x:Class="Sedhep.Views.ShellView"
              x:DataType="vm:ShellViewModel">
-  <!--
-    One shell, two chromes. A wide window keeps its destinations in a rail down the left; a narrow
-    one keeps them under the thumb. The ViewModel decides which, from the width the view reports.
-  -->
-  <Grid RowDefinitions="*,Auto" ColumnDefinitions="Auto,*" Background="{DynamicResource Page}">
+  <!-- Phone uses bottom navigation; tablet pairs the collection and selected recipe. -->
+  <Grid RowDefinitions="*,Auto" ColumnDefinitions="Auto,*,*" Background="{DynamicResource Page}">
     <!-- The rail: where you can go, always in the same place. -->
     <Border Grid.Row="0"
             Grid.Column="0"
@@ -59,16 +56,49 @@
       </Grid>
     </Border>
 
-    <!-- The page itself. Recipe, editor and cooking screens push over the top-level pages. -->
+    <!-- The cookbook and reading pane share the available space on tablet and desktop. -->
     <ContentControl Grid.Row="0"
                     Grid.Column="1"
+                    Grid.ColumnSpan="{Binding MainContentColumnSpan}"
                     Content="{Binding Current}"
                     HorizontalAlignment="Stretch"
-                    MaxWidth="980" />
+                    MinWidth="0" />
+
+    <Border Grid.Row="0"
+            Grid.Column="2"
+            IsVisible="{Binding IsSplitViewVisible}"
+            Background="{DynamicResource Page}"
+            BorderBrush="{DynamicResource Border}"
+            BorderThickness="1,0,0,0">
+      <Grid>
+        <ContentControl Content="{Binding SelectedRecipe}"
+                        IsVisible="{Binding HasSelectedRecipe}"
+                        HorizontalAlignment="Stretch"
+                        MaxWidth="720" />
+        <StackPanel IsVisible="{Binding !HasSelectedRecipe}"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    MaxWidth="300"
+                    Margin="28"
+                    Spacing="12">
+          <Border Width="64" Height="64" CornerRadius="32"
+                  Background="{DynamicResource SurfaceMuted}"
+                  HorizontalAlignment="Center">
+            <Path Classes="icon" Data="{StaticResource IconBook}"
+                  Width="28" Height="28"
+                  HorizontalAlignment="Center" VerticalAlignment="Center" />
+          </Border>
+          <TextBlock Classes="h3" Text="Your cookbook, at a glance" TextAlignment="Center" />
+          <TextBlock Classes="muted" Text="Choose a recipe to read its ingredients and method."
+                     TextAlignment="Center" />
+        </StackPanel>
+      </Grid>
+    </Border>
 
     <!-- Status of the last transfer, kept out of the way until there is something to say. -->
     <Border Grid.Row="0"
             Grid.Column="1"
+            Grid.ColumnSpan="2"
             Classes="toast"
             Margin="16,0,16,12"
             VerticalAlignment="Bottom"
@@ -79,12 +109,18 @@
     <!-- Bottom navigation: the three places the plan asks for, on a phone-sized window. -->
     <Border Grid.Row="1"
             Grid.Column="0"
-            Grid.ColumnSpan="2"
+            Grid.ColumnSpan="3"
             IsVisible="{Binding IsTabBarVisible}"
             Background="{DynamicResource Surface}"
             BorderBrush="{DynamicResource Border}"
             BorderThickness="0,1,0,0"
             Padding="10,8,10,10">
+      <Border.IsVisible>
+        <MultiBinding Converter="{x:Static BoolConverters.Or}">
+          <Binding Path="IsTabBarVisible" />
+          <Binding Path="IsCollectionTabBarVisible" />
+        </MultiBinding>
+      </Border.IsVisible>
       <Grid ColumnDefinitions="*,*,*">
         <Button Grid.Column="0"
                 Classes="tab"
@@ -125,7 +161,7 @@
     <Border Grid.Row="0"
             Grid.RowSpan="2"
             Grid.Column="0"
-            Grid.ColumnSpan="2"
+            Grid.ColumnSpan="3"
             IsVisible="{Binding HasIncomingOffer}"
             Background="{DynamicResource Scrim}">
       <Border Classes="card" Margin="24" Padding="20" VerticalAlignment="Center">

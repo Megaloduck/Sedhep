@@ -8,13 +8,13 @@
              x:DataType="vm:MainViewModel">
   <Grid RowDefinitions="Auto,*,Auto" Background="{DynamicResource Page}">
     <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Disabled">
-      <StackPanel Margin="18,16,18,10" Spacing="14">
+      <StackPanel Margin="22,22,22,12" Spacing="16">
         <!-- Where you are, and the one action that matters most. -->
         <Grid ColumnDefinitions="*,Auto">
           <StackPanel Spacing="3">
             <StackPanel Orientation="Horizontal" Spacing="6">
               <Path Classes="icon sm accent" Data="{StaticResource IconPot}" VerticalAlignment="Center" />
-              <TextBlock Classes="eyebrow" Text="SEDHEP" VerticalAlignment="Center" />
+              <TextBlock Classes="eyebrow" Text="YOUR COOKBOOK" VerticalAlignment="Center" />
             </StackPanel>
             <TextBlock Classes="title" Text="{Binding HeaderTitle}" Margin="0,2,0,0" />
             <TextBlock Classes="muted" Text="{Binding HeaderSubtitle}" />
@@ -121,7 +121,7 @@
              IsVisible="{Binding !IsEmpty}"
              Background="Transparent"
              BorderThickness="0"
-             Padding="12,2,12,12"
+             Padding="14,2,14,14"
              SelectionMode="Single">
       <ListBox.Styles>
         <Style Selector="ListBoxItem">
@@ -148,9 +148,9 @@
                   HorizontalContentAlignment="Stretch"
                   Command="{Binding $parent[ListBox].((vm:MainViewModel)DataContext).OpenRecipeCommand}"
                   CommandParameter="{Binding}">
-            <Border Classes="card" Padding="12" BoxShadow="0 6 18 -10 #26140A00">
+            <Border Classes="card" Padding="14" BoxShadow="0 8 22 -12 #28264653">
               <Grid ColumnDefinitions="Auto,*,Auto">
-                <Border Classes="cover" Width="76" Height="76">
+                <Border Classes="cover" Width="84" Height="84">
                   <Grid>
                     <Image Source="{Binding Cover}" Stretch="UniformToFill" IsVisible="{Binding HasCover}" />
                     <Border Background="{DynamicResource AccentSoft}" IsVisible="{Binding !HasCover}">

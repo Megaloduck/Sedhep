@@ -16,11 +16,11 @@ namespace Sedhep.ViewModels;
 /// </summary>
 public partial class ShellViewModel : ViewModelBase, ICookbookNavigator
 {
-    /// <summary>
-    /// Past this width the shell stops acting like a phone: the tabs move to a rail down the left
-    /// and the content sits in one readable column.
-    /// </summary>
-    public const double WideBreakpoint = 760;
+    /// <summary>At tablet width, keep the collection beside the selected recipe.</summary>
+    public const double SplitBreakpoint = 600;
+
+    /// <summary>At desktop width, move the top-level destinations to the left rail.</summary>
+    public const double WideBreakpoint = 1024;
 
     private readonly Func<MainViewModel> _cookbookFactory;
     private readonly Func<Recipe, RecipeViewModel> _recipeFactory;
@@ -45,6 +45,12 @@ public partial class ShellViewModel : ViewModelBase, ICookbookNavigator
 
     [ObservableProperty]
     private bool _isWideLayout;
+
+    [ObservableProperty]
+    private bool _isSplitLayout;
+
+    [ObservableProperty]
+    private RecipeViewModel? _selectedRecipe;
 
     public ShellViewModel(
         Func<MainViewModel> cookbookFactory,
@@ -97,6 +103,14 @@ public partial class ShellViewModel : ViewModelBase, ICookbookNavigator
     /// <summary>The tab bar belongs to the three top-level pages, not to a recipe being read.</summary>
     public bool IsTabBarVisible => !IsWideLayout && Current is MainViewModel or SettingsViewModel;
 
+    public bool IsSplitViewVisible => IsSplitLayout && Current is MainViewModel;
+
+    public bool IsCollectionTabBarVisible => IsTabBarVisible && IsSplitLayout;
+
+    public bool HasSelectedRecipe => IsSplitViewVisible && SelectedRecipe is not null;
+
+    public int MainContentColumnSpan => IsSplitViewVisible ? 1 : 2;
+
     public bool IsCookbookTab => Current is MainViewModel { IsFavoritesActive: false };
 
     public bool IsFavoritesTab => Current is MainViewModel { IsFavoritesActive: true };
@@ -106,6 +120,7 @@ public partial class ShellViewModel : ViewModelBase, ICookbookNavigator
     public void ShowCookbook()
     {
         _history.Clear();
+        SelectedRecipe = null;
         Cookbook.IsFavoritesActive = false;
         Show(Cookbook);
         _ = Cookbook.InitializeAsync();
@@ -114,6 +129,7 @@ public partial class ShellViewModel : ViewModelBase, ICookbookNavigator
     public void ShowFavorites()
     {
         _history.Clear();
+        SelectedRecipe = null;
         Cookbook.IsFavoritesActive = true;
         Show(Cookbook);
         _ = Cookbook.RefreshAsync();
@@ -122,6 +138,7 @@ public partial class ShellViewModel : ViewModelBase, ICookbookNavigator
     public void ShowSettings()
     {
         _history.Clear();
+        SelectedRecipe = null;
         Show(_settingsFactory());
     }
 
@@ -130,7 +147,16 @@ public partial class ShellViewModel : ViewModelBase, ICookbookNavigator
         Push(_shareFactory(recipeId));
     }
 
-    public void ShowRecipe(Recipe recipe) => Push(_recipeFactory(recipe));
+    public void ShowRecipe(Recipe recipe)
+    {
+        if (IsSplitLayout && Current is MainViewModel)
+        {
+            SelectedRecipe = _recipeFactory(recipe);
+            return;
+        }
+
+        Push(_recipeFactory(recipe));
+    }
 
     public void ShowEditor(Recipe? existing) => Push(_editorFactory(existing));
 
@@ -140,6 +166,12 @@ public partial class ShellViewModel : ViewModelBase, ICookbookNavigator
 
     public void GoBack()
     {
+        if (HasSelectedRecipe)
+        {
+            SelectedRecipe = null;
+            return;
+        }
+
         if (_history.Count == 0)
         {
             ShowCookbook();
@@ -170,9 +202,42 @@ public partial class ShellViewModel : ViewModelBase, ICookbookNavigator
         Current = page;
         OnPropertyChanged(nameof(IsRailVisible));
         OnPropertyChanged(nameof(IsTabBarVisible));
+        OnPropertyChanged(nameof(IsCollectionTabBarVisible));
         OnPropertyChanged(nameof(IsCookbookTab));
         OnPropertyChanged(nameof(IsFavoritesTab));
         OnPropertyChanged(nameof(IsSettingsTab));
+        OnPropertyChanged(nameof(IsSplitViewVisible));
+        OnPropertyChanged(nameof(HasSelectedRecipe));
+        OnPropertyChanged(nameof(MainContentColumnSpan));
+    }
+
+    public void UpdateLayout(double width)
+    {
+        IsSplitLayout = width >= SplitBreakpoint;
+        IsWideLayout = width >= WideBreakpoint;
+    }
+
+    partial void OnSelectedRecipeChanged(RecipeViewModel? value) => OnPropertyChanged(nameof(HasSelectedRecipe));
+
+    partial void OnIsSplitLayoutChanged(bool value)
+    {
+        if (!value && SelectedRecipe is not null && Current is MainViewModel)
+        {
+            var recipe = SelectedRecipe;
+            SelectedRecipe = null;
+            Push(recipe);
+        }
+        else if (value && Current is RecipeViewModel recipe && _history.TryPeek(out var previous) && previous is MainViewModel cookbook)
+        {
+            _history.Pop();
+            SelectedRecipe = recipe;
+            Show(cookbook);
+        }
+
+        OnPropertyChanged(nameof(IsSplitViewVisible));
+        OnPropertyChanged(nameof(IsCollectionTabBarVisible));
+        OnPropertyChanged(nameof(HasSelectedRecipe));
+        OnPropertyChanged(nameof(MainContentColumnSpan));
     }
 
     /// <summary>Resizing across the breakpoint swaps one navigation for the other.</summary>
@@ -180,6 +245,7 @@ public partial class ShellViewModel : ViewModelBase, ICookbookNavigator
     {
         OnPropertyChanged(nameof(IsRailVisible));
         OnPropertyChanged(nameof(IsTabBarVisible));
+        OnPropertyChanged(nameof(IsCollectionTabBarVisible));
     }
 
     private void OnCookbookPropertyChanged(object? sender, PropertyChangedEventArgs e)

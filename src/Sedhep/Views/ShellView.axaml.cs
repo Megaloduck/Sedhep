@@ -40,7 +40,7 @@ public partial class ShellView : UserControl
     {
         if (DataContext is ShellViewModel shell)
         {
-            shell.IsWideLayout = Bounds.Width >= ShellViewModel.WideBreakpoint;
+            shell.UpdateLayout(Bounds.Width);
         }
     }
 }

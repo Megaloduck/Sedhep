@@ -47,7 +47,7 @@ public partial class RecipeView : UserControl
         var twoColumns = width >= TwoColumnBreakpoint;
 
         grid.ColumnDefinitions = twoColumns
-            ? new ColumnDefinitions("340,*")
+            ? new ColumnDefinitions("300,*")
             : new ColumnDefinitions("*");
         grid.RowDefinitions = twoColumns
             ? new RowDefinitions("Auto")

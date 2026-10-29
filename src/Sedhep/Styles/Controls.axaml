@@ -69,7 +69,7 @@
   <!-- ============================ Buttons ============================ -->
   <Style Selector="Button">
     <Setter Property="MinHeight" Value="46" />
-    <Setter Property="CornerRadius" Value="13" />
+    <Setter Property="CornerRadius" Value="15" />
     <Setter Property="Padding" Value="16,10" />
     <Setter Property="FontSize" Value="{DynamicResource FontBody}" />
     <Setter Property="FontWeight" Value="SemiBold" />
@@ -92,7 +92,7 @@
     <Setter Property="Background" Value="{DynamicResource Accent}" />
     <Setter Property="BorderBrush" Value="{DynamicResource Accent}" />
     <Setter Property="BorderThickness" Value="0" />
-    <Setter Property="CornerRadius" Value="13" />
+    <Setter Property="CornerRadius" Value="15" />
     <Setter Property="Foreground" Value="{DynamicResource OnAccent}" />
   </Style>
   <Style Selector="Button.primary:pointerover /template/ ContentPresenter#PART_ContentPresenter">
@@ -112,7 +112,7 @@
   <Style Selector="Button.secondary /template/ ContentPresenter#PART_ContentPresenter">
     <Setter Property="Background" Value="{DynamicResource SurfaceMuted}" />
     <Setter Property="BorderBrush" Value="Transparent" />
-    <Setter Property="CornerRadius" Value="13" />
+    <Setter Property="CornerRadius" Value="15" />
     <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
   </Style>
   <Style Selector="Button.secondary:pointerover /template/ ContentPresenter#PART_ContentPresenter">
@@ -347,13 +347,13 @@
     <Setter Property="Background" Value="{DynamicResource Surface}" />
     <Setter Property="BorderBrush" Value="{DynamicResource Border}" />
     <Setter Property="BorderThickness" Value="1" />
-    <Setter Property="CornerRadius" Value="18" />
-    <Setter Property="Padding" Value="16" />
+    <Setter Property="CornerRadius" Value="20" />
+    <Setter Property="Padding" Value="18" />
   </Style>
 
   <Style Selector="Border.flat">
     <Setter Property="Background" Value="{DynamicResource SurfaceMuted}" />
-    <Setter Property="CornerRadius" Value="14" />
+    <Setter Property="CornerRadius" Value="16" />
     <Setter Property="Padding" Value="12" />
   </Style>
 
@@ -374,7 +374,7 @@
 
   <Style Selector="Border.cover">
     <Setter Property="ClipToBounds" Value="True" />
-    <Setter Property="CornerRadius" Value="14" />
+    <Setter Property="CornerRadius" Value="18" />
     <Setter Property="Background" Value="{DynamicResource SurfaceMuted}" />
   </Style>
 

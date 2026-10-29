@@ -9,8 +9,17 @@
              x:Class="Sedhep.Views.RecipeView"
              x:DataType="vm:RecipeViewModel">
   <Grid Background="{DynamicResource Page}" RowDefinitions="*,Auto">
+    <Grid.Styles>
+      <Style Selector="Border.recipeSection">
+        <Setter Property="Background" Value="{DynamicResource Surface}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Border}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="18" />
+        <Setter Property="Padding" Value="18" />
+      </Style>
+    </Grid.Styles>
     <ScrollViewer Grid.Row="0">
-      <StackPanel Margin="18,14,18,20" Spacing="16">
+      <StackPanel Margin="22,22,22,20" Spacing="18" MaxWidth="720" HorizontalAlignment="Center">
         <!-- Leaving and sharing, always in the same place. -->
         <Grid ColumnDefinitions="Auto,*,Auto">
           <Button Classes="icon" Command="{Binding BackCommand}" ToolTip.Tip="Back to cookbook">
@@ -22,7 +31,7 @@
         </Grid>
 
         <!-- The dish itself: a photo when there is one, a warm monogram when there is not. -->
-        <Border Classes="cover" Height="200">
+        <Border Classes="cover" Height="200" MaxWidth="680" HorizontalAlignment="Left">
           <Panel>
             <Image Source="{Binding CoverImage}" Stretch="UniformToFill" IsVisible="{Binding HasCover}" />
             <Border Background="{DynamicResource SurfaceSunken}" IsVisible="{Binding !HasCover}">
@@ -90,7 +99,7 @@
               ColumnDefinitions="*"
               RowDefinitions="Auto,Auto">
           <!-- Ingredients read as a column of numbers first, names second. -->
-          <Border x:Name="IngredientsCard" Classes="card">
+          <Border x:Name="IngredientsCard" Classes="recipeSection">
             <StackPanel Spacing="12">
               <Grid ColumnDefinitions="*,Auto">
                 <TextBlock Classes="label" Text="INGREDIENTS" VerticalAlignment="Center" />
@@ -129,7 +138,7 @@
           </Border>
 
           <!-- Directions, one numbered circle per step. -->
-          <Border x:Name="DirectionsCard" Grid.Row="1" Classes="card">
+          <Border x:Name="DirectionsCard" Grid.Row="1" Classes="recipeSection">
             <StackPanel Spacing="12">
               <Grid ColumnDefinitions="*,Auto">
                 <TextBlock Classes="label" Text="DIRECTIONS" VerticalAlignment="Center" />
@@ -167,7 +176,7 @@
         </Grid>
 
         <!-- Notes are the "remember this next time" part of a family recipe. -->
-        <Border Classes="card" IsVisible="{Binding HasNotes}">
+        <Border Classes="recipeSection" IsVisible="{Binding HasNotes}" MaxWidth="720" HorizontalAlignment="Left">
           <StackPanel Spacing="10">
             <TextBlock Classes="label" Text="NOTES" />
             <TextBlock Classes="body"
