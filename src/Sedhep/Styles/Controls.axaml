@@ -12,10 +12,18 @@
     <Setter Property="Foreground" Value="{DynamicResource AccentInk}" />
   </Style>
 
+  <!-- The brand line on the cookbook home, drawn as large as a book title. -->
+  <Style Selector="TextBlock.brand">
+    <Setter Property="FontSize" Value="{DynamicResource FontBrand}" />
+    <Setter Property="FontWeight" Value="Bold" />
+    <Setter Property="LineHeight" Value="44" />
+    <Setter Property="Foreground" Value="{DynamicResource Ink}" />
+  </Style>
+
   <Style Selector="TextBlock.display">
     <Setter Property="FontSize" Value="{DynamicResource FontDisplay}" />
     <Setter Property="FontWeight" Value="Bold" />
-    <Setter Property="LineHeight" Value="40" />
+    <Setter Property="LineHeight" Value="39" />
     <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
   </Style>
 
@@ -166,6 +174,27 @@
   </Style>
   <Style Selector="Button.bare:pointerover /template/ ContentPresenter">
     <Setter Property="Background" Value="Transparent" />
+  </Style>
+
+  <!-- A round icon target, for the one action that floats over a page. -->
+  <Style Selector="Button.round">
+    <Setter Property="Width" Value="50" />
+    <Setter Property="Height" Value="50" />
+    <Setter Property="Padding" Value="0" />
+    <Setter Property="MinHeight" Value="0" />
+    <Setter Property="CornerRadius" Value="999" />
+    <Setter Property="Background" Value="{DynamicResource Accent}" />
+    <Setter Property="Foreground" Value="{DynamicResource OnAccent}" />
+  </Style>
+  <Style Selector="Button.round /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource Accent}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource Accent}" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="CornerRadius" Value="999" />
+  </Style>
+  <Style Selector="Button.round:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource AccentHover}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource AccentHover}" />
   </Style>
 
   <!-- Icon button: 40x40 round target. -->
@@ -372,10 +401,29 @@
     <Setter Property="Background" Value="{DynamicResource FavoriteSoft}" />
   </Style>
 
+  <Style Selector="Border.pill.solid">
+    <Setter Property="Background" Value="{DynamicResource Ink}" />
+  </Style>
+
   <Style Selector="Border.cover">
     <Setter Property="ClipToBounds" Value="True" />
-    <Setter Property="CornerRadius" Value="18" />
+    <Setter Property="CornerRadius" Value="20" />
     <Setter Property="Background" Value="{DynamicResource SurfaceMuted}" />
+  </Style>
+
+  <!-- A warm block inside a card: the ingredients list, a stat strip, a cookie-tin note. -->
+  <Style Selector="Border.panel">
+    <Setter Property="Background" Value="{DynamicResource SurfaceWarm}" />
+    <Setter Property="CornerRadius" Value="18" />
+    <Setter Property="Padding" Value="16" />
+  </Style>
+
+  <!-- A recipe or ingredient card that lifts off the sand page. -->
+  <Style Selector="Border.printed">
+    <Setter Property="Background" Value="{DynamicResource Surface}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource Border}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="22" />
   </Style>
 
   <Style Selector="Border.divider">

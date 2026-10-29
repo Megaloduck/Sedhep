@@ -1,9 +1,11 @@
 // Licensed under the MIT license. See LICENSE in the project root.
 
 using System;
+using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Sedhep.Domain;
+using Sedhep.Media;
 
 namespace Sedhep.ViewModels;
 
@@ -17,9 +19,19 @@ public sealed partial class RecipeCardViewModel : ViewModelBase
     public RecipeCardViewModel(Recipe recipe)
     {
         Recipe = recipe;
+
+        // A recipe without a photo still gets a cover: the same warm wash every time, so it is
+        // recognisable in the grid the way a book spine is.
+        var tone = CoverPalette.ForTitle(recipe.Title);
+        CoverBackground = tone.Background;
+        CoverInk = tone.Ink;
     }
 
     public Recipe Recipe { get; }
+
+    public IBrush CoverBackground { get; }
+
+    public IBrush CoverInk { get; }
 
     [ObservableProperty]
     private Bitmap? _cover;

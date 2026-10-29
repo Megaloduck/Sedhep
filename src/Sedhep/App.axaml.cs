@@ -331,6 +331,11 @@ public partial class App : Application
             sp.GetRequiredService<ICookbookNavigator>(),
             sp.GetRequiredService<ILogger<CategoryManagerViewModel>>()));
 
+        services.AddSingleton<Func<AlmanacViewModel>>(sp => () => new AlmanacViewModel(
+            sp.GetRequiredService<IRecipeRepository>(),
+            sp.GetRequiredService<ICookbookNavigator>(),
+            sp.GetRequiredService<ILogger<AlmanacViewModel>>()));
+
         services.AddSingleton<Func<SettingsViewModel>>(sp => () => new SettingsViewModel(
             sp.GetRequiredService<AppSettingsStore>(),
             sp.GetRequiredService<AppearanceService>(),

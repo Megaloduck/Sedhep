@@ -3,24 +3,37 @@
              xmlns:vm="clr-namespace:Sedhep.ViewModels"
              x:Class="Sedhep.Views.ShellView"
              x:DataType="vm:ShellViewModel">
-  <!-- Phone uses bottom navigation; tablet pairs the collection and selected recipe. -->
+  <!--
+    Phone: a floating bottom bar of the four places you can be.
+    Desk: a floating rail on the left, with the collection beside the recipe you are reading.
+  -->
   <Grid RowDefinitions="*,Auto" ColumnDefinitions="Auto,*,*" Background="{DynamicResource Page}">
-    <!-- The rail: where you can go, always in the same place. -->
+
+    <!-- The rail. A paper card that never moves, so finding your way back is chrome, not a step. -->
     <Border Grid.Row="0"
             Grid.Column="0"
-            Width="208"
+            Width="226"
             IsVisible="{Binding IsRailVisible}"
+            Margin="14,14,0,14"
             Background="{DynamicResource Surface}"
             BorderBrush="{DynamicResource Border}"
-            BorderThickness="0,0,1,0"
-            Padding="12,16,12,14">
+            BorderThickness="1"
+            CornerRadius="26"
+            Padding="14,18,14,16">
       <Grid RowDefinitions="Auto,*,Auto">
-        <StackPanel Orientation="Horizontal" Spacing="7" Margin="8,0,0,0">
-          <Path Classes="icon sm accent" Data="{StaticResource IconPot}" VerticalAlignment="Center" />
-          <TextBlock Classes="eyebrow" Text="SEDHEP" VerticalAlignment="Center" />
+        <StackPanel Orientation="Horizontal" Spacing="9" Margin="8,0,0,0">
+          <Border Width="34" Height="34" CornerRadius="999" Background="{DynamicResource AccentSoft}">
+            <Path Classes="icon sm accent" Data="{StaticResource IconPot}"
+                  HorizontalAlignment="Center" VerticalAlignment="Center" />
+          </Border>
+          <StackPanel VerticalAlignment="Center">
+            <TextBlock Text="Sedhep" FontSize="{DynamicResource FontH2}" FontWeight="Bold" />
+            <TextBlock Text="Family cookbook" FontSize="{DynamicResource FontLabel}"
+                       Foreground="{DynamicResource TextTertiary}" />
+          </StackPanel>
         </StackPanel>
 
-        <StackPanel Grid.Row="1" Spacing="4" Margin="0,20,0,0">
+        <StackPanel Grid.Row="1" Spacing="4" Margin="0,24,0,0">
           <Button Classes="rail"
                   Classes.active="{Binding IsCookbookTab}"
                   Command="{Binding ShowCookbookTabCommand}"
@@ -38,6 +51,16 @@
             <StackPanel Orientation="Horizontal" Spacing="11">
               <Path Classes="icon" Data="{StaticResource IconHeart}" VerticalAlignment="Center" />
               <TextBlock Text="Favorites" VerticalAlignment="Center" />
+            </StackPanel>
+          </Button>
+
+          <Button Classes="rail"
+                  Classes.active="{Binding IsAlmanacTab}"
+                  Command="{Binding ShowAlmanacTabCommand}"
+                  ToolTip.Tip="Every ingredient, on its own card">
+            <StackPanel Orientation="Horizontal" Spacing="11">
+              <Path Classes="icon" Data="{StaticResource IconLeaf}" VerticalAlignment="Center" />
+              <TextBlock Text="Almanac" VerticalAlignment="Center" />
             </StackPanel>
           </Button>
         </StackPanel>
@@ -81,14 +104,15 @@
                     MaxWidth="300"
                     Margin="28"
                     Spacing="12">
-          <Border Width="64" Height="64" CornerRadius="32"
-                  Background="{DynamicResource SurfaceMuted}"
+          <Border Width="70" Height="70" CornerRadius="999"
+                  Background="{DynamicResource AccentSoft}"
                   HorizontalAlignment="Center">
             <Path Classes="icon" Data="{StaticResource IconBook}"
-                  Width="28" Height="28"
+                  Width="30" Height="30"
+                  Stroke="{DynamicResource AccentInk}"
                   HorizontalAlignment="Center" VerticalAlignment="Center" />
           </Border>
-          <TextBlock Classes="h3" Text="Your cookbook, at a glance" TextAlignment="Center" />
+          <TextBlock Classes="h2" Text="Your cookbook, at a glance" TextAlignment="Center" />
           <TextBlock Classes="muted" Text="Choose a recipe to read its ingredients and method."
                      TextAlignment="Center" />
         </StackPanel>
@@ -106,22 +130,23 @@
       <TextBlock Classes="muted" Text="{Binding OfferStatus}" />
     </Border>
 
-    <!-- Bottom navigation: the three places the plan asks for, on a phone-sized window. -->
+    <!-- Bottom bar: the same four places, floating over the page like a tray. -->
     <Border Grid.Row="1"
             Grid.Column="0"
             Grid.ColumnSpan="3"
-            IsVisible="{Binding IsTabBarVisible}"
+            Margin="12,0,12,12"
             Background="{DynamicResource Surface}"
             BorderBrush="{DynamicResource Border}"
-            BorderThickness="0,1,0,0"
-            Padding="10,8,10,10">
+            BorderThickness="1"
+            CornerRadius="24"
+            Padding="8,7">
       <Border.IsVisible>
         <MultiBinding Converter="{x:Static BoolConverters.Or}">
           <Binding Path="IsTabBarVisible" />
           <Binding Path="IsCollectionTabBarVisible" />
         </MultiBinding>
       </Border.IsVisible>
-      <Grid ColumnDefinitions="*,*,*">
+      <Grid ColumnDefinitions="*,*,*,*">
         <Button Grid.Column="0"
                 Classes="tab"
                 Classes.active="{Binding IsCookbookTab}"
@@ -146,6 +171,17 @@
 
         <Button Grid.Column="2"
                 Classes="tab"
+                Classes.active="{Binding IsAlmanacTab}"
+                Command="{Binding ShowAlmanacTabCommand}"
+                Margin="2,0">
+          <StackPanel Spacing="3" HorizontalAlignment="Center">
+            <Path Classes="icon" Data="{StaticResource IconLeaf}" HorizontalAlignment="Center" />
+            <TextBlock Text="Almanac" FontSize="{DynamicResource FontTab}" HorizontalAlignment="Center" />
+          </StackPanel>
+        </Button>
+
+        <Button Grid.Column="3"
+                Classes="tab"
                 Classes.active="{Binding IsSettingsTab}"
                 Command="{Binding ShowSettingsTabCommand}"
                 Margin="2,0">
@@ -157,14 +193,14 @@
       </Grid>
     </Border>
 
-    <!-- An arriving recipe is a deliberate interruption: it is never accepted automatically. -->
+    <!-- An arriving transfer is a deliberate interruption: it is never accepted automatically. -->
     <Border Grid.Row="0"
             Grid.RowSpan="2"
             Grid.Column="0"
             Grid.ColumnSpan="3"
             IsVisible="{Binding HasIncomingOffer}"
             Background="{DynamicResource Scrim}">
-      <Border Classes="card" Margin="24" Padding="20" VerticalAlignment="Center">
+      <Border Classes="card" Margin="24" Padding="20" VerticalAlignment="Center" MaxWidth="440">
         <StackPanel Spacing="14">
           <Border Classes="pill accent" HorizontalAlignment="Left">
             <StackPanel Orientation="Horizontal" Spacing="6">
@@ -188,6 +224,31 @@
                     Command="{Binding AcceptOfferCommand}"
                     HorizontalAlignment="Stretch" />
             <Button Classes="outline" Content="No thanks" Command="{Binding DeclineOfferCommand}" />
+          </StackPanel>
+        </StackPanel>
+      </Border>
+    </Border>
+
+    <!-- Existing recipes are protected until the recipient explicitly chooses a copy. -->
+    <Border Grid.Row="0" Grid.RowSpan="2"
+            Grid.Column="0" Grid.ColumnSpan="3"
+            IsVisible="{Binding HasPendingIncomingConflict}"
+            Background="{DynamicResource Scrim}">
+      <Border Classes="card" Margin="24" Padding="20" VerticalAlignment="Center" MaxWidth="440">
+        <StackPanel Spacing="14">
+          <Border Classes="pill accent" HorizontalAlignment="Left">
+            <TextBlock Classes="label" Text="SAME RECIPE, TWO VERSIONS" Foreground="{DynamicResource AccentInk}" />
+          </Border>
+          <StackPanel Spacing="4">
+            <TextBlock Classes="h2" Text="{Binding PendingIncomingConflict.Title}" />
+            <TextBlock Classes="muted" Text="{Binding IncomingConflictDetails}" />
+          </StackPanel>
+          <TextBlock Classes="muted" Text="Nothing is replaced until you choose. Keep your copy or use the one that arrived." />
+          <StackPanel Spacing="8">
+            <Button Classes="primary" Content="Keep my version" HorizontalAlignment="Stretch"
+                    Command="{Binding KeepLocalIncomingConflictCommand}" />
+            <Button Classes="outline" Content="Use the incoming version" HorizontalAlignment="Stretch"
+                    Command="{Binding UseIncomingConflictCommand}" />
           </StackPanel>
         </StackPanel>
       </Border>

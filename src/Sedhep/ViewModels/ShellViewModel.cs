@@ -14,7 +14,7 @@ namespace Sedhep.ViewModels;
 /// phone user can always walk back to the cookbook. Pages are created through factories to keep
 /// this class free of container lookups.
 /// </summary>
-public partial class ShellViewModel : ViewModelBase, ICookbookNavigator
+public partial class ShellViewModel : ViewModelBase, ICookbookNavigator, ICookbookImportPolicy
 {
     /// <summary>At tablet width, keep the collection beside the selected recipe.</summary>
     public const double SplitBreakpoint = 600;
@@ -27,12 +27,14 @@ public partial class ShellViewModel : ViewModelBase, ICookbookNavigator
     private readonly Func<Recipe?, RecipeEditorViewModel> _editorFactory;
     private readonly Func<Recipe, CookingModeViewModel> _cookingModeFactory;
     private readonly Func<CategoryManagerViewModel> _categoryManagerFactory;
+    private readonly Func<AlmanacViewModel> _almanacFactory;
     private readonly Func<Guid?, ShareViewModel> _shareFactory;
     private readonly Func<SettingsViewModel> _settingsFactory;
     private readonly INearbyShareService _nearby;
     private readonly Stack<ViewModelBase> _history = new();
 
     private MainViewModel? _cookbook;
+    private AlmanacViewModel? _almanac;
 
     [ObservableProperty]
     private ViewModelBase? _current;
@@ -52,12 +54,23 @@ public partial class ShellViewModel : ViewModelBase, ICookbookNavigator
     [ObservableProperty]
     private RecipeViewModel? _selectedRecipe;
 
+    [ObservableProperty]
+    private CookbookConflict? _pendingIncomingConflict;
+
+    [ObservableProperty]
+    private string? _incomingConflictDetails;
+
+    private TaskCompletionSource<ConflictDecision>? _incomingConflictAnswer;
+
+    private readonly System.Threading.SemaphoreSlim _incomingConflictGate = new(1, 1);
+
     public ShellViewModel(
         Func<MainViewModel> cookbookFactory,
         Func<Recipe, RecipeViewModel> recipeFactory,
         Func<Recipe?, RecipeEditorViewModel> editorFactory,
         Func<Recipe, CookingModeViewModel> cookingModeFactory,
         Func<CategoryManagerViewModel> categoryManagerFactory,
+        Func<AlmanacViewModel> almanacFactory,
         Func<Guid?, ShareViewModel> shareFactory,
         Func<SettingsViewModel> settingsFactory,
         INearbyShareService nearby)
@@ -67,6 +80,7 @@ public partial class ShellViewModel : ViewModelBase, ICookbookNavigator
         _editorFactory = editorFactory;
         _cookingModeFactory = cookingModeFactory;
         _categoryManagerFactory = categoryManagerFactory;
+        _almanacFactory = almanacFactory;
         _shareFactory = shareFactory;
         _settingsFactory = settingsFactory;
         _nearby = nearby;
@@ -92,7 +106,15 @@ public partial class ShellViewModel : ViewModelBase, ICookbookNavigator
         }
     }
 
+    /// <summary>Built on first use, then kept: flipping between the cookbook and the almanac is instant.</summary>
+    private AlmanacViewModel Almanac => _almanac ??= _almanacFactory();
+
     public bool HasIncomingOffer => IncomingOffer is not null;
+
+    public bool HasPendingIncomingConflict => PendingIncomingConflict is not null;
+
+    partial void OnPendingIncomingConflictChanged(CookbookConflict? value)
+        => OnPropertyChanged(nameof(HasPendingIncomingConflict));
 
     /// <summary>
     /// A wide window keeps its destinations in a rail that never moves: finding your way back to
@@ -101,7 +123,7 @@ public partial class ShellViewModel : ViewModelBase, ICookbookNavigator
     public bool IsRailVisible => IsWideLayout && Current is not CookingModeViewModel;
 
     /// <summary>The tab bar belongs to the three top-level pages, not to a recipe being read.</summary>
-    public bool IsTabBarVisible => !IsWideLayout && Current is MainViewModel or SettingsViewModel;
+    public bool IsTabBarVisible => !IsWideLayout && Current is MainViewModel or AlmanacViewModel or SettingsViewModel;
 
     public bool IsSplitViewVisible => IsSplitLayout && Current is MainViewModel;
 
@@ -114,6 +136,8 @@ public partial class ShellViewModel : ViewModelBase, ICookbookNavigator
     public bool IsCookbookTab => Current is MainViewModel { IsFavoritesActive: false };
 
     public bool IsFavoritesTab => Current is MainViewModel { IsFavoritesActive: true };
+
+    public bool IsAlmanacTab => Current is AlmanacViewModel;
 
     public bool IsSettingsTab => Current is SettingsViewModel;
 
@@ -133,6 +157,14 @@ public partial class ShellViewModel : ViewModelBase, ICookbookNavigator
         Cookbook.IsFavoritesActive = true;
         Show(Cookbook);
         _ = Cookbook.RefreshAsync();
+    }
+
+    public void ShowAlmanac()
+    {
+        _history.Clear();
+        SelectedRecipe = null;
+        Show(Almanac);
+        _ = Almanac.RefreshAsync();
     }
 
     public void ShowSettings()
@@ -205,6 +237,7 @@ public partial class ShellViewModel : ViewModelBase, ICookbookNavigator
         OnPropertyChanged(nameof(IsCollectionTabBarVisible));
         OnPropertyChanged(nameof(IsCookbookTab));
         OnPropertyChanged(nameof(IsFavoritesTab));
+        OnPropertyChanged(nameof(IsAlmanacTab));
         OnPropertyChanged(nameof(IsSettingsTab));
         OnPropertyChanged(nameof(IsSplitViewVisible));
         OnPropertyChanged(nameof(HasSelectedRecipe));
@@ -274,6 +307,9 @@ public partial class ShellViewModel : ViewModelBase, ICookbookNavigator
     private void ShowFavoritesTab() => ShowFavorites();
 
     [RelayCommand]
+    private void ShowAlmanacTab() => ShowAlmanac();
+
+    [RelayCommand]
     private void ShowSettingsTab() => ShowSettings();
 
     [RelayCommand]
@@ -290,10 +326,13 @@ public partial class ShellViewModel : ViewModelBase, ICookbookNavigator
         OnPropertyChanged(nameof(HasIncomingOffer));
         OfferStatus = $"Receiving from {offer.DeviceName}…";
 
-        var result = await _nearby.RespondAsync(offer.TransferId, accepted: true);
+        var result = await _nearby.RespondAsync(offer.TransferId, accepted: true, this);
 
         OfferStatus = result.Message;
         _ = Cookbook.RefreshAsync();
+
+        // New ingredients mean the almanac has something new to file.
+        _ = _almanac?.RefreshAsync();
         ClearOfferStatusSoon();
     }
 
@@ -308,6 +347,51 @@ public partial class ShellViewModel : ViewModelBase, ICookbookNavigator
         };
         timer.Start();
     }
+
+    /// <summary>
+    /// Incoming network imports pause here for a clear choice whenever a recipe already exists.
+    /// Keep the interaction on the UI thread while the transfer worker waits for the answer.
+    /// </summary>
+    public async System.Threading.Tasks.Task<ConflictDecision> ResolveAsync(
+        CookbookConflict conflict,
+        System.Threading.CancellationToken cancellationToken = default)
+    {
+        await _incomingConflictGate.WaitAsync(cancellationToken);
+        var answer = new TaskCompletionSource<ConflictDecision>(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+
+        try
+        {
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                _incomingConflictAnswer = answer;
+                IncomingConflictDetails = conflict.LocalRevision == conflict.IncomingRevision
+                    ? "Both copies have the same revision. Nothing changes unless you choose the incoming copy."
+                    : $"Your cookbook has revision {conflict.LocalRevision}; the incoming copy has revision {conflict.IncomingRevision}. Choose which one to keep.";
+                PendingIncomingConflict = conflict;
+            });
+
+            return await answer.Task.WaitAsync(cancellationToken);
+        }
+        finally
+        {
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                if (ReferenceEquals(_incomingConflictAnswer, answer))
+                {
+                    PendingIncomingConflict = null;
+                    _incomingConflictAnswer = null;
+                }
+            });
+            _incomingConflictGate.Release();
+        }
+    }
+
+    [RelayCommand]
+    private void KeepLocalIncomingConflict() => _incomingConflictAnswer?.TrySetResult(ConflictDecision.KeepLocal);
+
+    [RelayCommand]
+    private void UseIncomingConflict() => _incomingConflictAnswer?.TrySetResult(ConflictDecision.UseIncoming);
 
     [RelayCommand]
     private async System.Threading.Tasks.Task DeclineOffer()

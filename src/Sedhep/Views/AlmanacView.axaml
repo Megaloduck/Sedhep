@@ -1,0 +1,287 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:Sedhep.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="760"
+             x:Class="Sedhep.Views.AlmanacView"
+             x:DataType="vm:AlmanacViewModel">
+  <!--
+    The almanac: the cookbook's ingredients, one printed card each. Built from the recipes, so it
+    needs no maintenance and can never disagree with them.
+  -->
+  <Grid Background="{DynamicResource Page}">
+    <ScrollViewer>
+      <StackPanel Margin="22,22,22,28" Spacing="16" MaxWidth="980" HorizontalAlignment="Center">
+
+        <Grid ColumnDefinitions="*,Auto">
+          <StackPanel Spacing="4">
+            <StackPanel Orientation="Horizontal" Spacing="6">
+              <Path Classes="icon sm accent" Data="{StaticResource IconLeaf}" VerticalAlignment="Center" />
+              <TextBlock Classes="eyebrow" Text="THE INGREDIENTS ALMANAC" VerticalAlignment="Center" />
+            </StackPanel>
+            <TextBlock Classes="brand" Text="Almanac" Margin="0,2,0,0" />
+            <TextBlock Classes="muted"
+                       MaxWidth="440"
+                       Text="Every ingredient in your cookbook, filed on a card with the measure you usually write and the recipes that call for it." />
+          </StackPanel>
+
+          <Border Grid.Column="1"
+                  Width="62" Height="62"
+                  CornerRadius="999"
+                  Background="{DynamicResource AccentSoft}"
+                  VerticalAlignment="Top"
+                  Margin="12,6,0,0">
+            <Path Classes="icon lg accent" Data="{StaticResource IconCards}"
+                  HorizontalAlignment="Center" VerticalAlignment="Center" />
+          </Border>
+        </Grid>
+
+        <!-- Search reads the cards that are already built, so it works with no database round trip. -->
+        <Grid>
+          <TextBox Text="{Binding SearchText, Mode=TwoWay}"
+                   Watermark="Find an ingredient — garlic, coconut milk, chili…"
+                   Padding="44,11,44,11" />
+          <Path Classes="icon sm"
+                Data="{StaticResource IconSearch}"
+                Margin="15,0,0,0"
+                IsHitTestVisible="False"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Center" />
+          <Button Classes="bare"
+                  Width="34" Height="34"
+                  Margin="0,0,8,0"
+                  HorizontalAlignment="Right"
+                  VerticalAlignment="Center"
+                  IsVisible="{Binding IsSearching}"
+                  Command="{Binding ClearSearchCommand}"
+                  ToolTip.Tip="Clear search">
+            <Path Classes="icon sm" Data="{StaticResource IconClose}" />
+          </Button>
+        </Grid>
+
+        <!-- The shelves that actually appear in this cookbook. -->
+        <ScrollViewer HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled">
+          <ItemsControl ItemsSource="{Binding Families}">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                <StackPanel Orientation="Horizontal" />
+              </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:AlmanacFamilyFilterViewModel">
+                <Button Classes="chip"
+                        Classes.active="{Binding IsActive}"
+                        Content="{Binding Name}"
+                        Command="{Binding SelectCommand}"
+                        CommandParameter="{Binding}"
+                        Margin="0,0,8,0" />
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </ScrollViewer>
+
+        <Grid ColumnDefinitions="*,Auto">
+          <TextBlock Classes="h2" Text="On the shelf" VerticalAlignment="Center" />
+          <TextBlock Grid.Column="1" Classes="meta" Text="{Binding CountLabel}" VerticalAlignment="Center" />
+        </Grid>
+
+        <!-- One printed card per ingredient, in the style of a collectible reference card. -->
+        <ItemsControl ItemsSource="{Binding Cards}" IsVisible="{Binding !IsEmpty}">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <WrapPanel ItemWidth="170" />
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:AlmanacCardViewModel">
+              <Button Classes="bare"
+                      Margin="0,0,10,10"
+                      HorizontalAlignment="Stretch"
+                      HorizontalContentAlignment="Stretch"
+                      Command="{Binding $parent[ItemsControl].((vm:AlmanacViewModel)DataContext).ShowCardCommand}"
+                      CommandParameter="{Binding}">
+                <Border Background="{Binding Wash}"
+                        CornerRadius="22"
+                        Padding="15,14,15,13">
+                  <Grid RowDefinitions="Auto,Auto,Auto">
+                    <Grid ColumnDefinitions="*,Auto">
+                      <TextBlock Text="{Binding Initial}"
+                                 FontSize="30"
+                                 FontWeight="Bold"
+                                 Foreground="{Binding Ink}"
+                                 Opacity="0.85" />
+                      <Path Grid.Column="1"
+                            Data="{StaticResource IconLeaf}"
+                            Stroke="{Binding Ink}"
+                            StrokeThickness="1.7"
+                            StrokeLineCap="Round"
+                            StrokeJoin="Round"
+                            Width="19" Height="19"
+                            Opacity="0.55"
+                            VerticalAlignment="Top" />
+                    </Grid>
+
+                    <StackPanel Grid.Row="1" Spacing="2" Margin="0,14,0,12">
+                      <TextBlock Text="{Binding Name}"
+                                 FontSize="{DynamicResource FontH3}"
+                                 FontWeight="Bold"
+                                 Foreground="{Binding Ink}"
+                                 MaxLines="2"
+                                 TextTrimming="CharacterEllipsis" />
+                      <TextBlock Text="{Binding FamilyName}"
+                                 FontSize="{DynamicResource FontLabel}"
+                                 Foreground="{Binding Ink}"
+                                 Opacity="0.75" />
+                    </StackPanel>
+
+                    <Grid Grid.Row="2" ColumnDefinitions="*,Auto">
+                      <TextBlock Text="{Binding RecipeCountLabel}"
+                                 FontSize="{DynamicResource FontMeta}"
+                                 FontWeight="SemiBold"
+                                 Foreground="{Binding Ink}" />
+                      <Path Grid.Column="1"
+                            Data="{StaticResource IconChevronRight}"
+                            Stroke="{Binding Ink}"
+                            StrokeThickness="1.7"
+                            StrokeLineCap="Round"
+                            StrokeJoin="Round"
+                            Width="14" Height="14"
+                            Opacity="0.7"
+                            VerticalAlignment="Center" />
+                    </Grid>
+                  </Grid>
+                </Border>
+              </Button>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <!-- Nothing filed yet, or nothing on this shelf. -->
+        <StackPanel IsVisible="{Binding IsEmpty}"
+                    HorizontalAlignment="Center"
+                    MaxWidth="340"
+                    Spacing="12"
+                    Margin="0,26,0,10">
+          <Border Width="84" Height="84" CornerRadius="999"
+                  Background="{DynamicResource AccentSoft}"
+                  HorizontalAlignment="Center">
+            <Path Classes="icon" Data="{StaticResource IconLeaf}"
+                  Width="34" Height="34"
+                  Stroke="{DynamicResource AccentInk}"
+                  HorizontalAlignment="Center" VerticalAlignment="Center" />
+          </Border>
+          <TextBlock Classes="h2" Text="{Binding EmptyTitle}" TextAlignment="Center" />
+          <TextBlock Classes="muted" Text="{Binding EmptyMessage}" TextAlignment="Center" />
+          <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center" Margin="0,4,0,0">
+            <Button Classes="primary"
+                    Content="Write a recipe"
+                    IsVisible="{Binding !HasAnyIngredients}"
+                    Command="{Binding WriteRecipeCommand}" />
+            <Button Classes="outline"
+                    Content="Clear search"
+                    IsVisible="{Binding IsSearching}"
+                    Command="{Binding ClearSearchCommand}" />
+          </StackPanel>
+        </StackPanel>
+      </StackPanel>
+    </ScrollViewer>
+
+    <!-- One card, opened: the shelf, the usual measure, and every recipe that calls for it. -->
+    <Border IsVisible="{Binding HasSelection}"
+            Background="{DynamicResource Scrim}">
+      <Border Classes="printed"
+              Margin="16"
+              MaxWidth="470"
+              HorizontalAlignment="Center"
+              VerticalAlignment="Stretch"
+              ClipToBounds="True">
+        <Grid RowDefinitions="*,Auto">
+        <ScrollViewer>
+          <StackPanel>
+            <Border Background="{Binding Selected.Wash}" Padding="20,18">
+              <Grid ColumnDefinitions="*,Auto">
+                <StackPanel Spacing="4">
+                  <TextBlock Text="{Binding Selected.FamilyName}"
+                             FontSize="{DynamicResource FontLabel}"
+                             FontWeight="SemiBold"
+                             Foreground="{Binding Selected.Ink}"
+                             Opacity="0.75" />
+                  <TextBlock Classes="display"
+                             Text="{Binding Selected.Name}"
+                             Foreground="{Binding Selected.Ink}" />
+                  <TextBlock Text="{Binding Selected.UsesLabel}"
+                             FontSize="{DynamicResource FontMeta}"
+                             Foreground="{Binding Selected.Ink}"
+                             Opacity="0.8" />
+                </StackPanel>
+
+                <Button Grid.Column="1"
+                        Classes="icon"
+                        Background="Transparent"
+                        Command="{Binding CloseCardCommand}"
+                        ToolTip.Tip="Close">
+                  <Path Classes="icon" Data="{StaticResource IconClose}" Stroke="{Binding Selected.Ink}" />
+                </Button>
+              </Grid>
+            </Border>
+
+            <StackPanel Margin="20,16,20,20" Spacing="14">
+              <Grid ColumnDefinitions="*,*">
+                <Border Classes="panel">
+                  <StackPanel Spacing="3">
+                    <TextBlock Classes="label" Text="USUAL MEASURE" />
+                    <TextBlock Classes="h3" Text="{Binding Selected.UsualAmountLabel}" />
+                  </StackPanel>
+                </Border>
+                <Border Grid.Column="1" Classes="panel" Margin="10,0,0,0">
+                  <StackPanel Spacing="3">
+                    <TextBlock Classes="label" Text="ON THIS SHELF" />
+                    <TextBlock Classes="h3" Text="{Binding Selected.RecipeCountShort}" />
+                  </StackPanel>
+                </Border>
+              </Grid>
+
+              <TextBlock Classes="label" Text="USED IN" />
+              <ItemsControl ItemsSource="{Binding Selected.Uses}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:AlmanacUseViewModel">
+                    <Button Classes="bare"
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Stretch"
+                            Command="{Binding OpenCommand}"
+                            Margin="0,0,0,8">
+                      <Border Background="{DynamicResource SurfaceMuted}" CornerRadius="14" Padding="14,11">
+                        <Grid ColumnDefinitions="*,Auto">
+                          <StackPanel Spacing="2">
+                            <TextBlock Classes="h3" Text="{Binding Title}" MaxLines="1" TextTrimming="CharacterEllipsis" />
+                            <TextBlock Classes="meta" Text="{Binding MetaLine}" MaxLines="1" TextTrimming="CharacterEllipsis" />
+                          </StackPanel>
+                          <Path Grid.Column="1"
+                                Classes="icon sm"
+                                Data="{StaticResource IconChevronRight}"
+                                VerticalAlignment="Center"
+                                Margin="10,0,0,0" />
+                        </Grid>
+                      </Border>
+                    </Button>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+
+            </StackPanel>
+          </StackPanel>
+        </ScrollViewer>
+
+          <!-- Keeping Done outside the scroll area means a long ingredient list can never hide it. -->
+          <Border Grid.Row="1" Padding="20,8,20,18">
+            <Button Classes="primary"
+                    Content="Done"
+                    HorizontalAlignment="Stretch"
+                    Command="{Binding CloseCardCommand}" />
+          </Border>
+        </Grid>
+      </Border>
+    </Border>
+  </Grid>
+</UserControl>

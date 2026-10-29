@@ -144,6 +144,42 @@ public sealed class CookbookFileTests
     }
 
     [Fact]
+    public async Task A_newer_incoming_revision_still_requires_an_explicit_conflict_decision()
+    {
+        using var source = new TestCookbook("source");
+        using var target = new TestCookbook("target");
+
+        var id = Guid.NewGuid();
+        var local = new Recipe
+        {
+            Id = id, Title = "Mine", CreatedAt = DateTimeOffset.UtcNow, UpdatedAt = DateTimeOffset.UtcNow
+        };
+        await target.Recipes.SaveAsync(local);
+
+        var incoming = new Recipe
+        {
+            Id = id, Title = "Theirs", CreatedAt = DateTimeOffset.UtcNow, UpdatedAt = DateTimeOffset.UtcNow
+        };
+        for (var i = 0; i < 3; i++)
+        {
+            await source.Recipes.SaveAsync(incoming);
+        }
+
+        using var package = new MemoryStream();
+        await source.Files.WriteAsync(package, new[] { id });
+        package.Position = 0;
+
+        var policy = new Policy(_ => ConflictDecision.KeepLocal);
+        var result = await target.Files.ReadAsync(package, policy);
+
+        Assert.Single(policy.Seen);
+        Assert.Equal(3, policy.Seen[0].IncomingRevision);
+        Assert.Equal(1, result.Skipped);
+        Assert.Equal(0, result.Replaced);
+        Assert.Equal("Mine", (await target.Recipes.GetByIdAsync(id))!.Title);
+    }
+
+    [Fact]
     public async Task A_tie_is_offered_to_the_user_and_the_incoming_copy_can_win()
     {
         using var source = new TestCookbook("source");

@@ -221,6 +221,7 @@ public sealed class LanPeerShareService : INearbyShareService
             foreach (var pending in _pending.Values)
             {
                 pending.Answer.TrySetResult(false);
+                pending.Completed.TrySetResult(new ShareResult(false, "The transfer was cancelled."));
             }
 
             _pending.Clear();
@@ -495,7 +496,7 @@ public sealed class LanPeerShareService : INearbyShareService
                 }
 
                 await using var received = File.OpenRead(packagePath);
-                var result = await _cookbookFiles.ReadAsync(received, null, token);
+                var result = await _cookbookFiles.ReadAsync(received, pending.ImportPolicy, token);
 
                 _logger.LogInformation(
                     "Received {Recipes} recipes ({Bytes} bytes) from {Device}",
@@ -653,8 +654,20 @@ public sealed class LanPeerShareService : INearbyShareService
         }
     }
 
-    public async Task<ShareResult> RespondAsync(string transferId, bool accepted, CancellationToken cancellationToken = default)
+    public Task<ShareResult> RespondAsync(
+        string transferId,
+        bool accepted,
+        CancellationToken cancellationToken = default)
+        => RespondAsync(transferId, accepted, KeepLocalImportPolicy.Instance, cancellationToken);
+
+    public async Task<ShareResult> RespondAsync(
+        string transferId,
+        bool accepted,
+        ICookbookImportPolicy importPolicy,
+        CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(importPolicy);
+
         PendingOffer? pending;
         lock (_gate)
         {
@@ -666,6 +679,7 @@ public sealed class LanPeerShareService : INearbyShareService
             return new ShareResult(false, "That transfer is no longer waiting.");
         }
 
+        pending.ImportPolicy = importPolicy;
         pending.Answer.TrySetResult(accepted);
 
         if (!accepted)
@@ -715,12 +729,24 @@ public sealed class LanPeerShareService : INearbyShareService
 
     private sealed class PendingOffer
     {
+        public ICookbookImportPolicy ImportPolicy { get; set; } = KeepLocalImportPolicy.Instance;
+
         public TaskCompletionSource<bool> Answer { get; } =
             new(TaskCreationOptions.RunContinuationsAsynchronously);
 
         /// <summary>Completes once the package has been received and imported on this device.</summary>
         public TaskCompletionSource<ShareResult> Completed { get; } =
             new(TaskCreationOptions.RunContinuationsAsynchronously);
+    }
+
+    private sealed class KeepLocalImportPolicy : ICookbookImportPolicy
+    {
+        public static KeepLocalImportPolicy Instance { get; } = new();
+
+        public Task<ConflictDecision> ResolveAsync(
+            CookbookConflict conflict,
+            CancellationToken cancellationToken = default)
+            => Task.FromResult(ConflictDecision.KeepLocal);
     }
 
     private sealed class Announcement

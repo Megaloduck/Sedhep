@@ -68,9 +68,10 @@ public sealed class AppearanceService
         }
 
         var resources = Application.Current.Resources;
-        resources["FontDisplay"] = 32 * scale;
-        resources["FontCook"] = 29 * scale;
-        resources["FontTitle"] = 24 * scale;
+        resources["FontBrand"] = 40 * scale;
+        resources["FontDisplay"] = 33 * scale;
+        resources["FontCook"] = 30 * scale;
+        resources["FontTitle"] = 25 * scale;
         resources["FontH2"] = 20 * scale;
         resources["FontH3"] = 16.5 * scale;
         resources["FontBody"] = 15 * scale;

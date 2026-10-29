@@ -64,6 +64,13 @@ public interface INearbyShareService : IAsyncDisposable
 
     /// <summary>Answers a pending offer; accepting starts the transfer.</summary>
     Task<ShareResult> RespondAsync(string transferId, bool accepted, CancellationToken cancellationToken = default);
+
+    /// <summary>Answers a pending offer and asks the recipient before replacing any existing recipes.</summary>
+    Task<ShareResult> RespondAsync(
+        string transferId,
+        bool accepted,
+        ICookbookImportPolicy importPolicy,
+        CancellationToken cancellationToken = default);
 }
 
 public sealed record ShareResult(bool Success, string Message, int RecipeCount = 0, int PhotosRestored = 0);

@@ -163,24 +163,21 @@ public sealed class CookbookFileService : ICookbookFileService
 
             if (existing is not null)
             {
-                // A recipe that exists on both sides is a conflict unless the incoming one is
-                // clearly newer. The plan is explicit that neither copy may be thrown away without
-                // a decision.
-                if (existing.Revision >= dto.Revision)
+                // Revisions can describe which copy changed more often, but cannot prove that one
+                // copy contains the user's preferred content. Never discard an existing recipe
+                // during import without an explicit decision.
+                var conflict = new CookbookConflict(dto.Id, dto.Title, existing.Revision, dto.Revision);
+                conflicts.Add(conflict);
+
+                var decision = policy is null
+                    ? ConflictDecision.KeepLocal
+                    : await policy.ResolveAsync(conflict, cancellationToken);
+
+                if (decision == ConflictDecision.KeepLocal)
                 {
-                    var conflict = new CookbookConflict(dto.Id, dto.Title, existing.Revision, dto.Revision);
-                    conflicts.Add(conflict);
-
-                    var decision = policy is null
-                        ? ConflictDecision.KeepLocal
-                        : await policy.ResolveAsync(conflict, cancellationToken);
-
-                    if (decision == ConflictDecision.KeepLocal)
-                    {
-                        skipped++;
-                        warnings.Add($"“{dto.Title}” was kept exactly as it is on this device.");
-                        continue;
-                    }
+                    skipped++;
+                    warnings.Add($"“{dto.Title}” was kept exactly as it is on this device.");
+                    continue;
                 }
 
                 replaced++;

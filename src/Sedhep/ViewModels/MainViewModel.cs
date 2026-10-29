@@ -110,6 +110,7 @@ public partial class MainViewModel : ViewModelBase
         HeaderSubtitle = value
             ? "The recipes you come back to."
             : "Yours to keep, on this device.";
+        OnPropertyChanged(nameof(ShowWriteCta));
     }
 
     partial void OnSortChanged(RecipeSort value)
@@ -213,7 +214,8 @@ public partial class MainViewModel : ViewModelBase
         OnPropertyChanged(nameof(ShowWriteCta));
     }
 
-    public bool ShowWriteCta => !IsSearching;
+    /// <summary>An empty cookbook wants a first recipe; an empty favorites list does not.</summary>
+    public bool ShowWriteCta => !IsSearching && !IsFavoritesActive;
 
     private async Task LoadCategoryFiltersAsync()
     {

@@ -1,83 +1,89 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <!--
-    Sedhep borrows the inspiration's Mediterranean palette: blue-green ink, teal controls, and
-    restrained golden warmth. Recipes stay the focus on quiet paper-like surfaces in either theme.
+    The house palette: a Mediterranean kitchen at golden hour.
 
-      Blue-green       #264653   deep ink and the night palette
+      Blue-green       #264653   deep ink, the night palette, headings
       Teal             #2A9D8F   primary accent, selection and controls
-      Golden yellow    #E9C46A   timer and measurement emphasis
+      Golden yellow    #E9C46A   favorites, timers, warmth
       Warm orange      #F4A261   secondary warmth
       Coral            #E76F51   destructive actions
 
-    Interactive text uses contrast-safe ink shades; full-strength hues are reserved for fills.
+    Surfaces are sand and cream rather than white, so the cookbook reads like paper on a wooden
+    table. Large radii and generous type carry the friendly, illustrated-book feeling; full-strength
+    hues are reserved for fills, and interactive text uses contrast-safe ink shades.
   -->
   <ResourceDictionary.ThemeDictionaries>
     <ResourceDictionary x:Key="Light">
-      <SolidColorBrush x:Key="Page" Color="#FAF6F0" />
-      <SolidColorBrush x:Key="Surface" Color="#FFFDF9" />
-      <SolidColorBrush x:Key="SurfaceMuted" Color="#EFE8DE" />
-      <SolidColorBrush x:Key="SurfaceSunken" Color="#E7D8C7" />
-      <SolidColorBrush x:Key="Border" Color="#E2D5C5" />
-      <SolidColorBrush x:Key="BorderStrong" Color="#C8B6A5" />
+      <SolidColorBrush x:Key="Page" Color="#F6EEE1" />
+      <SolidColorBrush x:Key="Surface" Color="#FFFCF6" />
+      <SolidColorBrush x:Key="SurfaceMuted" Color="#F2E7D7" />
+      <SolidColorBrush x:Key="SurfaceSunken" Color="#E8D9C4" />
+      <SolidColorBrush x:Key="SurfaceWarm" Color="#F7E7D2" />
+      <SolidColorBrush x:Key="Border" Color="#E9DAC6" />
+      <SolidColorBrush x:Key="BorderStrong" Color="#D2B99E" />
 
-      <!-- Sandy Brown: the swatch for fills, a burnt shade for anything that has to be read. -->
+      <!-- The darkest ink doubles as the brand colour, like the headline on a book cover. -->
+      <SolidColorBrush x:Key="Ink" Color="#264653" />
+      <SolidColorBrush x:Key="InkSoft" Color="#4C6266" />
+
       <SolidColorBrush x:Key="Accent" Color="#2A9D8F" />
       <SolidColorBrush x:Key="AccentHover" Color="#238A7E" />
       <SolidColorBrush x:Key="AccentInk" Color="#17665D" />
       <SolidColorBrush x:Key="AccentSoft" Color="#DCEFEA" />
-      <!-- Dark Slate Gray, a shade deeper so a sandy button label still clears 5:1. -->
-      <SolidColorBrush x:Key="OnAccent" Color="#092D2E" />
+      <SolidColorBrush x:Key="OnAccent" Color="#062C29" />
 
-      <!-- The quiet greys still clear 4.5:1 on paper; the labels that use them are only 11.5px. -->
-      <SolidColorBrush x:Key="TextPrimary" Color="#203139" />
-      <SolidColorBrush x:Key="TextSecondary" Color="#59676B" />
-      <SolidColorBrush x:Key="TextTertiary" Color="#59676B" />
+      <!-- Newsprint-adjacent greys that still clear 4.5:1 on cream. -->
+      <SolidColorBrush x:Key="TextPrimary" Color="#22333A" />
+      <SolidColorBrush x:Key="TextSecondary" Color="#59686B" />
+      <SolidColorBrush x:Key="TextTertiary" Color="#66757A" />
 
-      <!-- Light Sea Green -->
-      <SolidColorBrush x:Key="Favorite" Color="#2A9D8F" />
-      <SolidColorBrush x:Key="FavoriteInk" Color="#17665D" />
-      <SolidColorBrush x:Key="FavoriteSoft" Color="#DCEFEA" />
+      <!-- Golden: a starred recipe is a treat, not a warning. -->
+      <SolidColorBrush x:Key="Favorite" Color="#E9C46A" />
+      <SolidColorBrush x:Key="FavoriteInk" Color="#755515" />
+      <SolidColorBrush x:Key="FavoriteSoft" Color="#F8EFCF" />
       <SolidColorBrush x:Key="Success" Color="#2A9D8F" />
       <SolidColorBrush x:Key="SuccessInk" Color="#17665D" />
       <SolidColorBrush x:Key="SuccessSoft" Color="#DCEFEA" />
 
-      <!-- Tomato -->
       <SolidColorBrush x:Key="Danger" Color="#E76F51" />
       <SolidColorBrush x:Key="DangerInk" Color="#B94C38" />
       <SolidColorBrush x:Key="DangerSoft" Color="#FBE5DE" />
 
-      <!-- Burly Wood -->
       <SolidColorBrush x:Key="Highlight" Color="#E9C46A" />
       <SolidColorBrush x:Key="HighlightInk" Color="#755515" />
       <SolidColorBrush x:Key="HighlightSoft" Color="#F8EFCF" />
 
       <SolidColorBrush x:Key="CardShadow" Color="#1F264653" />
-      <SolidColorBrush x:Key="Scrim" Color="#99264653" />
+      <SolidColorBrush x:Key="Scrim" Color="#992E2A24" />
     </ResourceDictionary>
 
     <ResourceDictionary x:Key="Dark">
-      <!-- The night theme is Dark Slate Gray, taken down to candlelight. -->
-      <SolidColorBrush x:Key="Page" Color="#162E35" />
-      <SolidColorBrush x:Key="Surface" Color="#1D3942" />
-      <SolidColorBrush x:Key="SurfaceMuted" Color="#264653" />
-      <SolidColorBrush x:Key="SurfaceSunken" Color="#304F59" />
-      <SolidColorBrush x:Key="Border" Color="#37535B" />
-      <SolidColorBrush x:Key="BorderStrong" Color="#4B6970" />
+      <!-- Night is Dark Slate Gray taken down to candlelight, not a cold grey. -->
+      <SolidColorBrush x:Key="Page" Color="#14262B" />
+      <SolidColorBrush x:Key="Surface" Color="#1C3238" />
+      <SolidColorBrush x:Key="SurfaceMuted" Color="#254046" />
+      <SolidColorBrush x:Key="SurfaceSunken" Color="#2E4C52" />
+      <SolidColorBrush x:Key="SurfaceWarm" Color="#3A3630" />
+      <SolidColorBrush x:Key="Border" Color="#354F55" />
+      <SolidColorBrush x:Key="BorderStrong" Color="#4A686E" />
 
-      <SolidColorBrush x:Key="Accent" Color="#2A9D8F" />
-      <SolidColorBrush x:Key="AccentHover" Color="#41B4A3" />
-      <SolidColorBrush x:Key="AccentInk" Color="#76D8C7" />
-      <SolidColorBrush x:Key="AccentSoft" Color="#183D3D" />
-      <SolidColorBrush x:Key="OnAccent" Color="#08282D" />
+      <SolidColorBrush x:Key="Ink" Color="#F3EBE0" />
+      <SolidColorBrush x:Key="InkSoft" Color="#C6D2CC" />
+
+      <SolidColorBrush x:Key="Accent" Color="#2FA695" />
+      <SolidColorBrush x:Key="AccentHover" Color="#46BCA9" />
+      <SolidColorBrush x:Key="AccentInk" Color="#86E0CF" />
+      <SolidColorBrush x:Key="AccentSoft" Color="#1B3E3C" />
+      <SolidColorBrush x:Key="OnAccent" Color="#06201E" />
 
       <SolidColorBrush x:Key="TextPrimary" Color="#F3EBE0" />
-      <SolidColorBrush x:Key="TextSecondary" Color="#AAB7B0" />
-      <SolidColorBrush x:Key="TextTertiary" Color="#83968E" />
+      <SolidColorBrush x:Key="TextSecondary" Color="#ABBAB4" />
+      <SolidColorBrush x:Key="TextTertiary" Color="#93A39D" />
 
-      <SolidColorBrush x:Key="Favorite" Color="#48BBA8" />
-      <SolidColorBrush x:Key="FavoriteInk" Color="#76D8C7" />
-      <SolidColorBrush x:Key="FavoriteSoft" Color="#183D3D" />
+      <SolidColorBrush x:Key="Favorite" Color="#E9C46A" />
+      <SolidColorBrush x:Key="FavoriteInk" Color="#F1D98E" />
+      <SolidColorBrush x:Key="FavoriteSoft" Color="#40391F" />
       <SolidColorBrush x:Key="Success" Color="#48BBA8" />
       <SolidColorBrush x:Key="SuccessInk" Color="#76D8C7" />
       <SolidColorBrush x:Key="SuccessSoft" Color="#183D3D" />
@@ -96,9 +102,10 @@
   </ResourceDictionary.ThemeDictionaries>
 
   <!-- Type scale. These are plain doubles so the Settings page can grow the whole app at once. -->
-  <x:Double x:Key="FontDisplay">32</x:Double>
-  <x:Double x:Key="FontCook">29</x:Double>
-  <x:Double x:Key="FontTitle">24</x:Double>
+  <x:Double x:Key="FontBrand">40</x:Double>
+  <x:Double x:Key="FontDisplay">33</x:Double>
+  <x:Double x:Key="FontCook">30</x:Double>
+  <x:Double x:Key="FontTitle">25</x:Double>
   <x:Double x:Key="FontH2">20</x:Double>
   <x:Double x:Key="FontH3">16.5</x:Double>
   <x:Double x:Key="FontBody">15</x:Double>
@@ -106,9 +113,9 @@
   <x:Double x:Key="FontLabel">11.5</x:Double>
   <x:Double x:Key="FontTab">11</x:Double>
 
-  <!-- Radii -->
-  <CornerRadius x:Key="RadiusCard">18</CornerRadius>
-  <CornerRadius x:Key="RadiusControl">13</CornerRadius>
+  <!-- Radii: soft printed-card corners. -->
+  <CornerRadius x:Key="RadiusCard">22</CornerRadius>
+  <CornerRadius x:Key="RadiusControl">15</CornerRadius>
   <CornerRadius x:Key="RadiusPill">999</CornerRadius>
-  <CornerRadius x:Key="RadiusCover">16</CornerRadius>
+  <CornerRadius x:Key="RadiusCover">20</CornerRadius>
 </ResourceDictionary>

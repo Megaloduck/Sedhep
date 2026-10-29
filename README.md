@@ -8,9 +8,20 @@ account, a server or a subscription.
 
 ## What is in the app
 
-**The cookbook.** A searchable list of recipes with covers, category filters and three orders
-(recent, newest, A–Z). Search reads the local database and covers names, ingredients, steps, notes
-and tags — it works with no connection at all.
+**The cookbook.** Covers first: each recipe is a little book on the shelf, in its own warm colours
+when there is no photograph. Categories are shelves you tap, and the list has three orders (recent,
+newest, A–Z). Search reads the local database and covers names, ingredients, steps, notes and tags —
+it works with no connection at all.
+
+**The ingredients almanac.** The plan's one distinctive idea: every ingredient any recipe mentions
+gets its own card, filed under the shelf it belongs to (produce, protein, spice, herb, grain, dairy,
+sweetener, pantry), with the measure you usually write for it and every recipe that calls for it.
+The almanac is built from the recipes themselves, so it needs no maintenance and can never drift out
+of date. It is the quickest answer to “what can I cook with what is in the kitchen?”
+
+![The ingredients almanac](docs/screenshots/almanac.png)
+
+![One ingredient card, opened](docs/screenshots/almanac-card.png)
 
 **Recipes.** A name is the only required field. Everything else — photo, description, category,
 times, servings, ingredients, ordered steps, notes, tags — is optional and can be filled in as the
@@ -62,6 +73,10 @@ platforms/                 Android, iOS, browser and desktop hosts
 
 The UI depends on the domain interfaces only. The sharing transport knows nothing about recipes: it
 moves an encrypted package and hands it to the cookbook file reader on the other side.
+
+The almanac is a view, not a second source of truth: `IngredientAlmanac` groups the structured
+ingredient rows the cookbook already stores, so no glossary needs to be maintained by hand and a
+recipe edit shows up on the cards immediately.
 
 Data choices worth knowing:
 

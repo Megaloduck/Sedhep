@@ -15,6 +15,9 @@ public interface ICookbookNavigator
 
     void ShowFavorites();
 
+    /// <summary>The ingredients almanac: every ingredient in the cookbook, filed on a card.</summary>
+    void ShowAlmanac();
+
     void ShowSettings();
 
     /// <summary>Opens the sharing page, optionally with a recipe already chosen.</summary>

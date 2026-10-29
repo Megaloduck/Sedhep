@@ -2,6 +2,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
+using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -48,6 +49,10 @@ public partial class RecipeViewModel : ViewModelBase
         ? "?"
         : Recipe.Title.Trim()[..1].ToUpperInvariant();
 
+    public IBrush CoverBackground { get; }
+
+    public IBrush CoverInk { get; }
+
     public ObservableCollection<RecipePhotoViewModel> Photos { get; } = new();
 
     public RecipeViewModel(
@@ -63,6 +68,11 @@ public partial class RecipeViewModel : ViewModelBase
         _logger = logger;
         Recipe = recipe;
         IsFavorite = recipe.IsFavorite;
+
+        // The same wash the cover grid uses, so a recipe without a photo still looks like itself.
+        var tone = CoverPalette.ForTitle(recipe.Title);
+        CoverBackground = tone.Background;
+        CoverInk = tone.Ink;
 
         // Only the photos of the recipe being looked at are decoded.
         _ = LoadPhotosAsync();

@@ -32,4 +32,7 @@
   <StreamGeometry x:Key="IconArrowDown">M12 5v14 M6 13l6 6 6-6</StreamGeometry>
   <StreamGeometry x:Key="IconTag">M4 11.5V5.5a1.5 1.5 0 0 1 1.5-1.5h6L20 12.5 12.5 20 4 11.5Z M8 8h.01</StreamGeometry>
   <StreamGeometry x:Key="IconInfo">M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Z M12 11v6 M12 7.6h.01</StreamGeometry>
+  <StreamGeometry x:Key="IconLeaf">M20 4C10.7 4 4 9.4 4 16.2c0 1.3.3 2.5.8 3.5 1-5.4 5-9.4 11.2-11C9.6 11.4 6.4 15.9 6.4 20 M4.8 19.7C13 20.6 20 15.3 20 4.6</StreamGeometry>
+  <StreamGeometry x:Key="IconCards">M7.5 6.8 16.8 4a1.8 1.8 0 0 1 2.2 1.2l3 10.6a1.8 1.8 0 0 1-1.2 2.2l-9.3 2.8a1.8 1.8 0 0 1-2.2-1.2L6.3 9a1.8 1.8 0 0 1 1.2-2.2Z M4.6 8.6 2 19.4a1.8 1.8 0 0 0 1.2 2.2l8.9 2.2</StreamGeometry>
+  <StreamGeometry x:Key="IconGrid">M4 4h6v6H4Z M14 4h6v6h-6Z M4 14h6v6H4Z M14 14h6v6h-6Z</StreamGeometry>
 </ResourceDictionary>
