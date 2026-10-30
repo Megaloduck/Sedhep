@@ -375,27 +375,27 @@
 
   <!-- The rail's one filled action: write a new recipe. -->
   <Style Selector="Button.newRecipe">
-    <Setter Property="MinHeight" Value="48" />
-    <Setter Property="Padding" Value="12,9" />
+    <Setter Property="MinHeight" Value="46" />
+    <Setter Property="Padding" Value="12,10" />
     <Setter Property="CornerRadius" Value="16" />
     <Setter Property="HorizontalAlignment" Value="Stretch" />
     <Setter Property="HorizontalContentAlignment" Value="Left" />
-    <Setter Property="Foreground" Value="{DynamicResource Page}" />
+    <Setter Property="Foreground" Value="{DynamicResource Ink}" />
   </Style>
   <Style Selector="Button.newRecipe /template/ ContentPresenter#PART_ContentPresenter">
-    <Setter Property="Background" Value="{DynamicResource Ink}" />
-    <Setter Property="BorderBrush" Value="{DynamicResource Ink}" />
+    <Setter Property="Background" Value="{DynamicResource Page}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource Page}" />
     <Setter Property="BorderThickness" Value="1" />
     <Setter Property="CornerRadius" Value="16" />
-    <Setter Property="Foreground" Value="{DynamicResource Page}" />
+    <Setter Property="Foreground" Value="{DynamicResource Ink}" />
   </Style>
   <Style Selector="Button.newRecipe:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-    <Setter Property="Background" Value="{DynamicResource AccentInk}" />
+    <Setter Property="Background" Value="{DynamicResource SurfaceMuted}" />
     <Setter Property="BorderBrush" Value="{DynamicResource AccentInk}" />
-    <Setter Property="Foreground" Value="{DynamicResource Page}" />
+    <Setter Property="Foreground" Value="{DynamicResource Ink}" />
   </Style>
   <Style Selector="Button.newRecipe TextBlock">
-    <Setter Property="Foreground" Value="{DynamicResource Page}" />
+    <Setter Property="Foreground" Value="{DynamicResource Ink}" />
   </Style>
 
   <!-- Text-only action, e.g. "Save" in the editor header. -->

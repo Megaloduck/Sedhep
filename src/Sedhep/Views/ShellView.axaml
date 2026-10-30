@@ -8,7 +8,7 @@
     Phone: a floating tray of the four places you can be, with writing a recipe raised in the middle.
     Desk: the same list in a rail, standing open like a book's table of contents.
   -->
-  <Grid RowDefinitions="*,Auto" ColumnDefinitions="Auto,*,*" Background="{DynamicResource Page}">
+  <Grid RowDefinitions="*,Auto" ColumnDefinitions="Auto,*,*" Background="Transparent">
 
     <!-- The rail. A paper card that never moves, so finding your way back is chrome, not a step. -->
     <Border Grid.Row="0"
@@ -57,7 +57,7 @@
           </Grid>
         </Button>
 
-        <StackPanel Grid.Row="3" Spacing="2" Margin="0,12,0,0">
+        <StackPanel Grid.Row="3" Margin="0,8,0,0" Spacing="8">
           <Button Classes="rail"
                   Classes.active="{Binding IsCookbookTab}"
                   Command="{Binding ShowCookbookTabCommand}"
@@ -182,7 +182,7 @@
             BorderBrush="{DynamicResource Border}"
             BorderThickness="1"
             CornerRadius="26"
-            Padding="6,6,6,8"
+            Padding="6"
             BoxShadow="0 14 30 -22 #55264653">
       <Border.IsVisible>
         <MultiBinding Converter="{x:Static BoolConverters.Or}">
@@ -226,7 +226,7 @@
                 Command="{Binding NewRecipeCommand}"
                 AutomationProperties.Name="New Recipe"
                 ToolTip.Tip="New recipe"
-                Margin="10,-26,10,0">
+                Margin="10,-25,10,0">
           <controls:TwoToneIcon Data="{StaticResource ToneAddCircle}"
                                 SoftData="{StaticResource ToneAddCircleSoft}"
                                 Width="30" Height="30"

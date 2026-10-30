@@ -194,7 +194,7 @@ public partial class App : Application
                 {
                     Title = "Sedhep",
                     Width = 580,
-                    Height = 700,
+                    Height = 680,
                     MinWidth = 460,
                     MinHeight = 540,
                     WindowStartupLocation = WindowStartupLocation.CenterScreen,
