@@ -6,12 +6,13 @@
              xmlns:domain="using:Sedhep.Domain"
              mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="800"
              x:Class="Sedhep.Views.ShareView"
-             x:DataType="vm:ShareViewModel">
+             x:DataType="vm:ShareViewModel"
+             xmlns:controls="clr-namespace:Sedhep.Controls">
   <Grid Background="{DynamicResource Page}" RowDefinitions="Auto,*">
     <Border Padding="12,12,12,4">
       <Grid ColumnDefinitions="Auto,*,Auto">
-        <Button Classes="icon" Command="{Binding BackCommand}" ToolTip.Tip="Back">
-          <Path Classes="icon" Data="{StaticResource IconChevronLeft}" />
+        <Button Classes="icon" Command="{Binding BackCommand}" AutomationProperties.Name="Back" ToolTip.Tip="Back">
+          <controls:TwoToneIcon Data="{StaticResource ToneChevronLeft}" Foreground="{DynamicResource TextSecondary}" Width="20" Height="20" />
         </Button>
         <TextBlock Grid.Column="1" Classes="h2" Text="Share &amp; backup" HorizontalAlignment="Center" VerticalAlignment="Center" />
         <Border Grid.Column="2" Width="42" />
@@ -54,7 +55,7 @@
 
             <StackPanel Spacing="6" IsVisible="{Binding !HasDevices}">
               <Grid ColumnDefinitions="Auto,*">
-                <Path Classes="icon" Data="{StaticResource IconNearby}" Stroke="{DynamicResource AccentInk}" />
+                <controls:TwoToneIcon Data="{StaticResource ToneWifiTethering}" Foreground="{DynamicResource AccentInk}" Width="20" Height="20" />
                 <TextBlock Grid.Column="1" Margin="10,0,0,0" Classes="body" Text="Looking for phones on this Wi-Fi…" IsVisible="{Binding IsLooking}" VerticalAlignment="Center" />
                 <TextBlock Grid.Column="1" Margin="10,0,0,0" Classes="body" Text="No phones found yet." IsVisible="{Binding !IsLooking}" VerticalAlignment="Center" />
               </Grid>
@@ -68,7 +69,7 @@
                   <Border Classes="flat" Margin="0,0,0,8" Padding="12">
                     <Grid ColumnDefinitions="Auto,*,Auto">
                       <Border Width="36" Height="36" CornerRadius="12" Background="{DynamicResource Surface}">
-                        <Path Classes="icon sm" Data="{StaticResource IconNearby}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        <controls:TwoToneIcon Data="{StaticResource ToneWifiTethering}" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center" VerticalAlignment="Center" Width="16" Height="16" />
                       </Border>
                       <StackPanel Grid.Column="1" Margin="12,0,8,0" VerticalAlignment="Center" Spacing="2">
                         <TextBlock Classes="h3" Text="{Binding DisplayName}" TextTrimming="CharacterEllipsis" MaxLines="1" />
@@ -107,14 +108,14 @@
 
             <Button Classes="outline" Command="{Binding ExportFileCommand}" HorizontalAlignment="Stretch">
               <StackPanel Orientation="Horizontal" Spacing="8">
-                <Path Classes="icon sm" Data="{StaticResource IconDownload}" />
+                <controls:TwoToneIcon Data="{StaticResource ToneDownload}" SoftData="{StaticResource ToneDownloadSoft}" Foreground="{DynamicResource TextSecondary}" Width="16" Height="16" />
                 <TextBlock Text="Save the cookbook to a file" VerticalAlignment="Center" />
               </StackPanel>
             </Button>
 
             <Button Classes="outline" Command="{Binding ImportFileCommand}" HorizontalAlignment="Stretch">
               <StackPanel Orientation="Horizontal" Spacing="8">
-                <Path Classes="icon sm" Data="{StaticResource IconFolder}" />
+                <controls:TwoToneIcon Data="{StaticResource ToneFolder}" SoftData="{StaticResource ToneFolderSoft}" Foreground="{DynamicResource TextSecondary}" Width="16" Height="16" />
                 <TextBlock Text="Open a cookbook file" VerticalAlignment="Center" />
               </StackPanel>
             </Button>
@@ -127,7 +128,7 @@
 
         <Border Classes="flat">
           <Grid ColumnDefinitions="Auto,*">
-            <Path Classes="icon sm" Data="{StaticResource IconInfo}" Stroke="{DynamicResource TextTertiary}" VerticalAlignment="Top" />
+            <controls:TwoToneIcon Data="{StaticResource ToneInfo}" SoftData="{StaticResource ToneInfoSoft}" Foreground="{DynamicResource TextTertiary}" VerticalAlignment="Top" Width="16" Height="16" />
             <TextBlock Grid.Column="1"
                        Margin="10,0,0,0"
                        Classes="muted"

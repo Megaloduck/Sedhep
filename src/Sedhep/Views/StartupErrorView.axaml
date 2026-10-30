@@ -2,7 +2,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="clr-namespace:Sedhep.ViewModels"
              x:Class="Sedhep.Views.StartupErrorView"
-             x:DataType="vm:StartupErrorViewModel">
+             x:DataType="vm:StartupErrorViewModel"
+             xmlns:controls="clr-namespace:Sedhep.Controls">
   <Grid Background="{DynamicResource Page}" RowDefinitions="*,Auto">
     <ScrollViewer VerticalScrollBarVisibility="Auto">
       <StackPanel VerticalAlignment="Center"
@@ -11,12 +12,7 @@
                   Spacing="12"
                   Margin="30,18">
         <Border Width="74" Height="74" CornerRadius="37" Background="{DynamicResource DangerSoft}" HorizontalAlignment="Center">
-          <Path Classes="icon lg"
-                Data="{StaticResource IconInfo}"
-                Width="30" Height="30"
-                Stroke="{DynamicResource DangerInk}"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center" />
+          <controls:TwoToneIcon Data="{StaticResource ToneInfo}" SoftData="{StaticResource ToneInfoSoft}" Foreground="{DynamicResource DangerInk}" HorizontalAlignment="Center" VerticalAlignment="Center" Width="30" Height="30" />
         </Border>
 
         <StackPanel Spacing="6">

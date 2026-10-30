@@ -67,16 +67,19 @@ public sealed class AppearanceService
             return;
         }
 
+        // Keep in step with the type scale declared in Styles/Palette.axaml: the scale is applied
+        // on startup, so a number that disagrees there wins and the design quietly drifts.
         var resources = Application.Current.Resources;
         resources["FontBrand"] = 40 * scale;
-        resources["FontDisplay"] = 33 * scale;
-        resources["FontCook"] = 30 * scale;
-        resources["FontTitle"] = 25 * scale;
-        resources["FontH2"] = 20 * scale;
-        resources["FontH3"] = 16.5 * scale;
+        resources["FontDisplay"] = 31 * scale;
+        resources["FontCook"] = 28 * scale;
+        resources["FontTitle"] = 24 * scale;
+        resources["FontH2"] = 19 * scale;
+        resources["FontH3"] = 17 * scale;
         resources["FontBody"] = 15 * scale;
         resources["FontMeta"] = 13 * scale;
-        resources["FontLabel"] = 11.5 * scale;
-        resources["FontTab"] = 11 * scale;
+        resources["FontLabel"] = 11 * scale;
+        resources["FontTab"] = 11.5 * scale;
+        resources["FontNav"] = 14.5 * scale;
     }
 }

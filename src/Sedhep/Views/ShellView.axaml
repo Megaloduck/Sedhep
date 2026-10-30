@@ -1,79 +1,115 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="clr-namespace:Sedhep.ViewModels"
+             xmlns:controls="clr-namespace:Sedhep.Controls"
              x:Class="Sedhep.Views.ShellView"
              x:DataType="vm:ShellViewModel">
   <!--
-    Phone: a floating bottom bar of the four places you can be.
-    Desk: a floating rail on the left, with the collection beside the recipe you are reading.
+    Phone: a floating tray of the four places you can be, with writing a recipe raised in the middle.
+    Desk: the same list in a rail, standing open like a book's table of contents.
   -->
   <Grid RowDefinitions="*,Auto" ColumnDefinitions="Auto,*,*" Background="{DynamicResource Page}">
 
     <!-- The rail. A paper card that never moves, so finding your way back is chrome, not a step. -->
     <Border Grid.Row="0"
             Grid.Column="0"
-            Width="226"
+            Width="244"
             IsVisible="{Binding IsRailVisible}"
             Margin="14,14,0,14"
             Background="{DynamicResource Surface}"
             BorderBrush="{DynamicResource Border}"
             BorderThickness="1"
             CornerRadius="26"
-            Padding="14,18,14,16">
-      <Grid RowDefinitions="Auto,*,Auto">
-        <StackPanel Orientation="Horizontal" Spacing="9" Margin="8,0,0,0">
-          <Border Width="34" Height="34" CornerRadius="999" Background="{DynamicResource AccentSoft}">
-            <Path Classes="icon sm accent" Data="{StaticResource IconPot}"
-                  HorizontalAlignment="Center" VerticalAlignment="Center" />
-          </Border>
-          <StackPanel VerticalAlignment="Center">
-            <TextBlock Text="Sedhep" FontSize="{DynamicResource FontH2}" FontWeight="Bold" />
-            <TextBlock Text="Family cookbook" FontSize="{DynamicResource FontLabel}"
-                       Foreground="{DynamicResource TextTertiary}" />
-          </StackPanel>
-        </StackPanel>
+            Padding="16,20,16,16">
+      <Grid RowDefinitions="Auto,Auto,Auto,*,Auto">
 
-        <StackPanel Grid.Row="1" Spacing="4" Margin="0,24,0,0">
+        <!-- The imprint: which book is open. -->
+        <Grid ColumnDefinitions="Auto,*" Margin="2,0,0,0">
+          <Border Width="40" Height="40"
+                  CornerRadius="13"
+                  ClipToBounds="True"
+                  Background="{DynamicResource AccentSoft}">
+            <Image Source="avares://Sedhep/Assets/app-icon.png" Stretch="UniformToFill" />
+          </Border>
+          <StackPanel Grid.Column="1" Margin="11,0,0,0" VerticalAlignment="Center" Spacing="1">
+            <TextBlock Classes="brand" FontSize="25" LineHeight="27" Text="Sedhep" />
+            <TextBlock Classes="data" FontSize="11" Text="Heritage proven" />
+          </StackPanel>
+        </Grid>
+
+        <Border Grid.Row="1" Classes="divider" Margin="2,18,2,16" />
+
+        <!-- The one thing a cookbook is for, given the only filled button in the rail. -->
+        <Button Grid.Row="2"
+                Classes="newRecipe"
+                Command="{Binding NewRecipeCommand}"
+                AutomationProperties.Name="New Recipe"
+                ToolTip.Tip="Write a new recipe">
+          <Grid ColumnDefinitions="Auto,*">
+            <controls:TwoToneIcon Data="{StaticResource ToneAddCircle}"
+                                  SoftData="{StaticResource ToneAddCircleSoft}"
+                                  Foreground="{Binding $parent[Button].Foreground}" />
+            <TextBlock Grid.Column="1"
+                       Classes="navLabel"
+                       Text="New Recipe"
+                       Margin="10,0,0,0"
+                       VerticalAlignment="Center" />
+          </Grid>
+        </Button>
+
+        <StackPanel Grid.Row="3" Spacing="2" Margin="0,12,0,0">
           <Button Classes="rail"
                   Classes.active="{Binding IsCookbookTab}"
                   Command="{Binding ShowCookbookTabCommand}"
+                  AutomationProperties.Name="Cookbook"
                   ToolTip.Tip="Everything you have cooked">
-            <StackPanel Orientation="Horizontal" Spacing="11">
-              <Path Classes="icon" Data="{StaticResource IconBook}" VerticalAlignment="Center" />
-              <TextBlock Text="Cookbook" VerticalAlignment="Center" />
+            <StackPanel Orientation="Horizontal" Spacing="10">
+              <controls:TwoToneIcon Data="{StaticResource ToneBookmark}"
+                                    SoftData="{StaticResource ToneBookmarkSoft}"
+                                    Foreground="{Binding $parent[Button].Foreground}" />
+              <TextBlock Classes="navLabel" Text="Cookbook" VerticalAlignment="Center" />
             </StackPanel>
           </Button>
 
           <Button Classes="rail"
                   Classes.active="{Binding IsFavoritesTab}"
                   Command="{Binding ShowFavoritesTabCommand}"
+                  AutomationProperties.Name="Favorites"
                   ToolTip.Tip="Only the recipes you starred">
-            <StackPanel Orientation="Horizontal" Spacing="11">
-              <Path Classes="icon" Data="{StaticResource IconHeart}" VerticalAlignment="Center" />
-              <TextBlock Text="Favorites" VerticalAlignment="Center" />
+            <StackPanel Orientation="Horizontal" Spacing="10">
+              <controls:TwoToneIcon Data="{StaticResource ToneStar}"
+                                    SoftData="{StaticResource ToneStarSoft}"
+                                    Foreground="{Binding $parent[Button].Foreground}" />
+              <TextBlock Classes="navLabel" Text="Favorites" VerticalAlignment="Center" />
             </StackPanel>
           </Button>
 
           <Button Classes="rail"
                   Classes.active="{Binding IsAlmanacTab}"
                   Command="{Binding ShowAlmanacTabCommand}"
+                  AutomationProperties.Name="Almanac"
                   ToolTip.Tip="Every ingredient, on its own card">
-            <StackPanel Orientation="Horizontal" Spacing="11">
-              <Path Classes="icon" Data="{StaticResource IconLeaf}" VerticalAlignment="Center" />
-              <TextBlock Text="Almanac" VerticalAlignment="Center" />
+            <StackPanel Orientation="Horizontal" Spacing="10">
+              <controls:TwoToneIcon Data="{StaticResource ToneEco}"
+                                    SoftData="{StaticResource ToneEcoSoft}"
+                                    Foreground="{Binding $parent[Button].Foreground}" />
+              <TextBlock Classes="navLabel" Text="Almanac" VerticalAlignment="Center" />
             </StackPanel>
           </Button>
         </StackPanel>
 
         <!-- Preferences live apart from the cookbook, at the foot of the rail. -->
-        <Button Grid.Row="2"
+        <Button Grid.Row="4"
                 Classes="rail"
                 Classes.active="{Binding IsSettingsTab}"
                 Command="{Binding ShowSettingsTabCommand}"
+                AutomationProperties.Name="Settings"
                 ToolTip.Tip="Appearance, cookbook folder and sharing">
-          <StackPanel Orientation="Horizontal" Spacing="11">
-            <Path Classes="icon" Data="{StaticResource IconSliders}" VerticalAlignment="Center" />
-            <TextBlock Text="Settings" VerticalAlignment="Center" />
+          <StackPanel Orientation="Horizontal" Spacing="10">
+            <controls:TwoToneIcon Data="{StaticResource ToneSettings}"
+                                  SoftData="{StaticResource ToneSettingsSoft}"
+                                  Foreground="{Binding $parent[Button].Foreground}" />
+            <TextBlock Classes="navLabel" Text="Settings" VerticalAlignment="Center" />
           </StackPanel>
         </Button>
       </Grid>
@@ -107,10 +143,12 @@
           <Border Width="70" Height="70" CornerRadius="999"
                   Background="{DynamicResource AccentSoft}"
                   HorizontalAlignment="Center">
-            <Path Classes="icon" Data="{StaticResource IconBook}"
-                  Width="30" Height="30"
-                  Stroke="{DynamicResource AccentInk}"
-                  HorizontalAlignment="Center" VerticalAlignment="Center" />
+            <controls:TwoToneIcon Classes="lg"
+                                  Data="{StaticResource ToneBookmark}"
+                                  SoftData="{StaticResource ToneBookmarkSoft}"
+                                  Foreground="{DynamicResource AccentInk}"
+                                  HorizontalAlignment="Center"
+                                  VerticalAlignment="Center" />
           </Border>
           <TextBlock Classes="h2" Text="Your cookbook, at a glance" TextAlignment="Center" />
           <TextBlock Classes="muted" Text="Choose a recipe to read its ingredients and method."
@@ -130,31 +168,41 @@
       <TextBlock Classes="muted" Text="{Binding OfferStatus}" />
     </Border>
 
-    <!-- Bottom bar: the same four places, floating over the page like a tray. -->
+    <!--
+      Bottom bar: the same four places, floating over the page like a tray. The create button sits
+      in its own column and breaks the top edge, so it is found by feel rather than by reading.
+    -->
     <Border Grid.Row="1"
             Grid.Column="0"
             Grid.ColumnSpan="3"
             Margin="12,0,12,12"
+            MaxWidth="560"
+            HorizontalAlignment="Stretch"
             Background="{DynamicResource Surface}"
             BorderBrush="{DynamicResource Border}"
             BorderThickness="1"
-            CornerRadius="24"
-            Padding="8,7">
+            CornerRadius="26"
+            Padding="6,6,6,8"
+            BoxShadow="0 14 30 -22 #55264653">
       <Border.IsVisible>
         <MultiBinding Converter="{x:Static BoolConverters.Or}">
           <Binding Path="IsTabBarVisible" />
           <Binding Path="IsCollectionTabBarVisible" />
         </MultiBinding>
       </Border.IsVisible>
-      <Grid ColumnDefinitions="*,*,*,*">
+      <Grid ColumnDefinitions="*,*,Auto,*,*">
         <Button Grid.Column="0"
                 Classes="tab"
                 Classes.active="{Binding IsCookbookTab}"
                 Command="{Binding ShowCookbookTabCommand}"
-                Margin="2,0">
-          <StackPanel Spacing="3" HorizontalAlignment="Center">
-            <Path Classes="icon" Data="{StaticResource IconBook}" HorizontalAlignment="Center" />
-            <TextBlock Text="Cookbook" FontSize="{DynamicResource FontTab}" HorizontalAlignment="Center" />
+                AutomationProperties.Name="Cookbook"
+                Margin="1,0">
+          <StackPanel Spacing="4" HorizontalAlignment="Center">
+            <controls:TwoToneIcon Data="{StaticResource ToneBookmark}"
+                                  SoftData="{StaticResource ToneBookmarkSoft}"
+                                  Foreground="{Binding $parent[Button].Foreground}"
+                                  HorizontalAlignment="Center" />
+            <TextBlock Classes="tabLabel" Text="Cookbook" HorizontalAlignment="Center" />
           </StackPanel>
         </Button>
 
@@ -162,32 +210,58 @@
                 Classes="tab"
                 Classes.active="{Binding IsFavoritesTab}"
                 Command="{Binding ShowFavoritesTabCommand}"
-                Margin="2,0">
-          <StackPanel Spacing="3" HorizontalAlignment="Center">
-            <Path Classes="icon" Data="{StaticResource IconHeart}" HorizontalAlignment="Center" />
-            <TextBlock Text="Favorites" FontSize="{DynamicResource FontTab}" HorizontalAlignment="Center" />
+                AutomationProperties.Name="Favorites"
+                Margin="1,0">
+          <StackPanel Spacing="4" HorizontalAlignment="Center">
+            <controls:TwoToneIcon Data="{StaticResource ToneStar}"
+                                  SoftData="{StaticResource ToneStarSoft}"
+                                  Foreground="{Binding $parent[Button].Foreground}"
+                                  HorizontalAlignment="Center" />
+            <TextBlock Classes="tabLabel" Text="Favorites" HorizontalAlignment="Center" />
           </StackPanel>
         </Button>
 
         <Button Grid.Column="2"
-                Classes="tab"
-                Classes.active="{Binding IsAlmanacTab}"
-                Command="{Binding ShowAlmanacTabCommand}"
-                Margin="2,0">
-          <StackPanel Spacing="3" HorizontalAlignment="Center">
-            <Path Classes="icon" Data="{StaticResource IconLeaf}" HorizontalAlignment="Center" />
-            <TextBlock Text="Almanac" FontSize="{DynamicResource FontTab}" HorizontalAlignment="Center" />
-          </StackPanel>
+                Classes="create"
+                Command="{Binding NewRecipeCommand}"
+                AutomationProperties.Name="New Recipe"
+                ToolTip.Tip="New recipe"
+                Margin="10,-26,10,0">
+          <controls:TwoToneIcon Data="{StaticResource ToneAddCircle}"
+                                SoftData="{StaticResource ToneAddCircleSoft}"
+                                Width="30" Height="30"
+                                Foreground="{Binding $parent[Button].Foreground}"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center" />
         </Button>
 
         <Button Grid.Column="3"
                 Classes="tab"
+                Classes.active="{Binding IsAlmanacTab}"
+                Command="{Binding ShowAlmanacTabCommand}"
+                AutomationProperties.Name="Almanac"
+                Margin="1,0">
+          <StackPanel Spacing="4" HorizontalAlignment="Center">
+            <controls:TwoToneIcon Data="{StaticResource ToneEco}"
+                                  SoftData="{StaticResource ToneEcoSoft}"
+                                  Foreground="{Binding $parent[Button].Foreground}"
+                                  HorizontalAlignment="Center" />
+            <TextBlock Classes="tabLabel" Text="Almanac" HorizontalAlignment="Center" />
+          </StackPanel>
+        </Button>
+
+        <Button Grid.Column="4"
+                Classes="tab"
                 Classes.active="{Binding IsSettingsTab}"
                 Command="{Binding ShowSettingsTabCommand}"
-                Margin="2,0">
-          <StackPanel Spacing="3" HorizontalAlignment="Center">
-            <Path Classes="icon" Data="{StaticResource IconSliders}" HorizontalAlignment="Center" />
-            <TextBlock Text="Settings" FontSize="{DynamicResource FontTab}" HorizontalAlignment="Center" />
+                AutomationProperties.Name="Settings"
+                Margin="1,0">
+          <StackPanel Spacing="4" HorizontalAlignment="Center">
+            <controls:TwoToneIcon Data="{StaticResource ToneSettings}"
+                                  SoftData="{StaticResource ToneSettingsSoft}"
+                                  Foreground="{Binding $parent[Button].Foreground}"
+                                  HorizontalAlignment="Center" />
+            <TextBlock Classes="tabLabel" Text="Settings" HorizontalAlignment="Center" />
           </StackPanel>
         </Button>
       </Grid>
@@ -204,7 +278,7 @@
         <StackPanel Spacing="14">
           <Border Classes="pill accent" HorizontalAlignment="Left">
             <StackPanel Orientation="Horizontal" Spacing="6">
-              <Path Classes="icon sm accent" Data="{StaticResource IconNearby}" />
+              <controls:TwoToneIcon Data="{StaticResource ToneWifiTethering}" Foreground="{DynamicResource AccentInk}" Width="16" Height="16" />
               <TextBlock Classes="label" Text="RECIPE ARRIVING" Foreground="{DynamicResource AccentInk}" />
             </StackPanel>
           </Border>

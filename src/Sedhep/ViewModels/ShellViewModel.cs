@@ -107,7 +107,19 @@ public partial class ShellViewModel : ViewModelBase, ICookbookNavigator, ICookbo
     }
 
     /// <summary>Built on first use, then kept: flipping between the cookbook and the almanac is instant.</summary>
-    private AlmanacViewModel Almanac => _almanac ??= _almanacFactory();
+    private AlmanacViewModel Almanac
+    {
+        get
+        {
+            if (_almanac is null)
+            {
+                _almanac = _almanacFactory();
+                _almanac.PropertyChanged += OnAlmanacPropertyChanged;
+            }
+
+            return _almanac;
+        }
+    }
 
     public bool HasIncomingOffer => IncomingOffer is not null;
 
@@ -122,8 +134,17 @@ public partial class ShellViewModel : ViewModelBase, ICookbookNavigator, ICookbo
     /// </summary>
     public bool IsRailVisible => IsWideLayout && Current is not CookingModeViewModel;
 
-    /// <summary>The tab bar belongs to the three top-level pages, not to a recipe being read.</summary>
-    public bool IsTabBarVisible => !IsWideLayout && Current is MainViewModel or AlmanacViewModel or SettingsViewModel;
+    /// <summary>
+    /// The tab bar belongs to the top-level pages, not to a recipe being read, and not to an
+    /// ingredient card that is open: a dialog covers the app whole, navigation included.
+    /// </summary>
+    public bool IsTabBarVisible => !IsWideLayout && Current switch
+    {
+        MainViewModel => true,
+        AlmanacViewModel almanac => !almanac.HasSelection,
+        SettingsViewModel => true,
+        _ => false
+    };
 
     public bool IsSplitViewVisible => IsSplitLayout && Current is MainViewModel;
 
@@ -281,6 +302,15 @@ public partial class ShellViewModel : ViewModelBase, ICookbookNavigator, ICookbo
         OnPropertyChanged(nameof(IsCollectionTabBarVisible));
     }
 
+    private void OnAlmanacPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(AlmanacViewModel.HasSelection))
+        {
+            OnPropertyChanged(nameof(IsTabBarVisible));
+            OnPropertyChanged(nameof(IsCollectionTabBarVisible));
+        }
+    }
+
     private void OnCookbookPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (e.PropertyName == nameof(MainViewModel.IsFavoritesActive))
@@ -311,6 +341,10 @@ public partial class ShellViewModel : ViewModelBase, ICookbookNavigator, ICookbo
 
     [RelayCommand]
     private void ShowSettingsTab() => ShowSettings();
+
+    /// <summary>The create button in the rail and in the bottom bar open the same blank page.</summary>
+    [RelayCommand]
+    private void NewRecipe() => ShowEditor(null);
 
     [RelayCommand]
     private async System.Threading.Tasks.Task AcceptOffer()

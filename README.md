@@ -74,6 +74,18 @@ platforms/                 Android, iOS, browser and desktop hosts
 The UI depends on the domain interfaces only. The sharing transport knows nothing about recipes: it
 moves an encrypted package and hands it to the cookbook file reader on the other side.
 
+### Type and icons
+
+Three faces do three jobs: **Zasline** for display (the brand, page names, navigation),
+**Restora** for anything read as prose, and **IBM Plex Mono** for data — measures, times, counts
+and the small caps labels. All three ship in `src/Sedhep/Assets` and are wired up once in
+`Styles/Palette.axaml`, so the type scale on the Settings page still grows the whole app.
+
+Icons are **Material Icons two-tone**, converted from the official two-tone SVGs into XAML
+geometry in `Styles/TwoToneIcons.axaml` and drawn by `Controls/TwoToneIcon.cs`. Each icon is an
+outline plus a lighter fill painted in the current ink, rather than a colour-glyph font, so icons
+follow light and dark themes and the state of the control that holds them.
+
 The almanac is a view, not a second source of truth: `IngredientAlmanac` groups the structured
 ingredient rows the cookbook already stores, so no glossary needs to be maintained by hand and a
 recipe edit shows up on the cards immediately.

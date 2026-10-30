@@ -1,48 +1,53 @@
 <Styles xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="clr-namespace:Sedhep.Controls">
   <!-- ============================ Typography ============================ -->
   <Style Selector="TextBlock">
+    <Setter Property="FontFamily" Value="{DynamicResource FontBodyFamily}" />
     <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
     <Setter Property="TextWrapping" Value="Wrap" />
   </Style>
 
+  <!-- Small caps metadata: the mono face, spaced out so it reads as a label, not a sentence. -->
   <Style Selector="TextBlock.eyebrow">
+    <Setter Property="FontFamily" Value="{DynamicResource FontDataFamily}" />
     <Setter Property="FontSize" Value="{DynamicResource FontLabel}" />
-    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="LetterSpacing" Value="1.2" />
     <Setter Property="Foreground" Value="{DynamicResource AccentInk}" />
   </Style>
 
   <!-- The brand line on the cookbook home, drawn as large as a book title. -->
   <Style Selector="TextBlock.brand">
+    <Setter Property="FontFamily" Value="{DynamicResource FontDisplayFamily}" />
     <Setter Property="FontSize" Value="{DynamicResource FontBrand}" />
-    <Setter Property="FontWeight" Value="Bold" />
-    <Setter Property="LineHeight" Value="44" />
+    <Setter Property="LineHeight" Value="46" />
     <Setter Property="Foreground" Value="{DynamicResource Ink}" />
   </Style>
 
   <Style Selector="TextBlock.display">
+    <Setter Property="FontFamily" Value="{DynamicResource FontDisplayFamily}" />
     <Setter Property="FontSize" Value="{DynamicResource FontDisplay}" />
-    <Setter Property="FontWeight" Value="Bold" />
-    <Setter Property="LineHeight" Value="39" />
+    <Setter Property="LineHeight" Value="37" />
     <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
   </Style>
 
   <Style Selector="TextBlock.title">
+    <Setter Property="FontFamily" Value="{DynamicResource FontDisplayFamily}" />
     <Setter Property="FontSize" Value="{DynamicResource FontTitle}" />
-    <Setter Property="FontWeight" Value="Bold" />
-    <Setter Property="LineHeight" Value="32" />
+    <Setter Property="LineHeight" Value="30" />
     <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
   </Style>
 
   <Style Selector="TextBlock.h2">
+    <Setter Property="FontFamily" Value="{DynamicResource FontDisplayFamily}" />
     <Setter Property="FontSize" Value="{DynamicResource FontH2}" />
-    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="LineHeight" Value="25" />
     <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
   </Style>
 
+  <!-- Card titles stay in the text face: they are read, not displayed. -->
   <Style Selector="TextBlock.h3">
     <Setter Property="FontSize" Value="{DynamicResource FontH3}" />
-    <Setter Property="FontWeight" Value="SemiBold" />
     <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
   </Style>
 
@@ -64,14 +69,36 @@
   </Style>
 
   <Style Selector="TextBlock.label">
+    <Setter Property="FontFamily" Value="{DynamicResource FontDataFamily}" />
     <Setter Property="FontSize" Value="{DynamicResource FontLabel}" />
-    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="LetterSpacing" Value="1" />
     <Setter Property="Foreground" Value="{DynamicResource TextTertiary}" />
   </Style>
 
+  <!-- Measures, times and counts are set like a recipe card: monospaced. -->
   <Style Selector="TextBlock.numeric">
-    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="FontFamily" Value="{DynamicResource FontDataFamily}" />
     <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
+  </Style>
+
+  <Style Selector="TextBlock.data">
+    <Setter Property="FontFamily" Value="{DynamicResource FontDataFamily}" />
+    <Setter Property="FontSize" Value="{DynamicResource FontMeta}" />
+    <Setter Property="Foreground" Value="{DynamicResource TextSecondary}" />
+  </Style>
+
+  <!-- The one place the display face is used for small type: the rail, where there is room. -->
+  <Style Selector="TextBlock.navLabel">
+    <Setter Property="FontFamily" Value="{DynamicResource FontDisplayFamily}" />
+    <Setter Property="FontSize" Value="{DynamicResource FontNav}" />
+    <Setter Property="LineHeight" Value="20" />
+  </Style>
+
+  <!-- Bottom bar labels: the text face, because they are small and must stay legible. -->
+  <Style Selector="TextBlock.tabLabel">
+    <Setter Property="FontFamily" Value="{DynamicResource FontBodyFamily}" />
+    <Setter Property="FontSize" Value="{DynamicResource FontTab}" />
+    <Setter Property="LineHeight" Value="15" />
   </Style>
 
   <!-- ============================ Buttons ============================ -->
@@ -79,8 +106,8 @@
     <Setter Property="MinHeight" Value="46" />
     <Setter Property="CornerRadius" Value="15" />
     <Setter Property="Padding" Value="16,10" />
-    <Setter Property="FontSize" Value="{DynamicResource FontBody}" />
-    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="FontFamily" Value="{DynamicResource FontDisplayFamily}" />
+    <Setter Property="FontSize" Value="{DynamicResource FontH3}" />
     <Setter Property="Cursor" Value="Hand" />
     <Setter Property="HorizontalContentAlignment" Value="Center" />
     <Setter Property="VerticalContentAlignment" Value="Center" />
@@ -228,13 +255,17 @@
   </Style>
 
   <!-- Chip: filters and tags. -->
+  <!-- A chip is a small reading label, not a heading: the text face, with room above and below. -->
   <Style Selector="Button.chip">
-    <Setter Property="MinHeight" Value="36" />
-    <Setter Property="Padding" Value="15,6" />
+    <Setter Property="MinHeight" Value="40" />
+    <Setter Property="Padding" Value="16,9" />
     <Setter Property="CornerRadius" Value="999" />
+    <Setter Property="FontFamily" Value="{DynamicResource FontBodyFamily}" />
     <Setter Property="FontSize" Value="{DynamicResource FontMeta}" />
+    <Setter Property="LineHeight" Value="18" />
     <Setter Property="FontWeight" Value="Normal" />
     <Setter Property="Foreground" Value="{DynamicResource TextSecondary}" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
   </Style>
   <Style Selector="Button.chip /template/ ContentPresenter#PART_ContentPresenter">
     <Setter Property="Background" Value="{DynamicResource Surface}" />
@@ -249,7 +280,6 @@
   </Style>
   <Style Selector="Button.chip.active">
     <Setter Property="Foreground" Value="{DynamicResource OnAccent}" />
-    <Setter Property="FontWeight" Value="SemiBold" />
   </Style>
   <Style Selector="Button.chip.active /template/ ContentPresenter#PART_ContentPresenter">
     <Setter Property="Background" Value="{DynamicResource Accent}" />
@@ -257,44 +287,66 @@
     <Setter Property="Foreground" Value="{DynamicResource OnAccent}" />
   </Style>
 
-  <!-- Tab bar buttons -->
+  <!-- Bottom navigation: five equal places, with the raised create button in the middle. -->
   <Style Selector="Button.tab">
-    <Setter Property="MinHeight" Value="52" />
-    <Setter Property="Padding" Value="0,6" />
-    <Setter Property="CornerRadius" Value="15" />
+    <Setter Property="MinHeight" Value="58" />
+    <Setter Property="Padding" Value="2,8" />
+    <Setter Property="CornerRadius" Value="16" />
     <Setter Property="FontWeight" Value="Normal" />
     <Setter Property="Foreground" Value="{DynamicResource TextTertiary}" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
   </Style>
   <Style Selector="Button.tab /template/ ContentPresenter#PART_ContentPresenter">
     <Setter Property="Background" Value="Transparent" />
     <Setter Property="BorderBrush" Value="Transparent" />
-    <Setter Property="CornerRadius" Value="15" />
+    <Setter Property="CornerRadius" Value="16" />
   </Style>
   <Style Selector="Button.tab:pointerover /template/ ContentPresenter#PART_ContentPresenter">
     <Setter Property="Background" Value="{DynamicResource SurfaceMuted}" />
   </Style>
-  <Style Selector="Button.tab Path">
-    <Setter Property="Stroke" Value="{DynamicResource TextTertiary}" />
-  </Style>
   <Style Selector="Button.tab TextBlock">
     <Setter Property="Foreground" Value="{DynamicResource TextTertiary}" />
   </Style>
-  <Style Selector="Button.tab.active /template/ ContentPresenter#PART_ContentPresenter">
-    <Setter Property="Background" Value="{DynamicResource AccentSoft}" />
-  </Style>
-  <Style Selector="Button.tab.active Path">
-    <Setter Property="Stroke" Value="{DynamicResource AccentInk}" />
+  <Style Selector="Button.tab.active">
+    <Setter Property="Foreground" Value="{DynamicResource AccentInk}" />
   </Style>
   <Style Selector="Button.tab.active TextBlock">
     <Setter Property="Foreground" Value="{DynamicResource AccentInk}" />
-    <Setter Property="FontWeight" Value="SemiBold" />
   </Style>
 
-  <!-- Rail: the same three places as the tabs, but laid out like a desk drawer. -->
+  <!--
+    The raised create button that breaks the top line of the bottom bar, the way a thumb finds
+    it without looking. The ring is the page colour, so it lifts off the bar.
+  -->
+  <Style Selector="Button.create">
+    <Setter Property="Foreground" Value="{DynamicResource Page}" />
+    <Setter Property="Width" Value="60" />
+    <Setter Property="Height" Value="60" />
+    <Setter Property="MinHeight" Value="0" />
+    <Setter Property="Padding" Value="0" />
+    <Setter Property="CornerRadius" Value="999" />
+    <Setter Property="Background" Value="{DynamicResource Ink}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource Page}" />
+    <Setter Property="BorderThickness" Value="4" />
+    <Setter Property="VerticalAlignment" Value="Top" />
+    <Setter Property="HorizontalAlignment" Value="Center" />
+  </Style>
+  <Style Selector="Button.create /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource Ink}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource Page}" />
+    <Setter Property="BorderThickness" Value="4" />
+    <Setter Property="CornerRadius" Value="999" />
+  </Style>
+  <Style Selector="Button.create:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource AccentInk}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource Page}" />
+  </Style>
+
+  <!-- Rail: the desk version of the same five places, laid out like a book's table of contents. -->
   <Style Selector="Button.rail">
-    <Setter Property="MinHeight" Value="44" />
-    <Setter Property="Padding" Value="11,8" />
-    <Setter Property="CornerRadius" Value="13" />
+    <Setter Property="MinHeight" Value="46" />
+    <Setter Property="Padding" Value="12,10" />
+    <Setter Property="CornerRadius" Value="14" />
     <Setter Property="FontWeight" Value="Normal" />
     <Setter Property="HorizontalAlignment" Value="Stretch" />
     <Setter Property="HorizontalContentAlignment" Value="Left" />
@@ -303,29 +355,48 @@
   <Style Selector="Button.rail /template/ ContentPresenter#PART_ContentPresenter">
     <Setter Property="Background" Value="Transparent" />
     <Setter Property="BorderBrush" Value="Transparent" />
-    <Setter Property="CornerRadius" Value="13" />
+    <Setter Property="CornerRadius" Value="14" />
   </Style>
   <Style Selector="Button.rail:pointerover /template/ ContentPresenter#PART_ContentPresenter">
     <Setter Property="Background" Value="{DynamicResource SurfaceMuted}" />
-  </Style>
-  <Style Selector="Button.rail:pointerover">
-    <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
-  </Style>
-  <Style Selector="Button.rail Path">
-    <Setter Property="Stroke" Value="{DynamicResource TextSecondary}" />
   </Style>
   <Style Selector="Button.rail TextBlock">
     <Setter Property="Foreground" Value="{DynamicResource TextSecondary}" />
   </Style>
   <Style Selector="Button.rail.active /template/ ContentPresenter#PART_ContentPresenter">
-    <Setter Property="Background" Value="{DynamicResource AccentSoft}" />
-  </Style>
-  <Style Selector="Button.rail.active Path">
-    <Setter Property="Stroke" Value="{DynamicResource AccentInk}" />
+    <Setter Property="Background" Value="{DynamicResource SurfaceMuted}" />
   </Style>
   <Style Selector="Button.rail.active TextBlock">
     <Setter Property="Foreground" Value="{DynamicResource AccentInk}" />
-    <Setter Property="FontWeight" Value="SemiBold" />
+  </Style>
+  <!-- Set last so it wins over the resting colour above: the icon reads the button's ink. -->
+  <Style Selector="Button.rail.active">
+    <Setter Property="Foreground" Value="{DynamicResource AccentInk}" />
+  </Style>
+
+  <!-- The rail's one filled action: write a new recipe. -->
+  <Style Selector="Button.newRecipe">
+    <Setter Property="MinHeight" Value="48" />
+    <Setter Property="Padding" Value="12,9" />
+    <Setter Property="CornerRadius" Value="16" />
+    <Setter Property="HorizontalAlignment" Value="Stretch" />
+    <Setter Property="HorizontalContentAlignment" Value="Left" />
+    <Setter Property="Foreground" Value="{DynamicResource Page}" />
+  </Style>
+  <Style Selector="Button.newRecipe /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource Ink}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource Ink}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="16" />
+    <Setter Property="Foreground" Value="{DynamicResource Page}" />
+  </Style>
+  <Style Selector="Button.newRecipe:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource AccentInk}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource AccentInk}" />
+    <Setter Property="Foreground" Value="{DynamicResource Page}" />
+  </Style>
+  <Style Selector="Button.newRecipe TextBlock">
+    <Setter Property="Foreground" Value="{DynamicResource Page}" />
   </Style>
 
   <!-- Text-only action, e.g. "Save" in the editor header. -->
@@ -444,6 +515,7 @@
   <Style Selector="TextBox">
     <Setter Property="MinHeight" Value="48" />
     <Setter Property="CornerRadius" Value="13" />
+    <Setter Property="FontFamily" Value="{DynamicResource FontBodyFamily}" />
     <Setter Property="Padding" Value="14,11" />
     <Setter Property="FontSize" Value="{DynamicResource FontBody}" />
     <Setter Property="Background" Value="{DynamicResource Surface}" />
@@ -467,6 +539,7 @@
   <Style Selector="ComboBox">
     <Setter Property="MinHeight" Value="46" />
     <Setter Property="CornerRadius" Value="13" />
+    <Setter Property="FontFamily" Value="{DynamicResource FontBodyFamily}" />
     <Setter Property="FontSize" Value="{DynamicResource FontBody}" />
     <Setter Property="Background" Value="{DynamicResource Surface}" />
     <Setter Property="BorderBrush" Value="{DynamicResource Border}" />
@@ -477,6 +550,7 @@
   <!-- A plain checkbox, used for the "copy my cookbook" choice on desktop. -->
   <Style Selector="CheckBox">
     <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
+    <Setter Property="FontFamily" Value="{DynamicResource FontBodyFamily}" />
     <Setter Property="FontSize" Value="{DynamicResource FontBody}" />
     <Setter Property="MinHeight" Value="32" />
   </Style>
@@ -500,37 +574,22 @@
     <Setter Property="Background" Value="{DynamicResource Page}" />
   </Style>
 
-  <!-- Icon used inline with text: a stroked 24x24 path. -->
-  <Style Selector="Path.icon">
-    <Setter Property="Stroke" Value="{DynamicResource TextSecondary}" />
-    <Setter Property="StrokeThickness" Value="1.7" />
-    <Setter Property="StrokeLineCap" Value="Round" />
-    <Setter Property="StrokeJoin" Value="Round" />
-    <Setter Property="Fill" Value="Transparent" />
-    <Setter Property="Stretch" Value="Uniform" />
+  <!-- A two-tone Material icon, drawn with the surrounding ink. -->
+  <Style Selector="controls|TwoToneIcon">
+    <Setter Property="Width" Value="24" />
+    <Setter Property="Height" Value="24" />
+    <Setter Property="Foreground" Value="{DynamicResource TextSecondary}" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+  </Style>
+  <Style Selector="controls|TwoToneIcon.favorite">
+    <Setter Property="Foreground" Value="{DynamicResource FavoriteInk}" />
+  </Style>
+  <Style Selector="controls|TwoToneIcon.lg">
+    <Setter Property="Width" Value="30" />
+    <Setter Property="Height" Value="30" />
+  </Style>
+  <Style Selector="controls|TwoToneIcon.sm">
     <Setter Property="Width" Value="20" />
     <Setter Property="Height" Value="20" />
-  </Style>
-  <Style Selector="Path.icon.lg">
-    <Setter Property="Width" Value="26" />
-    <Setter Property="Height" Value="26" />
-  </Style>
-  <Style Selector="Path.icon.sm">
-    <Setter Property="Width" Value="16" />
-    <Setter Property="Height" Value="16" />
-  </Style>
-  <Style Selector="Path.icon.accent">
-    <Setter Property="Stroke" Value="{DynamicResource AccentInk}" />
-  </Style>
-  <Style Selector="Path.icon.favorite">
-    <Setter Property="Stroke" Value="{DynamicResource FavoriteInk}" />
-    <Setter Property="Fill" Value="{DynamicResource Favorite}" />
-  </Style>
-  <Style Selector="Path.icon.onAccent">
-    <Setter Property="Stroke" Value="{DynamicResource OnAccent}" />
-  </Style>
-  <Style Selector="Path.filled">
-    <Setter Property="Fill" Value="{DynamicResource TextSecondary}" />
-    <Setter Property="Stroke" Value="{DynamicResource TextSecondary}" />
   </Style>
 </Styles>

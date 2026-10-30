@@ -7,7 +7,8 @@
              xmlns:sys="using:System"
              mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="800"
              x:Class="Sedhep.Views.RecipeView"
-             x:DataType="vm:RecipeViewModel">
+             x:DataType="vm:RecipeViewModel"
+             xmlns:controls="clr-namespace:Sedhep.Controls">
   <Grid Background="{DynamicResource Page}" RowDefinitions="*,Auto">
     <Grid.Styles>
       <Style Selector="Border.recipeSection">
@@ -40,19 +41,21 @@
             <!-- Leaving and sharing, floating over the cover so the recipe starts at the dish. -->
             <Button Classes="icon"
                     Command="{Binding BackCommand}"
+                    AutomationProperties.Name="Back"
                     ToolTip.Tip="Back to cookbook"
                     HorizontalAlignment="Left"
                     VerticalAlignment="Top"
                     Margin="12">
-              <Path Classes="icon" Data="{StaticResource IconChevronLeft}" />
+              <controls:TwoToneIcon Data="{StaticResource ToneChevronLeft}" Foreground="{DynamicResource TextSecondary}" Width="20" Height="20" />
             </Button>
             <Button Classes="icon"
                     Command="{Binding ShareCommand}"
+                    AutomationProperties.Name="Share"
                     ToolTip.Tip="Send to a nearby phone"
                     HorizontalAlignment="Right"
                     VerticalAlignment="Top"
                     Margin="12">
-              <Path Classes="icon" Data="{StaticResource IconShare}" />
+              <controls:TwoToneIcon Data="{StaticResource ToneIosShare}" Foreground="{DynamicResource TextSecondary}" Width="20" Height="20" />
             </Button>
           </Panel>
         </Border>
@@ -63,25 +66,25 @@
           <WrapPanel>
             <Border Classes="pill" Margin="0,0,6,6">
               <StackPanel Orientation="Horizontal" Spacing="5">
-                <Path Classes="icon sm" Data="{StaticResource IconFolder}" />
+                <controls:TwoToneIcon Data="{StaticResource ToneFolder}" SoftData="{StaticResource ToneFolderSoft}" Foreground="{DynamicResource TextSecondary}" Width="16" Height="16" />
                 <TextBlock Classes="meta" Text="{Binding CategoryLabel}" />
               </StackPanel>
             </Border>
             <Border Classes="pill" Margin="0,0,6,6" IsVisible="{Binding HasTime}">
               <StackPanel Orientation="Horizontal" Spacing="5">
-                <Path Classes="icon sm" Data="{StaticResource IconClock}" />
+                <controls:TwoToneIcon Data="{StaticResource ToneSchedule}" SoftData="{StaticResource ToneScheduleSoft}" Foreground="{DynamicResource TextSecondary}" Width="16" Height="16" />
                 <TextBlock Classes="meta" Text="{Binding TimeLabel}" />
               </StackPanel>
             </Border>
             <Border Classes="pill" Margin="0,0,6,6">
               <StackPanel Orientation="Horizontal" Spacing="5">
-                <Path Classes="icon sm" Data="{StaticResource IconPerson}" />
+                <controls:TwoToneIcon Data="{StaticResource TonePerson}" SoftData="{StaticResource TonePersonSoft}" Foreground="{DynamicResource TextSecondary}" Width="16" Height="16" />
                 <TextBlock Classes="meta" Text="{Binding ServingsLabel}" />
               </StackPanel>
             </Border>
             <Border Classes="pill favorite" Margin="0,0,6,6" IsVisible="{Binding IsFavorite}">
               <StackPanel Orientation="Horizontal" Spacing="5">
-                <Path Classes="icon sm" Data="{StaticResource IconStar}" Fill="{DynamicResource Favorite}" Stroke="{DynamicResource FavoriteInk}" />
+                <controls:TwoToneIcon Data="{StaticResource ToneStar}" SoftData="{StaticResource ToneStarSoft}" Foreground="{DynamicResource FavoriteInk}" Width="16" Height="16" />
                 <TextBlock Classes="meta" Text="Favorite" Foreground="{DynamicResource FavoriteInk}" />
               </StackPanel>
             </Border>
@@ -201,7 +204,7 @@
               <DataTemplate x:DataType="sys:String">
                 <Border Classes="pill" Margin="0,0,6,6">
                   <StackPanel Orientation="Horizontal" Spacing="5">
-                    <Path Classes="icon sm" Data="{StaticResource IconTag}" />
+                    <controls:TwoToneIcon Data="{StaticResource ToneLabel}" SoftData="{StaticResource ToneLabelSoft}" Foreground="{DynamicResource TextSecondary}" Width="16" Height="16" />
                     <TextBlock Classes="meta" Text="{Binding}" />
                   </StackPanel>
                 </Border>
@@ -225,42 +228,40 @@
       <StackPanel Spacing="10" MaxWidth="760" HorizontalAlignment="Stretch">
         <Button Classes="primary"
                 Command="{Binding CookCommand}"
+                AutomationProperties.Name="Start cooking"
                 IsVisible="{Binding HasSteps}"
                 HorizontalAlignment="Stretch">
           <StackPanel Orientation="Horizontal" Spacing="8">
-            <Path Classes="icon onAccent" Data="{StaticResource IconPlay}" Fill="{DynamicResource OnAccent}" />
+            <controls:TwoToneIcon Data="{StaticResource TonePlayArrow}" SoftData="{StaticResource TonePlayArrowSoft}" Foreground="{DynamicResource OnAccent}" Width="20" Height="20" />
             <TextBlock Text="Start cooking" VerticalAlignment="Center" Foreground="{DynamicResource OnAccent}" />
           </StackPanel>
         </Button>
 
         <Grid ColumnDefinitions="*,*,*,*">
-          <Button Grid.Column="0" Classes="bare" Command="{Binding ToggleFavoriteCommand}" Margin="0,2,0,2">
+          <Button Grid.Column="0" Classes="bare" Command="{Binding ToggleFavoriteCommand}" AutomationProperties.Name="Favorite" Margin="0,2,0,2">
             <StackPanel Spacing="4" HorizontalAlignment="Center">
-              <Path Classes="icon"
-                    Classes.favorite="{Binding IsFavorite}"
-                    Data="{StaticResource IconStar}"
-                    HorizontalAlignment="Center" />
+              <controls:TwoToneIcon Data="{StaticResource ToneStar}" SoftData="{StaticResource ToneStarSoft}" Classes.favorite="{Binding IsFavorite}" HorizontalAlignment="Center" Width="20" Height="20" />
               <TextBlock Classes="meta" Text="{Binding FavoriteLabel}" HorizontalAlignment="Center" />
             </StackPanel>
           </Button>
 
-          <Button Grid.Column="1" Classes="bare" Command="{Binding EditCommand}">
+          <Button Grid.Column="1" Classes="bare" Command="{Binding EditCommand}" AutomationProperties.Name="Edit recipe">
             <StackPanel Spacing="4" HorizontalAlignment="Center">
-              <Path Classes="icon" Data="{StaticResource IconPencil}" HorizontalAlignment="Center" />
+              <controls:TwoToneIcon Data="{StaticResource ToneEdit}" SoftData="{StaticResource ToneEditSoft}" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center" Width="20" Height="20" />
               <TextBlock Classes="meta" Text="Edit" HorizontalAlignment="Center" />
             </StackPanel>
           </Button>
 
-          <Button Grid.Column="2" Classes="bare" Command="{Binding ShareCommand}">
+          <Button Grid.Column="2" Classes="bare" Command="{Binding ShareCommand}" AutomationProperties.Name="Share recipe">
             <StackPanel Spacing="4" HorizontalAlignment="Center">
-              <Path Classes="icon" Data="{StaticResource IconShare}" HorizontalAlignment="Center" />
+              <controls:TwoToneIcon Data="{StaticResource ToneIosShare}" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center" Width="20" Height="20" />
               <TextBlock Classes="meta" Text="Share" HorizontalAlignment="Center" />
             </StackPanel>
           </Button>
 
-          <Button Grid.Column="3" Classes="bare" Command="{Binding DeleteCommand}">
+          <Button Grid.Column="3" Classes="bare" Command="{Binding DeleteCommand}" AutomationProperties.Name="Delete recipe">
             <StackPanel Spacing="4" HorizontalAlignment="Center">
-              <Path Classes="icon" Data="{StaticResource IconTrash}" Stroke="{DynamicResource DangerInk}" HorizontalAlignment="Center" />
+              <controls:TwoToneIcon Data="{StaticResource ToneDelete}" SoftData="{StaticResource ToneDeleteSoft}" Foreground="{DynamicResource DangerInk}" HorizontalAlignment="Center" Width="20" Height="20" />
               <TextBlock Classes="meta" Text="Delete" HorizontalAlignment="Center" Foreground="{DynamicResource DangerInk}" />
             </StackPanel>
           </Button>
@@ -274,7 +275,7 @@
             Background="{DynamicResource Scrim}">
       <Border Classes="card" Margin="24" Padding="20" VerticalAlignment="Center" MaxWidth="440">
         <StackPanel Spacing="14">
-          <Path Classes="icon lg" Data="{StaticResource IconTrash}" Stroke="{DynamicResource DangerInk}" />
+          <controls:TwoToneIcon Data="{StaticResource ToneDelete}" SoftData="{StaticResource ToneDeleteSoft}" Foreground="{DynamicResource DangerInk}" Width="26" Height="26" />
           <TextBlock Classes="h2" Text="Delete this recipe?" />
           <TextBlock Classes="muted" Text="It disappears from this device for good. This cannot be undone." />
           <StackPanel Orientation="Horizontal" Spacing="10">

@@ -5,12 +5,13 @@
              xmlns:vm="clr-namespace:Sedhep.ViewModels"
              mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="800"
              x:Class="Sedhep.Views.CategoryManagerView"
-             x:DataType="vm:CategoryManagerViewModel">
+             x:DataType="vm:CategoryManagerViewModel"
+             xmlns:controls="clr-namespace:Sedhep.Controls">
   <Grid Background="{DynamicResource Page}" RowDefinitions="Auto,*,Auto">
     <Border Padding="12,12,12,4">
       <Grid ColumnDefinitions="Auto,*,Auto">
         <Button Classes="icon" Command="{Binding BackCommand}" ToolTip.Tip="Back">
-          <Path Classes="icon" Data="{StaticResource IconChevronLeft}" />
+          <controls:TwoToneIcon Data="{StaticResource ToneChevronLeft}" Foreground="{DynamicResource TextSecondary}" Width="20" Height="20" />
         </Button>
         <TextBlock Grid.Column="1" Classes="h2" Text="Categories" HorizontalAlignment="Center" VerticalAlignment="Center" />
         <Border Grid.Column="2" Width="42" />
@@ -36,7 +37,7 @@
                             Command="{Binding $parent[ItemsControl].((vm:CategoryManagerViewModel)DataContext).DeleteCommand}"
                             CommandParameter="{Binding}"
                             ToolTip.Tip="Delete category">
-                      <Path Classes="icon sm" Data="{StaticResource IconTrash}" Stroke="{DynamicResource DangerInk}" />
+                      <controls:TwoToneIcon Data="{StaticResource ToneDelete}" SoftData="{StaticResource ToneDeleteSoft}" Foreground="{DynamicResource DangerInk}" Width="16" Height="16" />
                     </Button>
                   </Grid>
                   <TextBlock Classes="label" Text="{Binding UsageLabel}" />
@@ -65,7 +66,7 @@
 
         <Border Classes="card" IsVisible="{Binding IsConfirmingDelete}">
           <StackPanel Spacing="12">
-            <Path Classes="icon lg" Data="{StaticResource IconTrash}" Stroke="{DynamicResource DangerInk}" />
+            <controls:TwoToneIcon Data="{StaticResource ToneDelete}" SoftData="{StaticResource ToneDeleteSoft}" Foreground="{DynamicResource DangerInk}" Width="26" Height="26" />
             <TextBlock Classes="h3" Text="{Binding PendingDeleteMessage}" />
             <TextBlock Classes="muted" Text="The recipes stay in your cookbook." />
             <StackPanel Orientation="Horizontal" Spacing="10">

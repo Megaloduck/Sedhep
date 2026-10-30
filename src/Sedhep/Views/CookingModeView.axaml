@@ -6,12 +6,13 @@
              mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="800"
              x:Class="Sedhep.Views.CookingModeView"
              Focusable="True"
-             x:DataType="vm:CookingModeViewModel">
+             x:DataType="vm:CookingModeViewModel"
+             xmlns:controls="clr-namespace:Sedhep.Controls">
   <Grid Background="{DynamicResource Page}" RowDefinitions="Auto,Auto,*,Auto,Auto,Auto">
     <!-- Nothing on this screen competes with the step. -->
     <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" Margin="14,12,14,0">
-      <Button Classes="icon" Command="{Binding CloseCommand}" ToolTip.Tip="Back to the recipe">
-        <Path Classes="icon" Data="{StaticResource IconClose}" />
+      <Button Classes="icon" Command="{Binding CloseCommand}" AutomationProperties.Name="Back to the recipe" ToolTip.Tip="Back to the recipe">
+        <controls:TwoToneIcon Data="{StaticResource ToneClose}" Foreground="{DynamicResource TextSecondary}" Width="20" Height="20" />
       </Button>
       <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="10,0">
         <TextBlock Classes="meta"
@@ -27,7 +28,7 @@
               Classes="icon"
               Command="{Binding ToggleIngredientsCommand}"
               ToolTip.Tip="Show ingredients">
-        <Path Classes="icon" Data="{StaticResource IconBook}" />
+        <controls:TwoToneIcon Data="{StaticResource ToneMenuBook}" SoftData="{StaticResource ToneMenuBookSoft}" Foreground="{DynamicResource TextSecondary}" Width="20" Height="20" />
       </Button>
     </Grid>
 
@@ -62,10 +63,7 @@
             Margin="16,10,16,0"
             IsVisible="{Binding HasTimer}">
       <Grid ColumnDefinitions="Auto,*,Auto">
-        <Path Classes="icon"
-              Data="{StaticResource IconTimer}"
-              Stroke="{DynamicResource HighlightInk}"
-              VerticalAlignment="Center" />
+        <controls:TwoToneIcon Data="{StaticResource ToneTimer}" SoftData="{StaticResource ToneTimerSoft}" Foreground="{DynamicResource HighlightInk}" VerticalAlignment="Center" Width="20" Height="20" />
         <StackPanel Grid.Column="1" Margin="10,0" VerticalAlignment="Center">
           <TextBlock Classes="label" Text="{Binding TimerTitle}" Foreground="{DynamicResource HighlightInk}" />
           <TextBlock Classes="h3" Text="{Binding TimerLabel, TargetNullValue='Ready'}" />

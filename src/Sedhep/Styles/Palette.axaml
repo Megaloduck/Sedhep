@@ -101,17 +101,29 @@
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
 
+  <!--
+    Three faces, three jobs:
+      Zasline        display: the book's title, page names and the navigation itself
+      Restora        body: anything meant to be read as prose
+      IBM Plex Mono  data: measures, times, counts and small caps labels
+    All three are single-weight, so emphasis comes from size and colour rather than faux bold.
+  -->
+  <FontFamily x:Key="FontDisplayFamily">avares://Sedhep/Assets#Zasline</FontFamily>
+  <FontFamily x:Key="FontBodyFamily">avares://Sedhep/Assets#Restora</FontFamily>
+  <FontFamily x:Key="FontDataFamily">avares://Sedhep/Assets#IBM Plex Mono</FontFamily>
+
   <!-- Type scale. These are plain doubles so the Settings page can grow the whole app at once. -->
   <x:Double x:Key="FontBrand">40</x:Double>
-  <x:Double x:Key="FontDisplay">33</x:Double>
-  <x:Double x:Key="FontCook">30</x:Double>
-  <x:Double x:Key="FontTitle">25</x:Double>
-  <x:Double x:Key="FontH2">20</x:Double>
-  <x:Double x:Key="FontH3">16.5</x:Double>
+  <x:Double x:Key="FontDisplay">31</x:Double>
+  <x:Double x:Key="FontCook">28</x:Double>
+  <x:Double x:Key="FontTitle">24</x:Double>
+  <x:Double x:Key="FontH2">19</x:Double>
+  <x:Double x:Key="FontH3">17</x:Double>
   <x:Double x:Key="FontBody">15</x:Double>
   <x:Double x:Key="FontMeta">13</x:Double>
-  <x:Double x:Key="FontLabel">11.5</x:Double>
-  <x:Double x:Key="FontTab">11</x:Double>
+  <x:Double x:Key="FontLabel">11</x:Double>
+  <x:Double x:Key="FontTab">11.5</x:Double>
+  <x:Double x:Key="FontNav">14.5</x:Double>
 
   <!-- Radii: soft printed-card corners. -->
   <CornerRadius x:Key="RadiusCard">22</CornerRadius>

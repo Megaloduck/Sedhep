@@ -3,6 +3,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:Sedhep.ViewModels"
+             xmlns:controls="clr-namespace:Sedhep.Controls"
              mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="760"
              x:Class="Sedhep.Views.MainView"
              x:DataType="vm:MainViewModel">
@@ -10,34 +11,24 @@
     <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Disabled">
       <StackPanel Margin="22,20,22,10" Spacing="15" MaxWidth="980" HorizontalAlignment="Center">
 
-        <!-- The bookplate: who this cookbook belongs to, and the one action that matters most. -->
-        <Grid ColumnDefinitions="*,Auto">
-          <StackPanel Spacing="3">
-            <TextBlock Classes="brand" Text="Sedhep" />
-            <TextBlock Classes="muted" Text="{Binding HeaderSubtitle}" />
-          </StackPanel>
-
-          <Button Grid.Column="1"
-                  Classes="round"
-                  Command="{Binding NewRecipeCommand}"
-                  ToolTip.Tip="New recipe"
-                  VerticalAlignment="Top"
-                  Margin="10,6,0,0">
-            <Path Classes="icon lg onAccent" Data="{StaticResource IconPlus}" />
-          </Button>
-        </Grid>
+        <!-- The bookplate: who this cookbook belongs to. Writing lives in the navigation. -->
+        <StackPanel Spacing="3">
+          <TextBlock Classes="brand" Text="Sedhep" />
+          <TextBlock Classes="muted" Text="{Binding HeaderSubtitle}" />
+        </StackPanel>
 
         <!-- Search works entirely offline; it reads the local database. -->
         <Grid>
           <TextBox Text="{Binding SearchText, Mode=TwoWay}"
                    Watermark="Search recipes, ingredients, notes…"
                    Padding="44,11,44,11" />
-          <Path Classes="icon sm"
-                Data="{StaticResource IconSearch}"
-                Margin="15,0,0,0"
-                IsHitTestVisible="False"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Center" />
+          <controls:TwoToneIcon Classes="sm"
+                                Data="{StaticResource ToneSearch}"
+                                Foreground="{DynamicResource TextTertiary}"
+                                Margin="15,0,0,0"
+                                IsHitTestVisible="False"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center" />
           <Button Classes="bare"
                   Width="34" Height="34"
                   Margin="0,0,8,0"
@@ -46,7 +37,9 @@
                   IsVisible="{Binding IsSearching}"
                   Command="{Binding ClearSearchCommand}"
                   ToolTip.Tip="Clear search">
-            <Path Classes="icon sm" Data="{StaticResource IconClose}" />
+            <controls:TwoToneIcon Classes="sm"
+                                  Data="{StaticResource ToneClose}"
+                                  Foreground="{DynamicResource TextTertiary}" />
           </Button>
         </Grid>
 
@@ -125,7 +118,7 @@
                 Margin="34,10,34,30"
                 MaxWidth="340">
       <Border Width="92" Height="92" CornerRadius="999" Background="{DynamicResource AccentSoft}" HorizontalAlignment="Center">
-        <Path Classes="icon" Data="{StaticResource IconPot}" Width="40" Height="40" Stroke="{DynamicResource AccentInk}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+        <controls:TwoToneIcon Data="{StaticResource ToneSoupKitchen}" SoftData="{StaticResource ToneSoupKitchenSoft}" Foreground="{DynamicResource AccentInk}" HorizontalAlignment="Center" VerticalAlignment="Center" Width="40" Height="40" />
       </Border>
       <TextBlock Classes="h2" Text="{Binding EmptyTitle}" TextAlignment="Center" />
       <TextBlock Classes="muted" Text="{Binding EmptyMessage}" TextAlignment="Center" />
@@ -156,11 +149,12 @@
           <DataTemplate x:DataType="vm:RecipeCardViewModel">
             <Button Classes="bare"
                     Margin="0,0,10,14"
+                    AutomationProperties.Name="{Binding Title}"
                     HorizontalAlignment="Stretch"
                     HorizontalContentAlignment="Stretch"
                     Command="{Binding $parent[ItemsControl].((vm:MainViewModel)DataContext).OpenRecipeCommand}"
                     CommandParameter="{Binding}">
-              <StackPanel Spacing="8">
+              <StackPanel Spacing="10">
                 <Border Classes="cover" Height="120" Background="{Binding CoverBackground}"
                         BoxShadow="0 10 22 -16 #40264653">
                   <Grid>
@@ -183,15 +177,22 @@
                             HorizontalAlignment="Right"
                             VerticalAlignment="Top"
                             Margin="8">
-                      <Path Classes="icon sm favorite" Data="{StaticResource IconStar}"
-                            HorizontalAlignment="Center" VerticalAlignment="Center" />
+                      <controls:TwoToneIcon Width="17" Height="17"
+                                            Data="{StaticResource ToneStar}"
+                                            SoftData="{StaticResource ToneStarSoft}"
+                                            Foreground="{DynamicResource FavoriteInk}"
+                                            HorizontalAlignment="Center" VerticalAlignment="Center" />
                     </Border>
                   </Grid>
                 </Border>
 
-                <StackPanel Spacing="3" Margin="2,0">
+                <!-- Two lines are always reserved for the title, so a wrapped name cannot push
+                     the meta line out of line with the cards beside it. -->
+                <StackPanel Spacing="5" Margin="2,0,2,0">
                   <TextBlock Classes="h3"
                              Text="{Binding Title}"
+                             MinHeight="46"
+                             VerticalAlignment="Top"
                              MaxLines="2"
                              TextTrimming="CharacterEllipsis" />
                   <TextBlock Classes="meta"

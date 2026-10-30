@@ -13,7 +13,7 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceInclude Source="avares://Sedhep/Styles/Palette.axaml" />
-                <ResourceInclude Source="avares://Sedhep/Styles/Icons.axaml" />
+                <ResourceInclude Source="avares://Sedhep/Styles/TwoToneIcons.axaml" />
                 <ResourceInclude Source="avares://Sedhep/Styles/LightTheme.axaml" />
                 <ResourceInclude Source="avares://Sedhep/Styles/DarkTheme.axaml" />
             </ResourceDictionary.MergedDictionaries>
