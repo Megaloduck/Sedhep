@@ -72,6 +72,18 @@ public partial class App : Application
         Services.GetRequiredService<AppearanceService>().Apply();
         logger.LogInformation("Appearance applied");
 
+        // The recipes Sedhep ships with are added before the first page is built, so a new
+        // cookbook opens onto real food instead of an empty grid. It happens once, and a failure
+        // here must not keep the cook out of their cookbook.
+        try
+        {
+            Services.GetRequiredService<SampleCookbookSeeder>().TrySeedAsync().GetAwaiter().GetResult();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Sample recipes could not be added");
+        }
+
         var shell = Services.GetRequiredService<ShellViewModel>();
         logger.LogInformation("Shell created");
         shell.ShowCookbook();
@@ -272,6 +284,13 @@ public partial class App : Application
         services.AddSingleton<ICategoryRepository>(sp => new SqliteCategoryRepository(
             sp.GetRequiredService<SqliteConnection>(),
             sp.GetRequiredService<ILogger<SqliteCategoryRepository>>()));
+
+        services.AddSingleton(sp => new SampleCookbookSeeder(
+            sp.GetRequiredService<IRecipeRepository>(),
+            sp.GetRequiredService<ICategoryRepository>(),
+            sp.GetRequiredService<AppSettingsStore>(),
+            sp.GetRequiredService<IClock>(),
+            sp.GetRequiredService<ILogger<SampleCookbookSeeder>>()));
 
         services.AddSingleton<ICookbookFileService>(sp => new CookbookFileService(
             sp.GetRequiredService<IRecipeRepository>(),

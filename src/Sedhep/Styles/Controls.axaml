@@ -262,7 +262,6 @@
     <Setter Property="CornerRadius" Value="999" />
     <Setter Property="FontFamily" Value="{DynamicResource FontBodyFamily}" />
     <Setter Property="FontSize" Value="{DynamicResource FontMeta}" />
-    <Setter Property="LineHeight" Value="18" />
     <Setter Property="FontWeight" Value="Normal" />
     <Setter Property="Foreground" Value="{DynamicResource TextSecondary}" />
     <Setter Property="VerticalContentAlignment" Value="Center" />

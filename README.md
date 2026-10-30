@@ -13,6 +13,13 @@ when there is no photograph. Categories are shelves you tap, and the list has th
 newest, A–Z). Search reads the local database and covers names, ingredients, steps, notes and tags —
 it works with no connection at all.
 
+**A cookbook that is not empty on day one.** A new install starts with six recipes — a Sunday soup,
+a rendang, fried rice, grilled chicken, sambal and iced tea — with real amounts and real steps, so the
+first screen shows what the app is for. They are written through the same repository as anything the
+cook writes, so they can be edited, reordered or deleted like any other recipe. They are added once,
+only when the cookbook has nothing in it yet, and the fact that it happened is remembered in
+`settings.json`; deleting them keeps them deleted.
+
 **The ingredients almanac.** The plan's one distinctive idea: every ingredient any recipe mentions
 gets its own card, filed under the shelf it belongs to (produce, protein, spice, herb, grain, dairy,
 sweetener, pantry), with the measure you usually write for it and every recipe that calls for it.

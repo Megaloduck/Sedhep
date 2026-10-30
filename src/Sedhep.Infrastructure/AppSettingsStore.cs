@@ -32,6 +32,12 @@ public sealed class AppSettings
 
     public double? WindowHeight { get; set; }
 
+    /// <summary>
+    /// True once the recipes Sedhep ships with have been offered to this cookbook. Kept here rather
+    /// than derived from an empty cookbook so that deleting the samples is final.
+    /// </summary>
+    public bool SamplesAdded { get; set; }
+
     public static string DefaultDeviceName()
     {
         var machine = Environment.MachineName;

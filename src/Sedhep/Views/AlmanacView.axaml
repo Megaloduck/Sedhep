@@ -13,7 +13,7 @@
   -->
   <Grid Background="{DynamicResource Page}">
     <ScrollViewer>
-      <StackPanel Margin="22,22,22,28" Spacing="16" MaxWidth="980" HorizontalAlignment="Center">
+      <StackPanel Margin="22,22,22,28" Spacing="16" HorizontalAlignment="Center">
 
         <Grid ColumnDefinitions="*,Auto">
           <StackPanel Spacing="4">
@@ -22,9 +22,7 @@
               <TextBlock Classes="eyebrow" Text="THE INGREDIENTS ALMANAC" VerticalAlignment="Center" />
             </StackPanel>
             <TextBlock Classes="brand" Text="Almanac" Margin="0,2,0,0" />
-            <TextBlock Classes="muted"
-                       MaxWidth="440"
-                       HorizontalAlignment="Left"
+            <TextBlock Classes="muted" HorizontalAlignment="Left"
                        Text="Every ingredient in your cookbook, filed on a card with the measure you usually write and the recipes that call for it." />
           </StackPanel>
 
