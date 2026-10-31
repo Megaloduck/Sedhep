@@ -186,13 +186,17 @@
       Puts the reading pane away, or pulls it back out. One glyph, two states: the sidebar
       column is washed in while the pane stands beside the collection, and left empty once it
       is put away. The tooltip carries the wording, so the button stays the size of an icon.
+
+      It spans the same columns as the page, so it sits on the page's right edge in both states:
+      beside the splitter with the pane out, in the window's corner once the pane is away.
     -->
     <Button Grid.Row="0"
             Grid.Column="1"
+            Grid.ColumnSpan="{Binding MainContentColumnSpan}"
             Classes="icon"
             HorizontalAlignment="Right"
             VerticalAlignment="Top"
-            Margin="0,16,16,0"
+            Margin="0,16,18,0"
             IsVisible="{Binding IsPreviewToggleVisible}"
             Command="{Binding TogglePreviewCommand}"
             AutomationProperties.Name="{Binding PreviewToggleHint}"

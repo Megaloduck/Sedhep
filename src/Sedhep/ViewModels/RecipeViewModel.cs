@@ -78,8 +78,6 @@ public partial class RecipeViewModel : ViewModelBase
         _ = LoadPhotosAsync();
     }
 
-    public string FavoriteLabel => IsFavorite ? "Saved" : "Save";
-
     public string CategoryLabel => string.IsNullOrWhiteSpace(Recipe.CategoryName)
         ? "No category"
         : Recipe.CategoryName!;
@@ -138,7 +136,6 @@ public partial class RecipeViewModel : ViewModelBase
             Recipe.UpdatedAt = DateTimeOffset.UtcNow;
             await _recipes.SaveAsync(Recipe);
 
-            OnPropertyChanged(nameof(FavoriteLabel));
             Status = IsFavorite ? "Kept in favorites" : "Removed from favorites";
         }
         catch (Exception ex)

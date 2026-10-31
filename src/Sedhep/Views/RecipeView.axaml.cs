@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Interactivity;
 
 namespace Sedhep.Views;
 
@@ -30,6 +31,15 @@ public partial class RecipeView : UserControl
     }
 
     private void OnSizeChanged(object? sender, SizeChangedEventArgs e) => ApplyLayout(e.NewSize.Width);
+
+    /// <summary>
+    /// A flyout does not dismiss itself when one of its own rows runs a command, so the menu is
+    /// put away here once the row has done its work.
+    /// </summary>
+    private void OnMenuAction(object? sender, RoutedEventArgs e)
+    {
+        this.FindControl<Button>("ActionsButton")?.Flyout?.Hide();
+    }
 
     /// <summary>
     /// Ingredients stay where the cook can see them while reading the method. The fixed ingredient
