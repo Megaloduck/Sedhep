@@ -157,8 +157,7 @@
       <Grid>
         <ContentControl Content="{Binding SelectedRecipe}"
                         IsVisible="{Binding HasSelectedRecipe}"
-                        HorizontalAlignment="Stretch"
-                        MaxWidth="720" />
+                        HorizontalAlignment="Stretch" />
         <StackPanel IsVisible="{Binding !HasSelectedRecipe}"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"

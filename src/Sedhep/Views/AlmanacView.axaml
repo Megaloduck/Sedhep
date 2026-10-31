@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -13,7 +13,7 @@
   -->
   <Grid Background="{DynamicResource Page}">
     <ScrollViewer>
-      <StackPanel Margin="22,22,22,28" Spacing="16" HorizontalAlignment="Center">
+      <StackPanel Margin="22,22,22,28" Spacing="16" MaxWidth="1120" HorizontalAlignment="Stretch">
 
         <Grid ColumnDefinitions="*,Auto">
           <StackPanel Spacing="4">
@@ -89,10 +89,11 @@
         </Grid>
 
         <!-- One printed card per ingredient, in the style of a collectible reference card. -->
-        <ItemsControl ItemsSource="{Binding Cards}" IsVisible="{Binding !IsEmpty}">
+        <ItemsControl ItemsSource="{Binding Cards}" IsVisible="{Binding !IsEmpty}" MaxWidth="1120" HorizontalAlignment="Center">
           <ItemsControl.ItemsPanel>
             <ItemsPanelTemplate>
-              <WrapPanel ItemWidth="170" />
+              <!-- Cards share the width evenly instead of leaving a gap at the end of a row. -->
+              <controls:GalleryPanel MinItemWidth="170" />
             </ItemsPanelTemplate>
           </ItemsControl.ItemsPanel>
           <ItemsControl.ItemTemplate>

@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -21,7 +21,7 @@
     </Grid.Styles>
 
     <ScrollViewer Grid.Row="0">
-      <StackPanel Margin="22,20,22,22" Spacing="18" MaxWidth="760" HorizontalAlignment="Center">
+      <StackPanel Margin="22,20,22,22" Spacing="18" MaxWidth="1120" HorizontalAlignment="Stretch">
 
         <!-- The dish itself: a photograph when there is one, otherwise the recipe's own colours. -->
         <Border Classes="cover" Height="240">
@@ -266,7 +266,7 @@
         </Grid>
 
         <!-- Notes are the "remember this next time" part of a family recipe. -->
-        <Border Classes="recipeSection" IsVisible="{Binding HasNotes}" MaxWidth="760" HorizontalAlignment="Left">
+        <Border Classes="recipeSection" IsVisible="{Binding HasNotes}" HorizontalAlignment="Stretch">
           <StackPanel Spacing="10">
             <TextBlock Classes="label" Text="NOTES" />
             <TextBlock Classes="body"
@@ -312,7 +312,7 @@
               Command="{Binding CookCommand}"
               AutomationProperties.Name="Start cooking"
               IsVisible="{Binding HasSteps}"
-              MaxWidth="760"
+              MaxWidth="1120"
               HorizontalAlignment="Stretch">
         <StackPanel Orientation="Horizontal" Spacing="8">
           <controls:TwoToneIcon Data="{StaticResource TonePlayArrow}" SoftData="{StaticResource TonePlayArrowSoft}" Foreground="{DynamicResource OnAccent}" Width="20" Height="20" />

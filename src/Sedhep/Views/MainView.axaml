@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -9,7 +9,7 @@
              x:DataType="vm:MainViewModel">
   <Grid RowDefinitions="Auto,*,Auto" Background="{DynamicResource Page}">
     <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Disabled">
-      <StackPanel Margin="22,20,22,10" Spacing="15" MaxWidth="980" HorizontalAlignment="Center">
+      <StackPanel Margin="22,20,22,10" Spacing="15" MaxWidth="1120" HorizontalAlignment="Stretch">
 
         <!-- The bookplate: who this cookbook belongs to. Writing lives in the navigation. -->
         <StackPanel Spacing="3">
@@ -138,11 +138,12 @@
     <ScrollViewer Grid.Row="1" IsVisible="{Binding !IsEmpty}" HorizontalScrollBarVisibility="Disabled">
       <ItemsControl ItemsSource="{Binding Recipes}"
                     Margin="14,2,14,16"
-                    MaxWidth="980"
+                    MaxWidth="1120"
                     HorizontalAlignment="Center">
         <ItemsControl.ItemsPanel>
           <ItemsPanelTemplate>
-            <WrapPanel ItemWidth="170" />
+            <!-- Cards share the width evenly instead of leaving a gap at the end of a row. -->
+            <controls:GalleryPanel MinItemWidth="170" />
           </ItemsPanelTemplate>
         </ItemsControl.ItemsPanel>
         <ItemsControl.ItemTemplate>
