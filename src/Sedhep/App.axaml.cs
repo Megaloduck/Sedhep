@@ -306,6 +306,8 @@ public partial class App : Application
             sp.GetRequiredService<ILogger<LanPeerShareService>>()));
 
         services.AddSingleton<IFileDialogService, FileDialogService>();
+        services.AddSingleton<IClipboardService, ClipboardService>();
+        services.AddSingleton<QrImageReader>();
 
         // Desktop recovery and the folder chooser. The services are registered on every platform;
         // they report IsDesktop false where the shell cannot open folders or restart the app.
@@ -372,6 +374,8 @@ public partial class App : Application
             sp.GetRequiredService<INearbyShareService>(),
             sp.GetRequiredService<IRecipeRepository>(),
             sp.GetRequiredService<IFileDialogService>(),
+            sp.GetRequiredService<IClipboardService>(),
+            sp.GetRequiredService<QrImageReader>(),
             sp.GetRequiredService<ICookbookNavigator>(),
             sp.GetRequiredService<ILogger<ShareViewModel>>(),
             recipeId));

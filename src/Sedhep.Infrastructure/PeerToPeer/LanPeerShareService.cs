@@ -42,12 +42,15 @@ public sealed class LanPeerShareService : INearbyShareService
 
     private readonly AppSettingsStore _settings;
     private readonly ICookbookFileService _cookbookFiles;
-    private readonly FileSystemAppSandbox _sandbox;
+    private readonly string _dataDirectory;
     private readonly ILogger<LanPeerShareService> _logger;
 
     private readonly object _gate = new();
     private readonly Dictionary<string, PeerRecord> _peers = new(StringComparer.Ordinal);
     private readonly Dictionary<string, PendingOffer> _pending = new(StringComparer.Ordinal);
+
+    /// <summary>Codes this device has shown and nobody has used yet, keyed by token.</summary>
+    private readonly Dictionary<string, PairingInvitation> _invitations = new(StringComparer.Ordinal);
 
     private UdpClient? _udp;
     private TcpListener? _listener;
@@ -59,10 +62,20 @@ public sealed class LanPeerShareService : INearbyShareService
         ICookbookFileService cookbookFiles,
         FileSystemAppSandbox sandbox,
         ILogger<LanPeerShareService> logger)
+        : this(settings, cookbookFiles, sandbox.RootDirectory, logger)
+    {
+    }
+
+    /// <summary>The folder a transfer may use for scratch files, for callers that already know it.</summary>
+    public LanPeerShareService(
+        AppSettingsStore settings,
+        ICookbookFileService cookbookFiles,
+        string dataDirectory,
+        ILogger<LanPeerShareService> logger)
     {
         _settings = settings;
         _cookbookFiles = cookbookFiles;
-        _sandbox = sandbox;
+        _dataDirectory = dataDirectory;
         _logger = logger;
     }
 
@@ -87,6 +100,8 @@ public sealed class LanPeerShareService : INearbyShareService
     public event EventHandler? DevicesChanged;
 
     public event EventHandler<IncomingShareOffer>? OfferReceived;
+
+    public event EventHandler<PairingReceipt>? PairingReceiptReceived;
 
     public Task StartAsync(CancellationToken cancellationToken = default)
     {
@@ -157,6 +172,56 @@ public sealed class LanPeerShareService : INearbyShareService
         }
     }
 
+    /// <summary>
+    /// The address another device should dial. A private address on a real adapter is the useful
+    /// one; loopback is the honest fallback when this machine is talking to itself.
+    /// </summary>
+    private static string BestHost()
+    {
+        IPAddress? preferred = null;
+        IPAddress? fallback = null;
+
+        try
+        {
+            foreach (var nic in NetworkInterface.GetAllNetworkInterfaces())
+            {
+                if (nic.OperationalStatus != OperationalStatus.Up) continue;
+                if (nic.NetworkInterfaceType is NetworkInterfaceType.Loopback or NetworkInterfaceType.Tunnel) continue;
+
+                foreach (var info in nic.GetIPProperties().UnicastAddresses)
+                {
+                    var address = info.Address;
+                    if (address.AddressFamily != AddressFamily.InterNetwork || IPAddress.IsLoopback(address)) continue;
+
+                    if (IsPrivate(address))
+                    {
+                        preferred ??= address;
+                    }
+                    else
+                    {
+                        fallback ??= address;
+                    }
+                }
+            }
+        }
+        catch
+        {
+            // Interface enumeration is best effort; loopback still works on one machine.
+        }
+
+        return (preferred ?? fallback ?? IPAddress.Loopback).ToString();
+    }
+
+    private static bool IsPrivate(IPAddress address)
+    {
+        var octets = address.GetAddressBytes();
+
+        return octets[0] == 10
+               || (octets[0] == 172 && octets[1] is >= 16 and <= 31)
+               || (octets[0] == 192 && octets[1] == 168)
+               || (octets[0] == 169 && octets[1] == 254);
+    }
+
     private static IEnumerable<IPAddress> LocalAddresses()
     {
         var addresses = new List<IPAddress> { IPAddress.Loopback };
@@ -218,6 +283,7 @@ public sealed class LanPeerShareService : INearbyShareService
         lock (_gate)
         {
             _peers.Clear();
+            _invitations.Clear();
             foreach (var pending in _pending.Values)
             {
                 pending.Answer.TrySetResult(false);
@@ -392,6 +458,7 @@ public sealed class LanPeerShareService : INearbyShareService
         var transferId = Guid.NewGuid().ToString("N");
         var senderName = "Another phone";
         PendingOffer? pending = null;
+        PairingInvitation? pairing = null;
 
         try
         {
@@ -405,6 +472,11 @@ public sealed class LanPeerShareService : INearbyShareService
             }
 
             senderName = string.IsNullOrWhiteSpace(hello.DeviceName) ? senderName : hello.DeviceName!;
+
+            // A sender that scanned a code has already seen this screen, so there is nobody left
+            // to ask. A token that is stale or made up is turned away with a plain explanation.
+            var offeredToken = !string.IsNullOrWhiteSpace(hello.PairingToken);
+            pairing = TryRedeemInvitation(hello.PairingToken);
 
             using var own = ECDiffieHellman.Create(ECCurve.NamedCurves.nistP256);
             await FrameChannel.WritePlainJsonAsync(stream, new ControlMessage
@@ -437,18 +509,40 @@ public sealed class LanPeerShareService : INearbyShareService
                 Summary = offer.Summary ?? "A cookbook"
             };
 
-            pending = new PendingOffer();
-            lock (_gate)
+            if (offeredToken && pairing is null)
             {
-                _pending[transferId] = pending;
+                await channel.WriteJsonAsync(new ControlMessage
+                {
+                    Type = "offer-answer",
+                    Accepted = false,
+                    Message = "That code has expired. Ask for a fresh one."
+                }, token);
+
+                _logger.LogInformation("Refused a stale pairing code from {Device}", senderName);
+                return;
             }
 
-            OfferReceived?.Invoke(this, incoming);
+            pending = new PendingOffer();
+            bool accepted;
 
-            var accepted = await pending.Answer.Task.WaitAsync(TimeSpan.FromMinutes(2), token);
-            lock (_gate)
+            if (pairing is not null)
             {
-                _pending.Remove(transferId);
+                accepted = true;
+            }
+            else
+            {
+                lock (_gate)
+                {
+                    _pending[transferId] = pending;
+                }
+
+                OfferReceived?.Invoke(this, incoming);
+
+                accepted = await pending.Answer.Task.WaitAsync(TimeSpan.FromMinutes(2), token);
+                lock (_gate)
+                {
+                    _pending.Remove(transferId);
+                }
             }
 
             await channel.WriteJsonAsync(new ControlMessage
@@ -467,7 +561,7 @@ public sealed class LanPeerShareService : INearbyShareService
 
             // A cookbook with thousands of photos is far too big to hold in memory, so the package
             // lands on disk next to the cookbook and is deleted once it has been read.
-            var incomingDirectory = Path.Combine(_sandbox.RootDirectory, "incoming");
+            var incomingDirectory = Path.Combine(_dataDirectory, "incoming");
             Directory.CreateDirectory(incomingDirectory);
             var packagePath = Path.Combine(incomingDirectory, $"{transferId}.cookbook");
             long total = 0;
@@ -503,11 +597,25 @@ public sealed class LanPeerShareService : INearbyShareService
                     result.Imported + result.Replaced, total, senderName);
 
                 var receivedCount = result.Imported + result.Replaced;
-                var message = receivedCount > 0
-                    ? $"{receivedCount} recipes received from {senderName}"
-                    : $"Nothing new arrived from {senderName}";
+                var message = receivedCount switch
+                {
+                    0 => $"Nothing new arrived from {senderName}",
+                    1 => $"1 recipe received from {senderName}",
+                    _ => $"{receivedCount} recipes received from {senderName}"
+                };
 
-                pending.Completed.TrySetResult(new ShareResult(true, message, receivedCount, result.PhotosRestored));
+                var shareResult = new ShareResult(true, message, receivedCount, result.PhotosRestored);
+                pending.Completed.TrySetResult(shareResult);
+
+                if (pairing is not null)
+                {
+                    PairingReceiptReceived?.Invoke(this, new PairingReceipt(
+                        senderName,
+                        shareResult.Success,
+                        message,
+                        receivedCount,
+                        result.PhotosRestored));
+                }
 
                 await channel.WriteJsonAsync(new ControlMessage
                 {
@@ -539,7 +647,106 @@ public sealed class LanPeerShareService : INearbyShareService
         }
     }
 
-    public async Task<ShareResult> SendAsync(
+    public async Task<PairingInvitation> CreateInvitationAsync(
+        TimeSpan? lifetime = null,
+        CancellationToken cancellationToken = default)
+    {
+        if (!IsDiscovering)
+        {
+            await StartAsync(cancellationToken);
+        }
+
+        if (_listenPort == 0)
+        {
+            throw new InvalidOperationException("Nearby sharing is not listening on this device.");
+        }
+
+        var invitation = new PairingInvitation(
+            BestHost(),
+            _listenPort,
+            PairingInvitation.NewToken(),
+            ThisDeviceName,
+            DateTimeOffset.UtcNow + (lifetime ?? PairingInvitation.DefaultLifetime));
+
+        lock (_gate)
+        {
+            PruneInvitations();
+            _invitations[invitation.Token] = invitation;
+        }
+
+        _logger.LogInformation(
+            "Pairing code issued for {Device}, valid until {Expiry}",
+            ThisDeviceName,
+            invitation.ExpiresAt);
+
+        return invitation;
+    }
+
+    /// <summary>Callers hold <see cref="_gate"/>; expired codes are of no use to anyone.</summary>
+    private void PruneInvitations()
+    {
+        var now = DateTimeOffset.UtcNow;
+
+        foreach (var key in _invitations.Where(p => p.Value.IsExpiredAt(now)).Select(p => p.Key).ToList())
+        {
+            _invitations.Remove(key);
+        }
+    }
+
+    /// <summary>Takes a code out of the list: one invitation buys exactly one transfer.</summary>
+    private PairingInvitation? TryRedeemInvitation(string? token)
+    {
+        var key = PairingInvitation.NormaliseToken(token);
+
+        if (key.Length == 0)
+        {
+            return null;
+        }
+
+        lock (_gate)
+        {
+            PruneInvitations();
+
+            if (!_invitations.Remove(key, out var invitation))
+            {
+                return null;
+            }
+
+            _logger.LogInformation("Pairing code used by {Host}", invitation.DeviceName);
+            return invitation;
+        }
+    }
+
+    public Task<ShareResult> SendAsync(
+        PairingInvitation invitation,
+        Stream package,
+        string summary,
+        int recipeCount,
+        long totalBytes,
+        IProgress<ShareProgress>? progress = null,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(invitation);
+
+        if (invitation.IsExpiredAt(DateTimeOffset.UtcNow))
+        {
+            return Task.FromResult(new ShareResult(false, "That code has expired. Ask for a new one."));
+        }
+
+        var device = new NearbyDevice(string.Empty, invitation.DeviceName, invitation.Host, invitation.Port);
+
+        return SendCoreAsync(
+            device,
+            package,
+            summary,
+            recipeCount,
+            totalBytes,
+            invitation.Token,
+            progress,
+            cancellationToken);
+    }
+
+    public Task<ShareResult> SendAsync(
         NearbyDevice device,
         Stream package,
         string summary,
@@ -547,6 +754,17 @@ public sealed class LanPeerShareService : INearbyShareService
         long totalBytes,
         IProgress<ShareProgress>? progress = null,
         CancellationToken cancellationToken = default)
+        => SendCoreAsync(device, package, summary, recipeCount, totalBytes, null, progress, cancellationToken);
+
+    private async Task<ShareResult> SendCoreAsync(
+        NearbyDevice device,
+        Stream package,
+        string summary,
+        int recipeCount,
+        long totalBytes,
+        string? pairingToken,
+        IProgress<ShareProgress>? progress,
+        CancellationToken cancellationToken)
     {
         using var client = new TcpClient();
         client.NoDelay = true;
@@ -565,7 +783,8 @@ public sealed class LanPeerShareService : INearbyShareService
                 Type = "hello",
                 DeviceId = _settings.Current.DeviceId,
                 DeviceName = _settings.Current.DeviceName,
-                PublicKey = Convert.ToBase64String(own.ExportSubjectPublicKeyInfo())
+                PublicKey = Convert.ToBase64String(own.ExportSubjectPublicKeyInfo()),
+                PairingToken = pairingToken
             }, cancellationToken);
 
             var ack = await FrameChannel.ReadPlainJsonAsync(stream, cancellationToken);
@@ -763,6 +982,10 @@ public sealed class LanPeerShareService : INearbyShareService
         public string? DeviceId { get; set; }
         public string? DeviceName { get; set; }
         public string? PublicKey { get; set; }
+
+        /// <summary>Set when the sender scanned this device's QR code instead of finding it by name.</summary>
+        public string? PairingToken { get; set; }
+
         public string? TransferId { get; set; }
         public string? Summary { get; set; }
         public int RecipeCount { get; set; }

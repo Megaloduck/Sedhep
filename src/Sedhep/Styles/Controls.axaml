@@ -98,7 +98,7 @@
   <Style Selector="TextBlock.tabLabel">
     <Setter Property="FontFamily" Value="{DynamicResource FontBodyFamily}" />
     <Setter Property="FontSize" Value="{DynamicResource FontTab}" />
-    <Setter Property="LineHeight" Value="15" />
+    <!-- No fixed line height: the label has to grow with the text-size setting too. -->
   </Style>
 
   <!-- ============================ Buttons ============================ -->

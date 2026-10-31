@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
@@ -16,12 +18,27 @@ public interface IFileDialogService
 {
     Task<IStorageFile?> OpenAsync(string title, string extension, string description);
 
+    /// <summary>Opens a file of any of several kinds, such as the picture formats a QR code can arrive in.</summary>
+    Task<IStorageFile?> OpenAsync(string title, IReadOnlyList<string> extensions, string description);
+
     Task<IStorageFile?> SaveAsync(string title, string suggestedName, string extension, string description);
 }
 
 public sealed class FileDialogService : IFileDialogService
 {
-    public async Task<IStorageFile?> OpenAsync(string title, string extension, string description)
+    public Task<IStorageFile?> OpenAsync(string title, IReadOnlyList<string> extensions, string description)
+    {
+        var patterns = extensions.Select(e => $"*{e}").ToArray();
+        return OpenCoreAsync(title, patterns, description);
+    }
+
+    public Task<IStorageFile?> OpenAsync(string title, string extension, string description)
+        => OpenCoreAsync(title, new[] { $"*{extension}" }, description);
+
+    private static async Task<IStorageFile?> OpenCoreAsync(
+        string title,
+        IReadOnlyList<string> patterns,
+        string description)
     {
         var topLevel = ResolveTopLevel();
         if (topLevel is null)
@@ -33,7 +50,7 @@ public sealed class FileDialogService : IFileDialogService
         {
             Title = title,
             AllowMultiple = false,
-            FileTypeFilter = new[] { new FilePickerFileType(description) { Patterns = new[] { $"*{extension}" } } }
+            FileTypeFilter = new[] { new FilePickerFileType(description) { Patterns = patterns } }
         });
 
         return files.Count > 0 ? files[0] : null;

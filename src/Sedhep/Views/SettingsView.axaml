@@ -124,7 +124,11 @@
         <StackPanel Spacing="14">
           <TextBlock Classes="label" Text="SHARING AND BACKUP" />
 
-          <Button Classes="bare" Command="{Binding OpenShareCommand}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+          <Button Classes="bare"
+                  Command="{Binding OpenShareCommand}"
+                  HorizontalAlignment="Stretch"
+                  HorizontalContentAlignment="Stretch"
+                  AutomationProperties.Name="Sharing and backup">
             <Border Background="Transparent">
             <Grid ColumnDefinitions="Auto,*,Auto">
               <Border Width="36" Height="36" CornerRadius="12" Background="{DynamicResource SurfaceMuted}" VerticalAlignment="Center">

@@ -8,7 +8,15 @@
     Phone: a floating tray of the four places you can be, with writing a recipe raised in the middle.
     Desk: the same list in a rail, standing open like a book's table of contents.
   -->
-  <Grid RowDefinitions="*,Auto" ColumnDefinitions="Auto,*,*" Background="Transparent">
+  <!-- Columns: rail, collection, the divider you can drag, the reading pane. -->
+  <Grid RowDefinitions="*,Auto" Background="Transparent">
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="Auto" />
+      <ColumnDefinition Width="*" MinWidth="0" />
+      <ColumnDefinition Width="Auto" />
+      <!-- A little narrower than the collection, so the shelves stay the wider half. -->
+      <ColumnDefinition Width="0.95*" MinWidth="280" MaxWidth="760" />
+    </Grid.ColumnDefinitions>
 
     <!-- The rail. A paper card that never moves, so finding your way back is chrome, not a step. -->
     <Border Grid.Row="0"
@@ -123,12 +131,29 @@
                     HorizontalAlignment="Stretch"
                     MinWidth="0" />
 
+    <!-- The divider between the shelves and a recipe: a hairline that is also a drag handle. -->
     <Border Grid.Row="0"
             Grid.Column="2"
+            Width="1"
+            HorizontalAlignment="Center"
+            Background="{DynamicResource Border}"
+            IsVisible="{Binding IsSplitViewVisible}" />
+
+    <GridSplitter Grid.Row="0"
+                  Grid.Column="2"
+                  Width="9"
+                  ResizeDirection="Columns"
+                  ResizeBehavior="PreviousAndNext"
+                  Background="Transparent"
+                  Cursor="SizeWestEast"
+                  IsVisible="{Binding IsSplitViewVisible}"
+                  AutomationProperties.Name="Resize the reading pane"
+                  ToolTip.Tip="Drag to resize the reading pane" />
+
+    <Border Grid.Row="0"
+            Grid.Column="3"
             IsVisible="{Binding IsSplitViewVisible}"
-            Background="{DynamicResource Page}"
-            BorderBrush="{DynamicResource Border}"
-            BorderThickness="1,0,0,0">
+            Background="{DynamicResource Page}">
       <Grid>
         <ContentControl Content="{Binding SelectedRecipe}"
                         IsVisible="{Binding HasSelectedRecipe}"
@@ -157,10 +182,42 @@
       </Grid>
     </Border>
 
+    <!--
+      Puts the reading pane away, or pulls it back out. One glyph, two states: the sidebar
+      column is washed in while the pane stands beside the collection, and left empty once it
+      is put away. The tooltip carries the wording, so the button stays the size of an icon.
+    -->
+    <Button Grid.Row="0"
+            Grid.Column="1"
+            Classes="icon"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Top"
+            Margin="0,16,16,0"
+            IsVisible="{Binding IsPreviewToggleVisible}"
+            Command="{Binding TogglePreviewCommand}"
+            AutomationProperties.Name="{Binding PreviewToggleHint}"
+            ToolTip.Tip="{Binding PreviewToggleHint}">
+      <Panel>
+        <controls:TwoToneIcon Data="{StaticResource ToneViewSidebar}"
+                              SoftData="{StaticResource ToneViewSidebarSoft}"
+                              Foreground="{DynamicResource TextSecondary}"
+                              Width="20" Height="20"
+                              HorizontalAlignment="Center"
+                              VerticalAlignment="Center"
+                              IsVisible="{Binding IsPreviewOpen}" />
+        <controls:TwoToneIcon Data="{StaticResource ToneViewSidebar}"
+                              Foreground="{DynamicResource TextTertiary}"
+                              Width="20" Height="20"
+                              HorizontalAlignment="Center"
+                              VerticalAlignment="Center"
+                              IsVisible="{Binding !IsPreviewOpen}" />
+      </Panel>
+    </Button>
+
     <!-- Status of the last transfer, kept out of the way until there is something to say. -->
     <Border Grid.Row="0"
             Grid.Column="1"
-            Grid.ColumnSpan="2"
+            Grid.ColumnSpan="3"
             Classes="toast"
             Margin="16,0,16,12"
             VerticalAlignment="Bottom"
@@ -174,7 +231,7 @@
     -->
     <Border Grid.Row="1"
             Grid.Column="0"
-            Grid.ColumnSpan="3"
+            Grid.ColumnSpan="4"
             Margin="12,0,12,12"
             MaxWidth="560"
             HorizontalAlignment="Stretch"
@@ -190,13 +247,18 @@
           <Binding Path="IsCollectionTabBarVisible" />
         </MultiBinding>
       </Border.IsVisible>
-      <Grid ColumnDefinitions="*,*,Auto,*,*">
+      <!--
+        Five slots: four equal ones for the destinations and a fixed one in the middle for the
+        raised create button. The fixed width keeps the four tabs exactly even and the button
+        exactly on the bar's centre line, whatever the label widths are.
+      -->
+      <Grid ColumnDefinitions="*,*,64,*,*">
         <Button Grid.Column="0"
                 Classes="tab"
                 Classes.active="{Binding IsCookbookTab}"
                 Command="{Binding ShowCookbookTabCommand}"
                 AutomationProperties.Name="Cookbook"
-                Margin="1,0">
+                HorizontalAlignment="Stretch">
           <StackPanel Spacing="4" HorizontalAlignment="Center">
             <controls:TwoToneIcon Data="{StaticResource ToneBookmark}"
                                   SoftData="{StaticResource ToneBookmarkSoft}"
@@ -211,7 +273,7 @@
                 Classes.active="{Binding IsFavoritesTab}"
                 Command="{Binding ShowFavoritesTabCommand}"
                 AutomationProperties.Name="Favorites"
-                Margin="1,0">
+                HorizontalAlignment="Stretch">
           <StackPanel Spacing="4" HorizontalAlignment="Center">
             <controls:TwoToneIcon Data="{StaticResource ToneStar}"
                                   SoftData="{StaticResource ToneStarSoft}"
@@ -226,7 +288,7 @@
                 Command="{Binding NewRecipeCommand}"
                 AutomationProperties.Name="New Recipe"
                 ToolTip.Tip="New recipe"
-                Margin="10,-25,10,0">
+                Margin="0,-25,0,0">
           <controls:TwoToneIcon Data="{StaticResource ToneAddCircle}"
                                 SoftData="{StaticResource ToneAddCircleSoft}"
                                 Width="30" Height="30"
@@ -240,7 +302,7 @@
                 Classes.active="{Binding IsAlmanacTab}"
                 Command="{Binding ShowAlmanacTabCommand}"
                 AutomationProperties.Name="Almanac"
-                Margin="1,0">
+                HorizontalAlignment="Stretch">
           <StackPanel Spacing="4" HorizontalAlignment="Center">
             <controls:TwoToneIcon Data="{StaticResource ToneEco}"
                                   SoftData="{StaticResource ToneEcoSoft}"
@@ -255,7 +317,7 @@
                 Classes.active="{Binding IsSettingsTab}"
                 Command="{Binding ShowSettingsTabCommand}"
                 AutomationProperties.Name="Settings"
-                Margin="1,0">
+                HorizontalAlignment="Stretch">
           <StackPanel Spacing="4" HorizontalAlignment="Center">
             <controls:TwoToneIcon Data="{StaticResource ToneSettings}"
                                   SoftData="{StaticResource ToneSettingsSoft}"
@@ -271,7 +333,7 @@
     <Border Grid.Row="0"
             Grid.RowSpan="2"
             Grid.Column="0"
-            Grid.ColumnSpan="3"
+            Grid.ColumnSpan="4"
             IsVisible="{Binding HasIncomingOffer}"
             Background="{DynamicResource Scrim}">
       <Border Classes="card" Margin="24" Padding="20" VerticalAlignment="Center" MaxWidth="440">
@@ -305,7 +367,7 @@
 
     <!-- Existing recipes are protected until the recipient explicitly chooses a copy. -->
     <Border Grid.Row="0" Grid.RowSpan="2"
-            Grid.Column="0" Grid.ColumnSpan="3"
+            Grid.Column="0" Grid.ColumnSpan="4"
             IsVisible="{Binding HasPendingIncomingConflict}"
             Background="{DynamicResource Scrim}">
       <Border Classes="card" Margin="24" Padding="20" VerticalAlignment="Center" MaxWidth="440">

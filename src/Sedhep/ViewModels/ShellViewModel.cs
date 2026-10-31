@@ -51,6 +51,13 @@ public partial class ShellViewModel : ViewModelBase, ICookbookNavigator, ICookbo
     [ObservableProperty]
     private bool _isSplitLayout;
 
+    /// <summary>
+    /// Whether the reading pane is out. On a small desk the shelves are worth more than a recipe
+    /// nobody is reading yet, so the pane can be put away without leaving the page.
+    /// </summary>
+    [ObservableProperty]
+    private bool _isPreviewOpen = true;
+
     [ObservableProperty]
     private RecipeViewModel? _selectedRecipe;
 
@@ -86,6 +93,7 @@ public partial class ShellViewModel : ViewModelBase, ICookbookNavigator, ICookbo
         _nearby = nearby;
 
         _nearby.OfferReceived += OnOfferReceived;
+        _nearby.PairingReceiptReceived += OnPairingReceiptReceived;
     }
 
     /// <summary>
@@ -146,13 +154,19 @@ public partial class ShellViewModel : ViewModelBase, ICookbookNavigator, ICookbo
         _ => false
     };
 
-    public bool IsSplitViewVisible => IsSplitLayout && Current is MainViewModel;
+    public bool IsSplitViewVisible => IsSplitLayout && IsPreviewOpen && Current is MainViewModel;
+
+    /// <summary>The put-away control only exists where a pane could stand beside the collection.</summary>
+    public bool IsPreviewToggleVisible => IsSplitLayout && Current is MainViewModel;
+
+    public string PreviewToggleHint => IsPreviewOpen ? "Hide the reading pane" : "Show the reading pane";
 
     public bool IsCollectionTabBarVisible => IsTabBarVisible && IsSplitLayout;
 
     public bool HasSelectedRecipe => IsSplitViewVisible && SelectedRecipe is not null;
 
-    public int MainContentColumnSpan => IsSplitViewVisible ? 1 : 2;
+    /// <summary>Columns are rail, collection, divider, reading pane: fill all of them with no pane.</summary>
+    public int MainContentColumnSpan => IsSplitViewVisible ? 1 : 3;
 
     public bool IsCookbookTab => Current is MainViewModel { IsFavoritesActive: false };
 
@@ -204,7 +218,19 @@ public partial class ShellViewModel : ViewModelBase, ICookbookNavigator, ICookbo
     {
         if (IsSplitLayout && Current is MainViewModel)
         {
-            SelectedRecipe = _recipeFactory(recipe);
+            var page = _recipeFactory(recipe);
+
+            // The pane remembers what was last read into it, so putting it away and pulling it
+            // back out returns to the same recipe rather than to an empty pane.
+            SelectedRecipe = page;
+
+            if (IsPreviewOpen)
+            {
+                return;
+            }
+
+            // With the pane away there is nowhere to read, so the recipe opens as its own page.
+            Push(page);
             return;
         }
 
@@ -261,8 +287,24 @@ public partial class ShellViewModel : ViewModelBase, ICookbookNavigator, ICookbo
         OnPropertyChanged(nameof(IsAlmanacTab));
         OnPropertyChanged(nameof(IsSettingsTab));
         OnPropertyChanged(nameof(IsSplitViewVisible));
+        OnPropertyChanged(nameof(IsPreviewToggleVisible));
         OnPropertyChanged(nameof(HasSelectedRecipe));
         OnPropertyChanged(nameof(MainContentColumnSpan));
+    }
+
+    /// <summary>Puts the reading pane away or brings it back, without leaving the collection.</summary>
+    [RelayCommand]
+    private void TogglePreview()
+    {
+        IsPreviewOpen = !IsPreviewOpen;
+    }
+
+    partial void OnIsPreviewOpenChanged(bool value)
+    {
+        OnPropertyChanged(nameof(IsSplitViewVisible));
+        OnPropertyChanged(nameof(HasSelectedRecipe));
+        OnPropertyChanged(nameof(MainContentColumnSpan));
+        OnPropertyChanged(nameof(PreviewToggleHint));
     }
 
     public void UpdateLayout(double width)
@@ -275,7 +317,9 @@ public partial class ShellViewModel : ViewModelBase, ICookbookNavigator, ICookbo
 
     partial void OnIsSplitLayoutChanged(bool value)
     {
-        if (!value && SelectedRecipe is not null && Current is MainViewModel)
+        // A recipe only becomes a page this way if the pane was actually on screen. With the pane
+        // put away it is just a memory, and narrowing the window must not open it.
+        if (!value && IsPreviewOpen && SelectedRecipe is not null && Current is MainViewModel)
         {
             var recipe = SelectedRecipe;
             SelectedRecipe = null;
@@ -289,6 +333,7 @@ public partial class ShellViewModel : ViewModelBase, ICookbookNavigator, ICookbo
         }
 
         OnPropertyChanged(nameof(IsSplitViewVisible));
+        OnPropertyChanged(nameof(IsPreviewToggleVisible));
         OnPropertyChanged(nameof(IsCollectionTabBarVisible));
         OnPropertyChanged(nameof(HasSelectedRecipe));
         OnPropertyChanged(nameof(MainContentColumnSpan));
@@ -327,6 +372,26 @@ public partial class ShellViewModel : ViewModelBase, ICookbookNavigator, ICookbo
             IncomingOffer = offer;
             OfferStatus = null;
             OnPropertyChanged(nameof(HasIncomingOffer));
+        });
+    }
+
+    /// <summary>
+    /// A transfer that started from a QR code is already over by the time anyone hears about it,
+    /// so there is nothing to accept: the cookbook and the almanac just take the new recipes.
+    /// </summary>
+    private void OnPairingReceiptReceived(object? sender, PairingReceipt receipt)
+    {
+        Dispatcher.UIThread.Post(() =>
+        {
+            OfferStatus = receipt.Message;
+
+            if (_cookbook is not null)
+            {
+                _ = _cookbook.RefreshAsync();
+            }
+
+            _ = _almanac?.RefreshAsync();
+            ClearOfferStatusSoon();
         });
     }
 

@@ -81,5 +81,9 @@ public sealed class AppearanceService
         resources["FontLabel"] = 11 * scale;
         resources["FontTab"] = 11.5 * scale;
         resources["FontNav"] = 14.5 * scale;
+
+        // Two lines of an ingredient card's name, so a one-line name and a two-line name make the
+        // same card and their families and counts line up across a row.
+        resources["CardNameHeight"] = 46 * scale;
     }
 }

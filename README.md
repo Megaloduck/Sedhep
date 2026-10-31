@@ -13,6 +13,11 @@ when there is no photograph. Categories are shelves you tap, and the list has th
 newest, A–Z). Search reads the local database and covers names, ingredients, steps, notes and tags —
 it works with no connection at all.
 
+**A reading pane on a larger screen.** Past tablet width the collection sits beside the recipe being
+read, and the divider between the two can be dragged to give either side more room. The pane can be
+put away with one tap: the shelves then take the whole width, and a recipe opens as its own page
+until the pane is brought back, which returns to the recipe that was last read into it.
+
 **A cookbook that is not empty on day one.** A new install starts with six recipes — a Sunday soup,
 a rendang, fried rice, grilled chicken, sambal and iced tea — with real amounts and real steps, so the
 first screen shows what the app is for. They are written through the same repository as anything the
@@ -46,6 +51,14 @@ is transferred until the person holding it says yes. The connection is encrypted
 devices derive from an ephemeral Diffie–Hellman exchange, so the recipes are not readable on the
 way. No accounts, no cloud.
 
+**QR codes.** When the two devices cannot find each other on the network — a guest Wi-Fi that blocks
+discovery, two machines on different subnets — the transfer can start from a code instead. The
+receiving device shows a QR code carrying its address and a one-time token, and the sending device
+reads it. Reading means opening a picture of the code (a screenshot works) or pasting the code text;
+there is no camera capture in the shared Avalonia project, so a photo has to arrive as a file.
+Whoever scanned the code has already seen the screen it was on, so the transfer is not accepted a
+second time; the token is spent on first use and expires after five minutes.
+
 **Backups.** The whole cookbook can be written to a `.cookbook` file and opened again on another
 device. That file is a zip holding `manifest.json` (with the format version), `recipes.json`, and
 the photo files.
@@ -73,7 +86,7 @@ Dark theme:
 
 ```
 src/Sedhep.Domain          recipes, categories, sync metadata, sharing contracts
-src/Sedhep.Infrastructure  SQLite persistence, photo storage, .cookbook files, LAN transfer
+src/Sedhep.Infrastructure  SQLite persistence, photo storage, .cookbook files, LAN transfer, QR codes
 src/Sedhep                 Avalonia UI: view models, views, styles, navigation
 platforms/                 Android, iOS, browser and desktop hosts
 ```

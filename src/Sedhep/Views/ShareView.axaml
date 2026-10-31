@@ -99,6 +99,40 @@
           </StackPanel>
         </Border>
 
+        <!-- QR code: the transfer that still works when the Wi-Fi list comes up empty -->
+        <Border Classes="card">
+          <StackPanel Spacing="12">
+            <TextBlock Classes="label" Text="QR CODE" />
+            <TextBlock Classes="muted"
+                       Text="When two phones cannot find each other on the Wi-Fi, a code carried from one screen to the other still works." />
+
+            <Button Classes="outline"
+                    Command="{Binding ShowQrCodeCommand}"
+                    HorizontalAlignment="Stretch"
+                    AutomationProperties.Name="Show my code to receive">
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <controls:TwoToneIcon Data="{StaticResource ToneQrCode2}"
+                                      Foreground="{DynamicResource TextSecondary}"
+                                      Width="16" Height="16" />
+                <TextBlock Text="Show my code to receive" VerticalAlignment="Center" />
+              </StackPanel>
+            </Button>
+
+            <Button Classes="outline"
+                    Command="{Binding ScanQrCodeCommand}"
+                    HorizontalAlignment="Stretch"
+                    AutomationProperties.Name="Scan a code to send">
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <controls:TwoToneIcon Data="{StaticResource TonePhotoCamera}"
+                                      SoftData="{StaticResource TonePhotoCameraSoft}"
+                                      Foreground="{DynamicResource TextSecondary}"
+                                      Width="16" Height="16" />
+                <TextBlock Text="Scan a code to send" VerticalAlignment="Center" />
+              </StackPanel>
+            </Button>
+          </StackPanel>
+        </Border>
+
         <!-- Files -->
         <Border Classes="card">
           <StackPanel Spacing="12">
@@ -137,6 +171,131 @@
         </Border>
       </StackPanel>
     </ScrollViewer>
+
+    <!-- The QR panel: showing a code receives, scanning one sends. -->
+    <Border Grid.Row="0" Grid.RowSpan="2"
+            IsVisible="{Binding IsQrOpen}"
+            Background="{DynamicResource Scrim}">
+      <Border Classes="card" Margin="20" Padding="20" VerticalAlignment="Center">
+        <StackPanel Spacing="14">
+
+          <!-- Show my code -->
+          <StackPanel Spacing="12" IsVisible="{Binding IsShowCodeVisible}">
+            <TextBlock Classes="h2" Text="Let the other phone scan this" />
+            <TextBlock Classes="muted"
+                       Text="On the other phone open Share and tap “Scan a code”. Hold the picture steady in front of it." />
+
+            <Border Background="White" CornerRadius="18" Padding="14"
+                    HorizontalAlignment="Center"
+                    IsVisible="{Binding !IsCodeExpired}">
+              <controls:QrCodeView Value="{Binding PairingCode}" Width="216" Height="216" />
+            </Border>
+
+            <TextBlock Classes="body"
+                       HorizontalAlignment="Center"
+                       Text="{Binding PairingCountdown}"
+                       IsVisible="{Binding PairingCountdown, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+
+            <TextBlock Classes="muted"
+                       HorizontalAlignment="Center"
+                       Text="{Binding QrNote}"
+                       IsVisible="{Binding IsCodeExpired}" />
+
+            <TextBlock Classes="muted"
+                       Text="{Binding QrStatus}"
+                       IsVisible="{Binding QrStatus, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+
+            <ProgressBar Minimum="0" Maximum="100" Value="{Binding QrProgress}" IsVisible="{Binding HasQrProgress}" />
+
+            <Button Classes="primary"
+                    Content="Done"
+                    HorizontalAlignment="Stretch"
+                    Command="{Binding CloseQrCommand}" />
+
+            <Button Classes="outline"
+                    Content="Show a new code"
+                    HorizontalAlignment="Stretch"
+                    IsVisible="{Binding IsCodeExpired}"
+                    Command="{Binding NewQrCodeCommand}" />
+
+            <Button Classes="bare"
+                    HorizontalAlignment="Center"
+                    IsVisible="{Binding !IsCodeExpired}"
+                    Command="{Binding CopyQrCodeCommand}">
+              <StackPanel Orientation="Horizontal" Spacing="6">
+                <controls:TwoToneIcon Data="{StaticResource ToneContentCopy}"
+                                      SoftData="{StaticResource ToneContentCopySoft}"
+                                      Foreground="{DynamicResource TextTertiary}"
+                                      Width="14" Height="14" />
+                <TextBlock Classes="meta" Text="Copy the code instead" />
+              </StackPanel>
+            </Button>
+          </StackPanel>
+
+          <!-- Scan someone else's code -->
+          <StackPanel Spacing="12" IsVisible="{Binding IsScanVisible}">
+            <TextBlock Classes="h2" Text="Scan the other phone's code" />
+            <TextBlock Classes="muted"
+                       Text="Take a picture of the code on the other screen, then open it here. Copying the code on the other phone and pasting it also works." />
+
+            <Button Classes="primary"
+                    HorizontalAlignment="Stretch"
+                    Command="{Binding ChooseQrPictureCommand}"
+                    AutomationProperties.Name="Open a picture of the code">
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <controls:TwoToneIcon Data="{StaticResource TonePhotoCamera}"
+                                      SoftData="{StaticResource TonePhotoCameraSoft}"
+                                      Width="16" Height="16" />
+                <TextBlock Text="Open a picture of the code" VerticalAlignment="Center" />
+              </StackPanel>
+            </Button>
+
+            <Button Classes="outline"
+                    Content="Paste a copied code"
+                    HorizontalAlignment="Stretch"
+                    Command="{Binding PasteQrCodeCommand}" />
+
+            <TextBox Watermark="or paste the code here" Text="{Binding ScannedCode}" />
+
+            <Button Classes="outline"
+                    Content="Use this code"
+                    HorizontalAlignment="Stretch"
+                    IsVisible="{Binding HasTypedCode}"
+                    Command="{Binding UseTypedCodeCommand}" />
+
+            <TextBlock Classes="muted"
+                       Text="{Binding QrStatus}"
+                       IsVisible="{Binding QrStatus, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+
+            <Button Classes="bare" Content="Cancel" HorizontalAlignment="Center" Command="{Binding CloseQrCommand}" />
+          </StackPanel>
+
+          <!-- The code was read: send what this page is set to send -->
+          <StackPanel Spacing="12" IsVisible="{Binding IsScannedVisible}">
+            <TextBlock Classes="h2" Text="{Binding ScannedDeviceLabel}" />
+            <TextBlock Classes="muted" Text="Found a phone that is ready to receive." />
+            <TextBlock Classes="body" Text="{Binding ScopeHint}" />
+
+            <ProgressBar Minimum="0" Maximum="100" Value="{Binding QrProgress}" IsVisible="{Binding HasQrProgress}" />
+
+            <TextBlock Classes="muted"
+                       Text="{Binding QrStatus}"
+                       IsVisible="{Binding QrStatus, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+
+            <Button Classes="primary"
+                    Content="Send the recipes"
+                    HorizontalAlignment="Stretch"
+                    IsEnabled="{Binding !IsQrBusy}"
+                    Command="{Binding SendToScannedCommand}" />
+
+            <Button Classes="outline"
+                    Content="Back"
+                    HorizontalAlignment="Stretch"
+                    Command="{Binding ScanQrCodeCommand}" />
+          </StackPanel>
+        </StackPanel>
+      </Border>
+    </Border>
 
     <!-- The same recipe on both sides: the user picks which copy the cookbook keeps. -->
     <Border Grid.Row="0" Grid.RowSpan="2"

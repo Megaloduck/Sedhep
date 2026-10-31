@@ -129,6 +129,7 @@
                                  FontWeight="Bold"
                                  Foreground="{Binding Ink}"
                                  MaxLines="2"
+                                 MinHeight="{DynamicResource CardNameHeight}"
                                  TextTrimming="CharacterEllipsis" />
                       <TextBlock Text="{Binding FamilyName}"
                                  FontSize="{DynamicResource FontLabel}"

@@ -12,5 +12,6 @@
     <PackageReference Include="Microsoft.Data.Sqlite" />
     <PackageReference Include="System.Text.Json" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <PackageReference Include="ZXing.Net" />
   </ItemGroup>
 </Project>

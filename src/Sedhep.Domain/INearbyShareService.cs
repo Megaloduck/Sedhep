@@ -48,6 +48,12 @@ public interface INearbyShareService : IAsyncDisposable
     /// <summary>An offer from another device is waiting for an answer.</summary>
     event EventHandler<IncomingShareOffer>? OfferReceived;
 
+    /// <summary>
+    /// A device that scanned this device's QR code has finished sending. Offers that arrive that
+    /// way are never prompted for: the code was the answer.
+    /// </summary>
+    event EventHandler<PairingReceipt>? PairingReceiptReceived;
+
     Task StartAsync(CancellationToken cancellationToken = default);
 
     Task StopAsync();
@@ -55,6 +61,28 @@ public interface INearbyShareService : IAsyncDisposable
     /// <summary>Sends the given package to a nearby device and waits for its answer.</summary>
     Task<ShareResult> SendAsync(
         NearbyDevice device,
+        Stream package,
+        string summary,
+        int recipeCount,
+        long totalBytes,
+        IProgress<ShareProgress>? progress = null,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Issues a one-time invitation for this device to receive. It is shown as a QR code; the
+    /// device that scans it can send without being found on the network first.
+    /// </summary>
+    Task<PairingInvitation> CreateInvitationAsync(
+        TimeSpan? lifetime = null,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Sends the given package to the device whose code was scanned. It is the same transfer as
+    /// <see cref="SendAsync(NearbyDevice, Stream, string, int, long, IProgress{ShareProgress}?, CancellationToken)"/>
+    /// with the invitation token in the handshake, so the receiving device accepts without asking.
+    /// </summary>
+    Task<ShareResult> SendAsync(
+        PairingInvitation invitation,
         Stream package,
         string summary,
         int recipeCount,
