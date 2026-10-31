@@ -35,6 +35,14 @@ public partial class MainViewModel : ViewModelBase
     /// <summary>Guards against an older search finishing after a newer one.</summary>
     private int _loadVersion;
 
+    /// <summary>
+    /// How long the field rests before the database is asked again. Typing a word is one search,
+    /// not one per letter: the last keystroke cancels the pause that earlier ones started.
+    /// </summary>
+    private static readonly TimeSpan SearchDelay = TimeSpan.FromMilliseconds(220);
+
+    private CancellationTokenSource? _searchCts;
+
     private CancellationTokenSource? _coverCts;
 
     [ObservableProperty]
@@ -101,7 +109,36 @@ public partial class MainViewModel : ViewModelBase
     {
         OnPropertyChanged(nameof(IsSearching));
         OnPropertyChanged(nameof(ShowWriteCta));
-        _ = RefreshAsync();
+
+        _searchCts?.Cancel();
+        _searchCts?.Dispose();
+        _searchCts = null;
+
+        // Emptying the field is a decision, not typing: show the whole cookbook straight away.
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            _ = RefreshAsync();
+            return;
+        }
+
+        var cts = new CancellationTokenSource();
+        _searchCts = cts;
+        _ = SearchAfterPauseAsync(cts.Token);
+    }
+
+    private async Task SearchAfterPauseAsync(CancellationToken token)
+    {
+        try
+        {
+            await Task.Delay(SearchDelay, token);
+        }
+        catch (OperationCanceledException)
+        {
+            return;
+        }
+
+        // A fresh RefreshAsync bumps the load version, so a slower earlier search cannot win.
+        await RefreshAsync();
     }
 
     partial void OnIsFavoritesActiveChanged(bool value)
