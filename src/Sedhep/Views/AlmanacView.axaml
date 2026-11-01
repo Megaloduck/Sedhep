@@ -13,7 +13,7 @@
   -->
   <Grid Background="{DynamicResource Page}">
     <ScrollViewer>
-      <StackPanel Margin="22,22,22,28" Spacing="16" MaxWidth="1120" HorizontalAlignment="Stretch">
+      <StackPanel Margin="22,22,22,28" Spacing="16"  HorizontalAlignment="Stretch">
 
         <Grid ColumnDefinitions="*,Auto">
           <StackPanel Spacing="4">
@@ -89,7 +89,7 @@
         </Grid>
 
         <!-- One printed card per ingredient, in the style of a collectible reference card. -->
-        <ItemsControl ItemsSource="{Binding Cards}" IsVisible="{Binding !IsEmpty}" MaxWidth="1120" HorizontalAlignment="Center">
+        <ItemsControl ItemsSource="{Binding Cards}" IsVisible="{Binding !IsEmpty}" HorizontalAlignment="Center">
           <ItemsControl.ItemsPanel>
             <ItemsPanelTemplate>
               <!-- Cards share the width evenly instead of leaving a gap at the end of a row. -->

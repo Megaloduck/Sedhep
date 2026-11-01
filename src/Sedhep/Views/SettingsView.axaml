@@ -8,7 +8,7 @@
              x:DataType="vm:SettingsViewModel"
              xmlns:controls="clr-namespace:Sedhep.Controls">
   <ScrollViewer Background="{DynamicResource Page}">
-    <StackPanel Margin="18,16,18,24" Spacing="14" MaxWidth="1120" HorizontalAlignment="Stretch">
+    <StackPanel Margin="18,16,18,24" Spacing="14"  HorizontalAlignment="Stretch">
       <StackPanel Spacing="3">
         <StackPanel Orientation="Horizontal" Spacing="6">
           <controls:TwoToneIcon Data="{StaticResource ToneTune}" Foreground="{DynamicResource AccentInk}" VerticalAlignment="Center" Width="16" Height="16" />
